@@ -4,6 +4,9 @@
 
 create extension if not exists pgcrypto;
 
+create schema if not exists app_private;
+revoke all on schema app_private from public;
+
 create table if not exists public.profiles (
   id uuid primary key references auth.users(id) on delete cascade,
   full_name text,
@@ -106,7 +109,7 @@ create trigger touch_profiles_updated_at before update on public.profiles for ea
 drop trigger if exists touch_organizations_updated_at on public.organizations;
 create trigger touch_organizations_updated_at before update on public.organizations for each row execute function public.touch_updated_at();
 
-create or replace function public.handle_new_user()
+create or replace function app_private.handle_new_user()
 returns trigger
 language plpgsql
 security definer
@@ -130,9 +133,9 @@ end;
 $$;
 
 drop trigger if exists on_auth_user_created on auth.users;
-create trigger on_auth_user_created after insert on auth.users for each row execute function public.handle_new_user();
+create trigger on_auth_user_created after insert on auth.users for each row execute function app_private.handle_new_user();
 
-create or replace function public.is_platform_admin()
+create or replace function app_private.is_platform_admin()
 returns boolean
 language sql
 stable
@@ -146,7 +149,7 @@ as $$
   );
 $$;
 
-create or replace function public.is_org_member(org_id uuid)
+create or replace function app_private.is_org_member(org_id uuid)
 returns boolean
 language sql
 stable
@@ -161,14 +164,14 @@ as $$
   );
 $$;
 
-create or replace function public.can_manage_org(org_id uuid)
+create or replace function app_private.can_manage_org(org_id uuid)
 returns boolean
 language sql
 stable
 security definer
 set search_path = public
 as $$
-  select public.is_platform_admin() or exists (
+  select app_private.is_platform_admin() or exists (
     select 1 from public.organization_members om
     where om.organization_id = org_id
       and om.user_id = auth.uid()
@@ -186,7 +189,7 @@ alter table public.audit_logs enable row level security;
 -- Profiles
 DROP POLICY IF EXISTS "profiles_select_self_or_platform_admin" ON public.profiles;
 CREATE POLICY "profiles_select_self_or_platform_admin" ON public.profiles
-FOR SELECT USING (id = auth.uid() OR public.is_platform_admin());
+FOR SELECT USING (id = auth.uid() OR app_private.is_platform_admin());
 
 DROP POLICY IF EXISTS "profiles_update_self" ON public.profiles;
 CREATE POLICY "profiles_update_self" ON public.profiles
@@ -195,43 +198,43 @@ FOR UPDATE USING (id = auth.uid()) WITH CHECK (id = auth.uid() AND is_platform_a
 -- Organizations
 DROP POLICY IF EXISTS "organizations_select_members_or_platform_admin" ON public.organizations;
 CREATE POLICY "organizations_select_members_or_platform_admin" ON public.organizations
-FOR SELECT USING (public.is_platform_admin() OR public.is_org_member(id));
+FOR SELECT USING (app_private.is_platform_admin() OR app_private.is_org_member(id));
 
 DROP POLICY IF EXISTS "organizations_platform_admin_write" ON public.organizations;
 CREATE POLICY "organizations_platform_admin_write" ON public.organizations
-FOR ALL USING (public.is_platform_admin()) WITH CHECK (public.is_platform_admin());
+FOR ALL USING (app_private.is_platform_admin()) WITH CHECK (app_private.is_platform_admin());
 
 -- Organization members
 DROP POLICY IF EXISTS "organization_members_select_self_org_or_platform_admin" ON public.organization_members;
 CREATE POLICY "organization_members_select_self_org_or_platform_admin" ON public.organization_members
-FOR SELECT USING (public.is_platform_admin() OR user_id = auth.uid() OR public.is_org_member(organization_id));
+FOR SELECT USING (app_private.is_platform_admin() OR user_id = auth.uid() OR app_private.is_org_member(organization_id));
 
 DROP POLICY IF EXISTS "organization_members_platform_admin_write" ON public.organization_members;
 CREATE POLICY "organization_members_platform_admin_write" ON public.organization_members
-FOR ALL USING (public.is_platform_admin()) WITH CHECK (public.is_platform_admin());
+FOR ALL USING (app_private.is_platform_admin()) WITH CHECK (app_private.is_platform_admin());
 
 -- Branding
 DROP POLICY IF EXISTS "organization_branding_select_members_or_platform_admin" ON public.organization_branding;
 CREATE POLICY "organization_branding_select_members_or_platform_admin" ON public.organization_branding
-FOR SELECT USING (public.is_platform_admin() OR public.is_org_member(organization_id));
+FOR SELECT USING (app_private.is_platform_admin() OR app_private.is_org_member(organization_id));
 
 DROP POLICY IF EXISTS "organization_branding_admin_write" ON public.organization_branding;
 CREATE POLICY "organization_branding_admin_write" ON public.organization_branding
-FOR INSERT WITH CHECK (public.can_manage_org(organization_id));
+FOR INSERT WITH CHECK (app_private.can_manage_org(organization_id));
 
 DROP POLICY IF EXISTS "organization_branding_admin_update" ON public.organization_branding;
 CREATE POLICY "organization_branding_admin_update" ON public.organization_branding
-FOR UPDATE USING (public.can_manage_org(organization_id))
-WITH CHECK (public.can_manage_org(organization_id));
+FOR UPDATE USING (app_private.can_manage_org(organization_id))
+WITH CHECK (app_private.can_manage_org(organization_id));
 
 -- Audit logs are immutable from the app perspective. Inserts require verified tenant context.
 DROP POLICY IF EXISTS "audit_logs_select_members_or_platform_admin" ON public.audit_logs;
 CREATE POLICY "audit_logs_select_members_or_platform_admin" ON public.audit_logs
-FOR SELECT USING (public.is_platform_admin() OR public.is_org_member(organization_id));
+FOR SELECT USING (app_private.is_platform_admin() OR app_private.is_org_member(organization_id));
 
 DROP POLICY IF EXISTS "audit_logs_insert_members_or_platform_admin" ON public.audit_logs;
 CREATE POLICY "audit_logs_insert_members_or_platform_admin" ON public.audit_logs
-FOR INSERT WITH CHECK (public.can_manage_org(organization_id));
+FOR INSERT WITH CHECK (app_private.can_manage_org(organization_id));
 
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
 values ('tenant-assets', 'tenant-assets', true, 2097152, array['image/png', 'image/jpeg', 'image/webp', 'image/svg+xml'])
@@ -246,8 +249,8 @@ CREATE POLICY "tenant_assets_write_members_or_platform_admin" ON storage.objects
 FOR INSERT WITH CHECK (
   bucket_id = 'tenant-assets'
   and (
-    public.is_platform_admin()
-    or public.can_manage_org((storage.foldername(name))[1]::uuid)
+    app_private.is_platform_admin()
+    or app_private.can_manage_org((storage.foldername(name))[1]::uuid)
   )
 );
 
@@ -256,13 +259,25 @@ CREATE POLICY "tenant_assets_update_members_or_platform_admin" ON storage.object
 FOR UPDATE USING (
   bucket_id = 'tenant-assets'
   and (
-    public.is_platform_admin()
-    or public.can_manage_org((storage.foldername(name))[1]::uuid)
+    app_private.is_platform_admin()
+    or app_private.can_manage_org((storage.foldername(name))[1]::uuid)
   )
 ) WITH CHECK (
   bucket_id = 'tenant-assets'
   and (
-    public.is_platform_admin()
-    or public.can_manage_org((storage.foldername(name))[1]::uuid)
+    app_private.is_platform_admin()
+    or app_private.can_manage_org((storage.foldername(name))[1]::uuid)
   )
 );
+
+grant usage on schema public to authenticated;
+grant select, update on public.profiles to authenticated;
+grant select, insert, update on public.organizations to authenticated;
+grant select, insert, update on public.organization_members to authenticated;
+grant select, insert, update on public.organization_branding to authenticated;
+grant select, insert on public.audit_logs to authenticated;
+
+grant usage on schema app_private to authenticated;
+grant execute on function app_private.is_platform_admin() to authenticated;
+grant execute on function app_private.is_org_member(uuid) to authenticated;
+grant execute on function app_private.can_manage_org(uuid) to authenticated;
