@@ -1,5 +1,7 @@
 import { AppShell } from "@/components/layout/shell";
+import Link from "next/link";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/server";
 import { requirePlatformAdmin } from "@/lib/data/auth";
 
@@ -20,7 +22,10 @@ export default async function AdminDashboardPage() {
       </section>
       <Card className="mt-6">
         <CardHeader><CardTitle>Founder control layer</CardTitle><CardDescription>Minimal by design: enough to seed, verify, and demo first-client readiness without enterprise bloat.</CardDescription></CardHeader>
-        <CardContent><p className="text-sm leading-7 text-slate-600">Next admin increment: create tenant setup form after preview deployment and Stage A RLS smoke tests pass.</p></CardContent>
+        <CardContent className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-sm leading-7 text-slate-600">Tenant setup access is live for controlled founder onboarding. Keep first-client demos managed — no public self-signup.</p>
+          <Button asChild><Link href="/admin/tenants/new">Create tenant</Link></Button>
+        </CardContent>
       </Card>
     </AppShell>
   );

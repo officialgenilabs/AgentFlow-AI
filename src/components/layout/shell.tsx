@@ -27,7 +27,10 @@ function BrandMark({ organization, branding }: { organization?: Organization; br
 export function AppShell({ children, organization, branding, profile, mode = "tenant" }: { children: React.ReactNode; organization?: Organization; branding?: OrganizationBranding; profile: Profile; mode?: "tenant" | "admin" }) {
   const tenantHref = organization ? `/app/${organization.slug}` : "/select-organization";
   const nav = mode === "admin"
-    ? [{ href: "/admin/dashboard", label: "Founder Dashboard", icon: ShieldCheck }]
+    ? [
+        { href: "/admin/dashboard", label: "Founder Dashboard", icon: ShieldCheck },
+        { href: "/admin/tenants", label: "Tenants", icon: Building2 },
+      ]
     : [
         { href: `${tenantHref}/dashboard`, label: "Dashboard", icon: LayoutDashboard },
         { href: `${tenantHref}/branding`, label: "Branding", icon: Palette },

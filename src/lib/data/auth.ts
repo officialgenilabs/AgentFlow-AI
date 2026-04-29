@@ -38,6 +38,18 @@ export async function requirePlatformAdmin() {
 
 export async function getUserOrganizations(): Promise<Organization[]> {
   const { supabase } = await getAuthenticatedUser();
+  const profile = await getCurrentProfile();
+
+  if (profile.is_platform_admin) {
+    const { data, error } = await supabase
+      .from("organizations")
+      .select("id, name, slug, status, industry, plan")
+      .order("created_at", { ascending: true });
+
+    if (error) return [];
+    return (data ?? []) as Organization[];
+  }
+
   const { data, error } = await supabase
     .from("organization_members")
     .select("organizations(id, name, slug, status, industry, plan)")
