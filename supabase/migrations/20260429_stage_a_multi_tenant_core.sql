@@ -152,14 +152,14 @@ language sql
 stable
 security definer
 set search_path = public
-as $
+as $$
   select exists (
     select 1 from public.organization_members om
     where om.organization_id = org_id
       and om.user_id = auth.uid()
       and om.status = 'active'
   );
-$;
+$$;
 
 create or replace function public.can_manage_org(org_id uuid)
 returns boolean
@@ -167,7 +167,7 @@ language sql
 stable
 security definer
 set search_path = public
-as $
+as $$
   select public.is_platform_admin() or exists (
     select 1 from public.organization_members om
     where om.organization_id = org_id
@@ -175,7 +175,7 @@ as $
       and om.status = 'active'
       and om.role in ('owner', 'admin')
   );
-$;
+$$;
 
 alter table public.profiles enable row level security;
 alter table public.organizations enable row level security;
