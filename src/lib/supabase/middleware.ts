@@ -27,6 +27,30 @@ export async function updateSession(request: NextRequest) {
     },
   );
 
-  await supabase.auth.getUser();
+  const { data: { user } } = await supabase.auth.getUser();
+  const pathname = request.nextUrl.pathname;
+
+  if (pathname.startsWith("/admin")) {
+    if (!user) {
+      const redirectUrl = request.nextUrl.clone();
+      redirectUrl.pathname = "/login";
+      redirectUrl.search = "";
+      return NextResponse.redirect(redirectUrl);
+    }
+
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("is_platform_admin")
+      .eq("id", user.id)
+      .maybeSingle();
+
+    if (!profile?.is_platform_admin) {
+      const redirectUrl = request.nextUrl.clone();
+      redirectUrl.pathname = "/select-organization";
+      redirectUrl.search = "?error=platform-admin-required";
+      return NextResponse.redirect(redirectUrl);
+    }
+  }
+
   return supabaseResponse;
 }
