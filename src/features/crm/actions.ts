@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { resolveTenantBySlug } from "@/lib/data/auth";
 import { getOrgMembers } from "@/lib/data/crm";
+import { normalizeLeadEmail, normalizePhoneToE164 } from "@/lib/lead-identity";
 
 function text(value: FormDataEntryValue | null, fallback = "") {
   const next = typeof value === "string" ? value.trim() : "";
@@ -81,6 +82,8 @@ export async function createLead(orgSlug: string, formData: FormData) {
   const assignedOwner = await assertAssignable(tenant.organization.id, nullableText(formData.get("assigned_owner_user_id")));
   const pipelineStageId = nullableText(formData.get("pipeline_stage_id"));
   const capturedAt = nullableTimestamp(formData.get("captured_at")) ?? new Date().toISOString();
+  const normalizedEmail = normalizeLeadEmail(formData.get("email"));
+  const normalizedPhone = normalizePhoneToE164(formData.get("phone"));
 
   const { data: lead, error } = await supabase
     .from("leads")
@@ -88,8 +91,8 @@ export async function createLead(orgSlug: string, formData: FormData) {
       organization_id: tenant.organization.id,
       pipeline_stage_id: pipelineStageId,
       full_name: fullName,
-      email: nullableText(formData.get("email")),
-      phone: nullableText(formData.get("phone")),
+      email: normalizedEmail,
+      phone: normalizedPhone ?? nullableText(formData.get("phone")),
       company: nullableText(formData.get("company")),
       status: safeStatus(formData.get("status")),
       priority: safePriority(formData.get("priority")),
@@ -114,6 +117,7 @@ export async function createLead(orgSlug: string, formData: FormData) {
     .select("id")
     .single();
 
+  if (error?.code === "23505") redirect(`/app/${orgSlug}/leads/new?error=duplicate-identity`);
   if (error || !lead) redirect(`/app/${orgSlug}/leads/new?error=create-failed`);
 
   await supabase.from("audit_logs").insert({

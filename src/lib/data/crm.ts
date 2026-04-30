@@ -44,7 +44,7 @@ export async function getLeadList(orgSlug: string): Promise<{ tenant: Awaited<Re
   const [{ data: leads }, members, stages] = await Promise.all([
     supabase
       .from("leads")
-      .select("id, organization_id, pipeline_stage_id, full_name, email, phone, company, status, priority, estimated_value, exact_source, source_subtype, original_inbound_channel, source_reference, captured_at, first_contact_at, qualification_status, ai_qualification_decision_path, lead_origin_metadata, assigned_owner_user_id, created_by_user_id, updated_by_user_id, created_at, updated_at")
+      .select("id, organization_id, pipeline_stage_id, full_name, email, phone, normalized_email, normalized_phone_e164, identity_confidence, company, status, priority, estimated_value, exact_source, source_subtype, original_inbound_channel, source_reference, captured_at, first_contact_at, qualification_status, ai_qualification_decision_path, lead_origin_metadata, assigned_owner_user_id, created_by_user_id, updated_by_user_id, created_at, updated_at")
       .eq("organization_id", tenant.organization.id)
       .order("created_at", { ascending: false }),
     getOrgMembers(tenant.organization.id),
@@ -60,7 +60,7 @@ export async function getLeadDetail(orgSlug: string, leadId: string) {
 
   const { data: lead, error } = await supabase
     .from("leads")
-    .select("id, organization_id, pipeline_stage_id, full_name, email, phone, company, status, priority, estimated_value, exact_source, source_subtype, original_inbound_channel, source_reference, captured_at, first_contact_at, qualification_status, ai_qualification_decision_path, lead_origin_metadata, assigned_owner_user_id, created_by_user_id, updated_by_user_id, created_at, updated_at")
+    .select("id, organization_id, pipeline_stage_id, full_name, email, phone, normalized_email, normalized_phone_e164, identity_confidence, company, status, priority, estimated_value, exact_source, source_subtype, original_inbound_channel, source_reference, captured_at, first_contact_at, qualification_status, ai_qualification_decision_path, lead_origin_metadata, assigned_owner_user_id, created_by_user_id, updated_by_user_id, created_at, updated_at")
     .eq("organization_id", tenant.organization.id)
     .eq("id", leadId)
     .single();

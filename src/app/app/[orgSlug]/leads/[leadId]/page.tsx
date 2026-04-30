@@ -54,11 +54,12 @@ export default async function LeadDetailPage({ params, searchParams }: { params:
         </Card>
 
         <Card>
-          <CardHeader><CardTitle>Source integrity</CardTitle><CardDescription>Attribution fields preserved on the lead record.</CardDescription></CardHeader>
+          <CardHeader><CardTitle>Source + identity integrity</CardTitle><CardDescription>Attribution and strong dedupe keys preserved on the lead record.</CardDescription></CardHeader>
           <CardContent className="space-y-3 text-sm">
             <div className="rounded-2xl bg-slate-50 p-3"><p className="text-slate-400">Exact source</p><p className="font-medium text-slate-900">{lead.exact_source}</p></div>
             <div className="rounded-2xl bg-slate-50 p-3"><p className="text-slate-400">Subtype / channel</p><p className="font-medium text-slate-900">{lead.source_subtype} / {lead.original_inbound_channel}</p></div>
             <div className="rounded-2xl bg-slate-50 p-3"><p className="text-slate-400">Captured / first contact</p><p className="font-medium text-slate-900">{formatDate(lead.captured_at)} / {formatDate(lead.first_contact_at)}</p></div>
+            <div className="rounded-2xl bg-slate-50 p-3"><p className="text-slate-400">Strong identity</p><p className="font-medium text-slate-900">{lead.identity_confidence} • {lead.normalized_phone_e164 || lead.normalized_email || "No strong identity"}</p></div>
             <div className="rounded-2xl bg-slate-50 p-3"><p className="text-slate-400">Source reference</p><p className="font-medium text-slate-900">{lead.source_reference || "None"}</p></div>
           </CardContent>
         </Card>

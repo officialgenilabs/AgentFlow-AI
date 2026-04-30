@@ -58,6 +58,9 @@ export type Lead = {
   full_name: string;
   email: string | null;
   phone: string | null;
+  normalized_email: string | null;
+  normalized_phone_e164: string | null;
+  identity_confidence: "none" | "email" | "phone" | "phone_email" | string;
   company: string | null;
   status: "new" | "contacted" | "qualified" | "proposal" | "won" | "lost" | "archived" | string;
   priority: "low" | "medium" | "high" | "urgent" | string;

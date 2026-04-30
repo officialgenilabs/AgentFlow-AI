@@ -46,6 +46,7 @@ export default async function LeadsPage({ params, searchParams }: { params: Prom
                       <span className="rounded-full bg-amber-50 px-3 py-1 text-xs font-semibold uppercase text-amber-700">{lead.qualification_status}</span>
                     </div>
                     <p className="mt-2 text-sm text-slate-500">{lead.email || lead.phone || lead.company || "No contact detail captured"}</p>
+                    <p className="mt-1 text-xs text-slate-400">Identity: {lead.identity_confidence}{lead.normalized_phone_e164 || lead.normalized_email ? ` • ${lead.normalized_phone_e164 || lead.normalized_email}` : ""}</p>
                     <p className="mt-3 text-xs font-medium uppercase tracking-[0.18em] text-slate-400">{lead.exact_source} / {lead.source_subtype} / {lead.original_inbound_channel}</p>
                   </div>
                   <div className="grid gap-2 text-sm text-slate-600 sm:grid-cols-3 lg:min-w-[520px]">

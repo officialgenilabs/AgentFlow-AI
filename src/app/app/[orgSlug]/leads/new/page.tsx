@@ -16,7 +16,7 @@ export default async function NewLeadPage({ params, searchParams }: { params: Pr
       <Card>
         <CardHeader>
           <CardTitle>Create traceable lead</CardTitle>
-          <CardDescription>Lead Source Integrity is mandatory from the first CRM record: source, subtype, inbound channel, capture time, qualification path, owner, and origin trail.</CardDescription>
+          <CardDescription>Lead Source Integrity is mandatory from the first CRM record. Phone/email are normalized into strong identity keys so duplicate intake paths cannot silently fork the same lead.</CardDescription>
           {query.error ? <p className="text-sm font-medium text-red-700">Lead creation failed: {query.error}</p> : null}
         </CardHeader>
         <CardContent>
@@ -25,7 +25,7 @@ export default async function NewLeadPage({ params, searchParams }: { params: Pr
               <div className="space-y-2"><Label htmlFor="full_name">Lead name *</Label><Input id="full_name" name="full_name" required placeholder="Thandi Mokoena" /></div>
               <div className="space-y-2"><Label htmlFor="company">Company</Label><Input id="company" name="company" placeholder="Mokoena Family Trust" /></div>
               <div className="space-y-2"><Label htmlFor="email">Email</Label><Input id="email" name="email" type="email" placeholder="lead@example.com" /></div>
-              <div className="space-y-2"><Label htmlFor="phone">Phone</Label><Input id="phone" name="phone" placeholder="+27..." /></div>
+              <div className="space-y-2"><Label htmlFor="phone">Phone</Label><Input id="phone" name="phone" placeholder="+27... or 082..." /></div>
             </section>
 
             <section className="rounded-3xl border border-amber-200 bg-amber-50/60 p-5">
