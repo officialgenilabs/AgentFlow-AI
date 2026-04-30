@@ -126,3 +126,64 @@ export type LeadTask = {
   leads?: Pick<Lead, "id" | "full_name" | "status"> | null;
   profiles?: Pick<Profile, "full_name" | "email"> | null;
 };
+
+export type Channel = {
+  id: string;
+  organization_id: string;
+  provider: string;
+  channel_type: string;
+  display_name: string;
+  external_channel_id: string | null;
+  inbound_identifier: string | null;
+  status: "active" | "paused" | "disabled" | string;
+  metadata: Record<string, unknown>;
+  created_at: string;
+  updated_at: string;
+};
+
+export type Conversation = {
+  id: string;
+  organization_id: string;
+  channel_id: string;
+  lead_id: string | null;
+  external_conversation_id: string | null;
+  status: "open" | "handoff" | "closed" | string;
+  assigned_owner_user_id: string | null;
+  subject: string | null;
+  last_message_at: string | null;
+  metadata: Record<string, unknown>;
+  created_at: string;
+  updated_at: string;
+};
+
+export type Message = {
+  id: string;
+  organization_id: string;
+  channel_id: string;
+  conversation_id: string;
+  lead_id: string | null;
+  direction: "inbound" | "outbound" | "internal" | "system" | string;
+  sender_type: "lead" | "agent" | "system" | string;
+  sender_external_id: string | null;
+  sender_display_name: string | null;
+  external_message_id: string | null;
+  body: string;
+  occurred_at: string;
+  raw_payload: Record<string, unknown>;
+  created_at: string;
+};
+
+export type AutomationEvent = {
+  id: string;
+  organization_id: string;
+  event_type: string;
+  aggregate_type: string;
+  aggregate_id: string;
+  lead_id: string | null;
+  conversation_id: string | null;
+  message_id: string | null;
+  payload: Record<string, unknown>;
+  status: "pending" | "processing" | "processed" | "failed" | "ignored" | string;
+  created_at: string;
+  processed_at: string | null;
+};

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import { Building2, KanbanSquare, LayoutDashboard, ListChecks, Palette, ShieldCheck, Sparkles, UserRoundCheck } from "lucide-react";
+import { Building2, Inbox, KanbanSquare, LayoutDashboard, ListChecks, Palette, ShieldCheck, Sparkles, UserRoundCheck } from "lucide-react";
 import type { Organization, OrganizationBranding, Profile } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -34,6 +34,7 @@ export function AppShell({ children, organization, branding, profile, mode = "te
     : [
         { href: `${tenantHref}/dashboard`, label: "Dashboard", icon: LayoutDashboard },
         { href: `${tenantHref}/leads`, label: "Leads", icon: KanbanSquare },
+        { href: `${tenantHref}/inbox`, label: "Inbox", icon: Inbox },
         { href: `${tenantHref}/agent/leads`, label: "Agent View", icon: UserRoundCheck },
         { href: `${tenantHref}/tasks`, label: "Tasks", icon: ListChecks },
         { href: `${tenantHref}/branding`, label: "Branding", icon: Palette },
