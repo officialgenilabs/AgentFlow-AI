@@ -354,9 +354,9 @@ begin
   from public.ingest_lead_from_intake(
     v_channel.organization_id,
     v_sender_name,
-    v_channel.provider,
-    'inbound_message',
-    v_channel.channel_type,
+    'whatsapp',
+    'evolution',
+    v_channel.id::text,
     p_occurred_at,
     p_sender_email,
     p_sender_phone,
@@ -364,6 +364,9 @@ begin
     coalesce(nullif(btrim(coalesce(p_external_conversation_id, '')), ''), nullif(btrim(coalesce(p_sender_external_id, '')), '')),
     jsonb_build_object(
       'doctrine', 'conversation_ingestion_v1',
+      'exact_source', 'whatsapp',
+      'source_subtype', 'evolution',
+      'original_inbound_channel', v_channel.id,
       'channel_id', v_channel.id,
       'external_conversation_id', nullif(btrim(coalesce(p_external_conversation_id, '')), ''),
       'external_message_id', nullif(btrim(coalesce(p_external_message_id, '')), '')
