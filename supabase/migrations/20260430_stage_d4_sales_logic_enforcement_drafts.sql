@@ -1,0 +1,270 @@
+-- Stage D.4: Sales Logic Enforcement Layer
+-- Output strategy only. No schema, trigger, infrastructure, outbound, or auto-send changes.
+
+create or replace function public.generate_ai_reply_draft_for_message(p_message_id uuid)
+returns uuid
+language plpgsql
+security definer
+set search_path = public, app_private
+as $$
+declare
+  v_message record;
+  v_conversation record;
+  v_lead record;
+  v_history jsonb := '[]'::jsonb;
+  v_name text;
+  v_body_lower text;
+  v_bedroom_match text[];
+  v_budget_signal text;
+  v_timing_signal text;
+  v_location_signal text;
+  v_property_type text;
+  v_property_signal text;
+  v_intent text;
+  v_question_line text;
+  v_action_line text;
+  v_interrupt text;
+  v_opening text;
+  v_ack_line text;
+  v_variant int;
+  v_draft text;
+  v_draft_id uuid;
+begin
+  select * into v_message from public.messages m where m.id = p_message_id;
+
+  if v_message.id is null then
+    raise exception 'message_not_found';
+  end if;
+
+  if v_message.direction <> 'inbound' then
+    return null;
+  end if;
+
+  select * into v_conversation from public.conversations c where c.id = v_message.conversation_id;
+
+  if v_conversation.id is null or v_conversation.status <> 'open' then
+    return null;
+  end if;
+
+  select * into v_lead from public.leads l where l.id = coalesce(v_message.lead_id, v_conversation.lead_id);
+
+  select coalesce(jsonb_agg(jsonb_build_object(
+    'id', x.id,
+    'direction', x.direction,
+    'sender_type', x.sender_type,
+    'body', x.body,
+    'occurred_at', x.occurred_at
+  ) order by x.occurred_at asc), '[]'::jsonb)
+  into v_history
+  from (
+    select m.id, m.direction, m.sender_type, m.body, m.occurred_at
+    from public.messages m
+    where m.organization_id = v_message.organization_id
+      and m.conversation_id = v_message.conversation_id
+    order by m.occurred_at desc, m.created_at desc
+    limit 5
+  ) x;
+
+  v_variant := abs(hashtext(coalesce(v_message.external_message_id, v_message.id::text) || '|' || coalesce(v_message.body, ''))) % 8;
+  v_name := nullif(split_part(coalesce(v_lead.full_name, v_message.sender_display_name, ''), ' ', 1), '');
+  v_body_lower := lower(coalesce(v_message.body, ''));
+  v_bedroom_match := regexp_match(coalesce(v_message.body, ''), '([0-9]+|one|two|three|four|five)[ -]?bed(room)?', 'i');
+
+  v_location_signal := case
+    when v_body_lower like '%sandton%' then 'Sandton'
+    when v_body_lower like '%rosebank%' then 'Rosebank'
+    when v_body_lower like '%midrand%' then 'Midrand'
+    when v_body_lower like '%centurion%' then 'Centurion'
+    when v_body_lower like '%pretoria%' then 'Pretoria'
+    when v_body_lower like '%johannesburg%' or v_body_lower like '%joburg%' then 'Johannesburg'
+    else null
+  end;
+
+  v_budget_signal := case
+    when v_body_lower like '%not sure%budget%' or v_body_lower like '%unsure%budget%' then null
+    when v_body_lower ~ '(under|below|up to|around)\s*r?\s*[0-9]+(\.[0-9]+)?\s*[mk]?' then 'budget ' || substring(coalesce(v_message.body, '') from '((?:under|below|up to|around)\s*R?\s*[0-9]+(?:\.[0-9]+)?\s*[mk]?)')
+    when v_body_lower like '%budget%' or v_body_lower ~ 'r[0-9]' then 'budget noted'
+    else null
+  end;
+
+  v_timing_signal := case
+    when v_body_lower like '%tomorrow%' then 'tomorrow'
+    when v_body_lower like '%today%' then 'today'
+    when v_body_lower like '%weekend%' then 'this weekend'
+    when v_body_lower like '%soon%' then 'soon'
+    when v_body_lower like '%next week%' then 'next week'
+    when v_body_lower like '%urgent%' or v_body_lower like '%asap%' then 'urgent'
+    else null
+  end;
+
+  v_property_type := case
+    when v_body_lower like '%apartment%' or v_body_lower like '%flat%' then 'apartment'
+    when v_body_lower like '%house%' or v_body_lower like '%home%' then 'home'
+    else 'property'
+  end;
+
+  if v_bedroom_match is not null and v_location_signal is not null then
+    v_property_signal := 'a ' || lower(v_bedroom_match[1]) || '-bedroom ' || v_property_type || ' in ' || v_location_signal;
+  elsif v_bedroom_match is not null then
+    v_property_signal := 'a ' || lower(v_bedroom_match[1]) || '-bedroom ' || v_property_type;
+  elsif v_location_signal is not null then
+    v_property_signal := case
+      when v_property_type = 'apartment' then 'an apartment in ' || v_location_signal
+      when v_property_type = 'home' then 'a home in ' || v_location_signal
+      else 'property options in ' || v_location_signal
+    end;
+  elsif v_body_lower like '%viewing%' or v_body_lower like '%view%' then
+    v_property_signal := 'a viewing';
+  elsif v_body_lower like '%house%' or v_body_lower like '%home%' then
+    v_property_signal := 'a home search';
+  elsif v_body_lower like '%property%' or v_body_lower like '%apartment%' or v_body_lower like '%flat%' then
+    v_property_signal := 'a property search';
+  else
+    v_property_signal := 'starting your property search';
+  end if;
+
+  v_intent := case
+    when v_body_lower like '%viewing%' or v_body_lower like '%view%' or v_body_lower like '%book%' then 'viewing'
+    when v_body_lower like '%rent%' or v_body_lower like '%rental%' then 'rent'
+    when v_body_lower like '%buy%' or v_body_lower like '%purchase%' or v_body_lower like '%bond%' then 'buy'
+    when v_location_signal is null and v_bedroom_match is null and v_budget_signal is null then 'vague'
+    else 'search'
+  end;
+
+  v_opening := case v_variant % 4
+    when 0 then 'Got it —'
+    when 1 then 'Got you —'
+    when 2 then 'Okay, makes sense —'
+    else 'Perfect —'
+  end;
+
+  v_interrupt := case v_variant
+    when 0 then 'Quick one:'
+    when 1 then 'Just so I place you properly:'
+    when 2 then 'One thing:'
+    when 3 then null
+    when 4 then 'Quick check:'
+    when 5 then null
+    when 6 then 'Just to narrow it down:'
+    else 'One thing:'
+  end;
+
+  -- Sales sequencing: ask the next useful sales question, not a fixed budget-first script.
+  v_question_line := case
+    when v_intent = 'viewing' and v_timing_signal is not null then 'Do you already have a specific property in mind, or should I send matching options?'
+    when v_intent = 'viewing' then 'What day works best for you to view?'
+    when v_intent = 'vague' then 'Are you looking to buy or rent, and which area should I focus on?'
+    when v_budget_signal is not null and v_timing_signal is not null then 'Any must-have features I should filter for?'
+    when v_budget_signal is not null then 'When would you like to move or view?'
+    when v_location_signal is not null and v_bedroom_match is not null then 'What budget range should I keep it within?'
+    when v_location_signal is not null then 'Are you looking to buy or rent there?'
+    else 'Which area and budget should I work with?'
+  end;
+
+  v_action_line := case
+    when v_intent = 'viewing' then case v_variant % 4
+      when 0 then 'We can set this up quickly 👍'
+      when 1 then 'I can help get the viewing moving 👍'
+      when 2 then 'I’ll line up the next step for the viewing 👍'
+      else 'We can get the viewing sorted 👍'
+    end
+    when v_budget_signal is not null and v_location_signal is not null then case v_variant % 4
+      when 0 then 'I can send you a few solid options today 👍'
+      when 1 then 'I’ll pull together a shortlist for you 👍'
+      when 2 then 'I can line up matches that fit 👍'
+      else 'I’ll line up a few good matches for you 👍'
+    end
+    else case v_variant % 4
+      when 0 then 'I can line up options once I have that 👍'
+      when 1 then 'I can send a few strong matches once that’s clear 👍'
+      when 2 then 'I’ll narrow it down fast once you send that 👍'
+      else 'I can turn that into a clean shortlist 👍'
+    end
+  end;
+
+  v_ack_line := case
+    when v_intent = 'viewing' and v_property_signal = 'a viewing' then v_opening || ' you want to book a viewing.'
+    when v_intent = 'viewing' then v_opening || ' viewing request for ' || v_property_signal || case when v_timing_signal is not null then ', timing ' || v_timing_signal else '' end || '.'
+    when v_intent = 'vague' then v_opening || ' you’re starting your property search.'
+    when v_budget_signal is not null then v_opening || ' ' || v_property_signal || ' with ' || v_budget_signal || '.'
+    when v_timing_signal is not null then v_opening || ' ' || v_property_signal || ', timing ' || v_timing_signal || '.'
+    else v_opening || ' ' || v_property_signal || '.'
+  end;
+
+  if v_interrupt is null then
+    v_draft := format(
+      'Hi%s%s%s%s%s%s',
+      case when v_name is not null then ' ' || v_name else '' end,
+      case when v_variant in (3,5) then ' 👋' else '' end,
+      E'\n\n' || v_ack_line,
+      E'\n\n' || v_question_line,
+      E'\n\n' || v_action_line,
+      ''
+    );
+  elsif v_variant in (0,2,6) then
+    v_draft := format(
+      'Hi%s 👋%s%s%s%s%s%s',
+      case when v_name is not null then ' ' || v_name else '' end,
+      E'\n\n',
+      v_ack_line,
+      E'\n\n' || v_interrupt,
+      E'\n' || v_question_line,
+      E'\n\n' || v_action_line,
+      ''
+    );
+  else
+    v_draft := format(
+      'Hi%s%s%s%s%s%s',
+      case when v_name is not null then ' ' || v_name else '' end,
+      E'\n\n' || v_ack_line,
+      E'\n' || v_interrupt,
+      E' ' || v_question_line,
+      E'\n\n' || v_action_line,
+      ''
+    );
+  end if;
+
+  insert into public.ai_message_drafts (
+    organization_id, conversation_id, message_id, lead_id,
+    draft_content, status, generation_model, generation_context
+  ) values (
+    v_message.organization_id,
+    v_message.conversation_id,
+    v_message.id,
+    coalesce(v_message.lead_id, v_conversation.lead_id),
+    v_draft,
+    'draft',
+    'agentflow_sales_logic_draft_v1',
+    jsonb_build_object(
+      'doctrine', 'stage_d4_sales_logic_no_auto_send',
+      'rules', jsonb_build_array('draft_only', 'human_approval_required', 'intent_based_questioning', 'max_1_question', 'no_vague_questions', 'no_outbound_transport', 'no_auto_send'),
+      'conversation_status', v_conversation.status,
+      'last_message', v_message.body,
+      'detected_intent', v_intent,
+      'extracted_signal', v_property_signal,
+      'budget_signal', v_budget_signal,
+      'timing_signal', v_timing_signal,
+      'opening_variant', v_opening,
+      'pattern_interrupt', v_interrupt,
+      'question_selected', v_question_line,
+      'closing_variant', v_action_line,
+      'variation_key', v_variant,
+      'lead', jsonb_build_object('id', v_lead.id, 'full_name', v_lead.full_name, 'phone', v_lead.phone, 'email', v_lead.email, 'identity_confidence', v_lead.identity_confidence),
+      'history_last_5', v_history
+    )
+  )
+  on conflict (message_id) do update
+  set draft_content = case when public.ai_message_drafts.status = 'draft' then excluded.draft_content else public.ai_message_drafts.draft_content end,
+      generation_context = case when public.ai_message_drafts.status = 'draft' then excluded.generation_context else public.ai_message_drafts.generation_context end,
+      generation_model = case when public.ai_message_drafts.status = 'draft' then excluded.generation_model else public.ai_message_drafts.generation_model end,
+      updated_at = case when public.ai_message_drafts.status = 'draft' then now() else public.ai_message_drafts.updated_at end
+  returning id into v_draft_id;
+
+  return v_draft_id;
+end;
+$$;
+
+comment on function public.generate_ai_reply_draft_for_message(uuid) is
+'Creates/refreshes intent-sequenced WhatsApp sales drafts for inbound messages in open conversations. Draft-only: no outbound transport and no automatic sends.';
+
+grant execute on function public.generate_ai_reply_draft_for_message(uuid) to authenticated, service_role;

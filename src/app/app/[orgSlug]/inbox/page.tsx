@@ -3,6 +3,9 @@ import { ArrowRight, Circle, MessageSquareText, UserRound } from "lucide-react";
 import { AppShell } from "@/components/layout/shell";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { getInbox, displayConversationOwner } from "@/lib/data/inbox";
+import { sendApprovedAiMessageDraft, updateAiMessageDraft } from "@/features/inbox/actions";
+import { DraftSuggestionCard } from "@/features/inbox/draft-suggestion-card";
+import type { Message } from "@/lib/types";
 
 function statusTone(status: string) {
   if (status === "handoff") return "bg-amber-50 text-amber-700 border-amber-200";
@@ -10,10 +13,31 @@ function statusTone(status: string) {
   return "bg-emerald-50 text-emerald-700 border-emerald-200";
 }
 
+function draftIdFromMessage(message: Message) {
+  const draftId = message.raw_payload?.draft_id;
+  return typeof draftId === "string" ? draftId : null;
+}
+
+function messageBubbleTone(message: Message) {
+  if (message.direction === "outbound") {
+    if (message.status === "failed") return "ml-auto border-red-200 bg-red-50";
+    if (message.status === "pending") return "ml-auto border-amber-200 bg-amber-50";
+    return "ml-auto border-emerald-200 bg-emerald-50";
+  }
+  return "border-slate-200 bg-white";
+}
+
 export default async function InboxPage({ params, searchParams }: { params: Promise<{ orgSlug: string }>; searchParams: Promise<{ conversationId?: string; error?: string }> }) {
   const [{ orgSlug }, query] = await Promise.all([params, searchParams]);
-  const { tenant, conversations, selectedConversation, messages, members } = await getInbox(orgSlug, query.conversationId);
+  const { tenant, conversations, selectedConversation, messages, drafts, members } = await getInbox(orgSlug, query.conversationId);
   const selectedLead = selectedConversation?.lead ?? null;
+  const draftsByMessage = new Map(drafts.map((draft) => [draft.message_id, draft]));
+  const outboundByDraft = new Map(
+    messages
+      .filter((message) => message.direction === "outbound")
+      .map((message) => [draftIdFromMessage(message), message] as const)
+      .filter(([draftId]) => Boolean(draftId)),
+  );
 
   return (
     <AppShell profile={tenant.profile} organization={tenant.organization} branding={tenant.branding}>
@@ -21,10 +45,10 @@ export default async function InboxPage({ params, searchParams }: { params: Prom
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[var(--brand-accent)]">Stage C system inbox</p>
           <h2 className="text-3xl font-semibold tracking-tight text-slate-950">Conversations</h2>
-          <p className="mt-2 text-sm text-slate-600">CRM-backed inbound threads. Every message is attached through identity + intake first.</p>
+          <p className="mt-2 text-sm text-slate-600">CRM-backed threads. Inbound enters through intake; outbound requires explicit human Approve &amp; Send.</p>
         </div>
         <div className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-600">
-          {conversations.length} conversation{conversations.length === 1 ? "" : "s"} · inbound only
+          {conversations.length} conversation{conversations.length === 1 ? "" : "s"} · controlled send enabled
         </div>
       </div>
 
@@ -64,7 +88,7 @@ export default async function InboxPage({ params, searchParams }: { params: Prom
             <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
               <div>
                 <CardTitle>{selectedConversation ? selectedLead?.full_name ?? selectedConversation.subject ?? "Conversation" : "No thread selected"}</CardTitle>
-                <CardDescription>{selectedConversation?.channel?.provider ?? "CRM"} / {selectedConversation?.channel?.channel_type ?? "inbox"} · outbound and AI replies disabled</CardDescription>
+                <CardDescription>{selectedConversation?.channel?.provider ?? "CRM"} / {selectedConversation?.channel?.channel_type ?? "inbox"} · outbound only after UI click</CardDescription>
               </div>
               {selectedConversation ? <span className={`w-fit rounded-full border px-3 py-1 text-xs font-bold uppercase ${statusTone(selectedConversation.status)}`}>{selectedConversation.status}</span> : null}
             </div>
@@ -80,15 +104,26 @@ export default async function InboxPage({ params, searchParams }: { params: Prom
               </div>
             ) : messages.length === 0 ? (
               <div className="rounded-3xl border border-dashed border-slate-300 p-8 text-center text-sm text-slate-500">No messages found for this thread.</div>
-            ) : messages.map((message) => (
-              <div key={message.id} className="max-w-[82%] rounded-3xl border border-slate-200 bg-white p-4 shadow-sm">
-                <div className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
-                  <Circle className="size-2 fill-emerald-500 text-emerald-500" /> {message.sender_display_name ?? "Inbound lead"} · {message.direction}
+            ) : messages.map((message) => {
+              const draft = draftsByMessage.get(message.id);
+              const updateAction = draft ? updateAiMessageDraft.bind(null, orgSlug, draft.id) : null;
+              const sendAction = draft ? sendApprovedAiMessageDraft.bind(null, orgSlug, draft.id) : null;
+              const sentMessage = draft ? outboundByDraft.get(draft.id) ?? null : null;
+              return (
+              <div key={message.id} className="space-y-3">
+                <div className={`max-w-[82%] rounded-3xl border p-4 shadow-sm ${messageBubbleTone(message)}`}>
+                  <div className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+                    <Circle className={`size-2 ${message.direction === "outbound" ? "fill-emerald-500 text-emerald-500" : "fill-sky-500 text-sky-500"}`} /> {message.sender_display_name ?? (message.direction === "outbound" ? "Agent" : "Inbound lead")} · {message.direction} · {message.status}
+                  </div>
+                  <p className="whitespace-pre-wrap text-sm leading-6 text-slate-800">{message.body}</p>
+                  <p className="mt-3 text-xs text-slate-400">{new Date(message.occurred_at).toLocaleString()}{message.sent_at ? ` · sent ${new Date(message.sent_at).toLocaleString()}` : ""}</p>
                 </div>
-                <p className="whitespace-pre-wrap text-sm leading-6 text-slate-800">{message.body}</p>
-                <p className="mt-3 text-xs text-slate-400">{new Date(message.occurred_at).toLocaleString()}</p>
+
+                {draft && updateAction && sendAction && message.direction === "inbound" ? (
+                  <DraftSuggestionCard draft={draft} sentMessage={sentMessage} updateAction={updateAction} sendAction={sendAction} />
+                ) : null}
               </div>
-            ))}
+            );})}
           </CardContent>
         </Card>
 

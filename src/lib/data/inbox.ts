@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { resolveTenantBySlug } from "@/lib/data/auth";
 import { displayMember, getOrgMembers } from "@/lib/data/crm";
-import type { Channel, Conversation, Lead, Message } from "@/lib/types";
+import type { AiMessageDraft, Channel, Conversation, Lead, Message } from "@/lib/types";
 
 export type ConversationListItem = Conversation & {
   channel?: Pick<Channel, "display_name" | "provider" | "channel_type"> | null;
@@ -14,6 +14,7 @@ export type ConversationThread = {
   conversations: ConversationListItem[];
   selectedConversation: ConversationListItem | null;
   messages: Message[];
+  drafts: AiMessageDraft[];
   members: Awaited<ReturnType<typeof getOrgMembers>>;
 };
 
@@ -31,11 +32,15 @@ export async function getInbox(orgSlug: string, conversationId?: string): Promis
     getOrgMembers(tenant.organization.id),
   ]);
 
-  const normalizedConversations = (conversations ?? []).map((conversation) => ({
+  const normalizedConversations = ((conversations ?? []).map((conversation) => ({
     ...conversation,
     channel: Array.isArray(conversation.channels) ? conversation.channels[0] : conversation.channels,
     lead: Array.isArray(conversation.leads) ? conversation.leads[0] : conversation.leads,
-  })) as ConversationListItem[];
+  })) as ConversationListItem[]).sort((a, b) => {
+    const bActivity = new Date(b.last_message_at ?? b.updated_at ?? b.created_at).getTime();
+    const aActivity = new Date(a.last_message_at ?? a.updated_at ?? a.created_at).getTime();
+    return bActivity - aActivity;
+  });
 
   const selectedConversation = conversationId
     ? normalizedConversations.find((conversation) => conversation.id === conversationId) ?? null
@@ -48,10 +53,19 @@ export async function getInbox(orgSlug: string, conversationId?: string): Promis
   const { data: messages } = selectedConversation
     ? await supabase
         .from("messages")
-        .select("id, organization_id, channel_id, conversation_id, lead_id, direction, sender_type, sender_external_id, sender_display_name, external_message_id, body, occurred_at, raw_payload, created_at")
+        .select("id, organization_id, channel_id, conversation_id, lead_id, direction, sender_type, sender_external_id, sender_display_name, external_message_id, body, occurred_at, status, sent_at, raw_payload, created_at")
         .eq("organization_id", tenant.organization.id)
         .eq("conversation_id", selectedConversation.id)
-        .order("occurred_at", { ascending: true })
+        .order("occurred_at", { ascending: false })
+    : { data: [] };
+
+  const { data: drafts } = selectedConversation
+    ? await supabase
+        .from("ai_message_drafts")
+        .select("id, organization_id, conversation_id, message_id, lead_id, draft_content, status, generation_model, generation_context, edited_by_user_id, approved_by_user_id, approved_at, discarded_by_user_id, created_at, updated_at")
+        .eq("organization_id", tenant.organization.id)
+        .eq("conversation_id", selectedConversation.id)
+        .order("created_at", { ascending: true })
     : { data: [] };
 
   return {
@@ -59,6 +73,7 @@ export async function getInbox(orgSlug: string, conversationId?: string): Promis
     conversations: normalizedConversations,
     selectedConversation,
     messages: (messages ?? []) as Message[],
+    drafts: (drafts ?? []) as AiMessageDraft[],
     members,
   };
 }
