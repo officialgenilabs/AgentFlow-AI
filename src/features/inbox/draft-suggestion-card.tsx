@@ -12,7 +12,6 @@ type DraftSuggestionCardProps = {
   draft: AiMessageDraft;
   sentMessage?: Pick<Message, "id" | "status" | "external_message_id" | "sent_at"> | null;
   updateAction: DraftAction;
-  sendAction: DraftAction;
 };
 
 function SubmitButton({ children, pendingLabel, ...props }: React.ComponentProps<typeof Button> & { pendingLabel?: string }) {
@@ -27,17 +26,14 @@ function SubmitButton({ children, pendingLabel, ...props }: React.ComponentProps
 
 function sendStatusCopy(sentMessage?: DraftSuggestionCardProps["sentMessage"]) {
   if (!sentMessage) return null;
-  if (sentMessage.status === "sent") return `Sent${sentMessage.external_message_id ? ` · ${sentMessage.external_message_id}` : ""}`;
-  if (sentMessage.status === "failed") return "Send failed · manual retry required";
-  if (sentMessage.status === "pending") return "Send pending";
+  if (sentMessage.status === "sent") return `Historical outbound log${sentMessage.external_message_id ? ` · ${sentMessage.external_message_id}` : ""}`;
+  if (sentMessage.status === "failed") return "Historical outbound attempt failed before governance lock";
+  if (sentMessage.status === "pending") return "Historical outbound attempt pending review";
   return sentMessage.status;
 }
 
-export function DraftSuggestionCard({ draft, sentMessage, updateAction, sendAction }: DraftSuggestionCardProps) {
+export function DraftSuggestionCard({ draft, sentMessage, updateAction }: DraftSuggestionCardProps) {
   const isEditable = draft.status === "draft";
-  const isSent = sentMessage?.status === "sent";
-  const isFailed = sentMessage?.status === "failed";
-  const isPending = sentMessage?.status === "pending";
   const statusCopy = sendStatusCopy(sentMessage);
 
   return (
@@ -46,8 +42,8 @@ export function DraftSuggestionCard({ draft, sentMessage, updateAction, sendActi
         <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] text-violet-700">
           <Sparkles className="size-4" /> AI suggestion · {draft.status}
         </div>
-        <span className="rounded-full border border-violet-200 bg-white px-2.5 py-1 text-[10px] font-bold uppercase text-violet-700">
-          Human-controlled send
+        <span className="rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-[10px] font-bold uppercase text-amber-700">
+          Outbound governance locked
         </span>
       </div>
 
@@ -61,8 +57,12 @@ export function DraftSuggestionCard({ draft, sentMessage, updateAction, sendActi
           className="w-full rounded-2xl border border-violet-200 bg-white px-3 py-2 text-sm leading-6 text-slate-800 outline-none focus:border-violet-400 disabled:bg-violet-50 disabled:text-slate-500"
         />
 
+        <div className="rounded-2xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-800">
+          Outbound sending is currently governance-locked during certification. Drafts remain visible for review, but no message can be sent from this interface.
+        </div>
+
         {statusCopy ? (
-          <p className={`rounded-2xl px-3 py-2 text-xs font-semibold ${isFailed ? "border border-red-200 bg-red-50 text-red-700" : "border border-violet-200 bg-white text-violet-700"}`}>
+          <p className="rounded-2xl border border-violet-200 bg-white px-3 py-2 text-xs font-semibold text-violet-700">
             {statusCopy}
           </p>
         ) : null}
@@ -73,25 +73,13 @@ export function DraftSuggestionCard({ draft, sentMessage, updateAction, sendActi
               <SubmitButton type="submit" name="status" value="draft" size="sm" variant="secondary" pendingLabel="Saving...">Save edit</SubmitButton>
               <SubmitButton type="submit" name="status" value="approved" size="sm" pendingLabel="Approving...">Approve draft</SubmitButton>
               <SubmitButton type="submit" name="status" value="discarded" size="sm" variant="ghost" pendingLabel="Discarding...">Discard</SubmitButton>
-              <SubmitButton formAction={sendAction} type="submit" name="status" value="approved" size="sm" className="bg-emerald-600 hover:bg-emerald-700" pendingLabel="Sending...">
-                Approve &amp; Send
-              </SubmitButton>
             </>
-          ) : isFailed ? (
-            <SubmitButton formAction={sendAction} type="submit" name="status" value="approved" size="sm" className="bg-emerald-600 hover:bg-emerald-700" pendingLabel="Retrying...">
-              Retry send manually
-            </SubmitButton>
-          ) : isPending ? (
-            <p className="text-xs text-violet-700">Send is in progress. No background retry is scheduled.</p>
-          ) : isSent ? (
-            <p className="text-xs text-violet-700">Outbound logged and locked. Duplicate sends are blocked.</p>
-          ) : draft.status === "approved" ? (
-            <SubmitButton formAction={sendAction} type="submit" name="status" value="approved" size="sm" className="bg-emerald-600 hover:bg-emerald-700" pendingLabel="Sending...">
-              Send approved draft
-            </SubmitButton>
           ) : (
-            <p className="text-xs text-violet-700">Draft is {draft.status}. It cannot be sent.</p>
+            <p className="text-xs text-violet-700">Draft is {draft.status}. Outbound authority remains locked pending certification.</p>
           )}
+          <Button type="button" size="sm" disabled className="cursor-not-allowed border border-amber-200 bg-amber-100 text-amber-800 hover:bg-amber-100">
+            Sending locked
+          </Button>
         </div>
       </form>
     </div>

@@ -3,7 +3,7 @@ import { ArrowRight, Circle, MessageSquareText, UserRound } from "lucide-react";
 import { AppShell } from "@/components/layout/shell";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { getInbox, displayConversationOwner } from "@/lib/data/inbox";
-import { sendApprovedAiMessageDraft, updateAiMessageDraft } from "@/features/inbox/actions";
+import { updateAiMessageDraft } from "@/features/inbox/actions";
 import { DraftSuggestionCard } from "@/features/inbox/draft-suggestion-card";
 import type { Message } from "@/lib/types";
 
@@ -45,10 +45,10 @@ export default async function InboxPage({ params, searchParams }: { params: Prom
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[var(--brand-accent)]">Stage C system inbox</p>
           <h2 className="text-3xl font-semibold tracking-tight text-slate-950">Conversations</h2>
-          <p className="mt-2 text-sm text-slate-600">CRM-backed threads. Inbound enters through intake; outbound requires explicit human Approve &amp; Send.</p>
+          <p className="mt-2 text-sm text-slate-600">CRM-backed threads. Inbound enters through governed intake; outbound sending is currently governance-locked during certification.</p>
         </div>
         <div className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-600">
-          {conversations.length} conversation{conversations.length === 1 ? "" : "s"} · controlled send enabled
+          {conversations.length} conversation{conversations.length === 1 ? "" : "s"} · inbound-only runtime mode
         </div>
       </div>
 
@@ -88,7 +88,7 @@ export default async function InboxPage({ params, searchParams }: { params: Prom
             <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
               <div>
                 <CardTitle>{selectedConversation ? selectedLead?.full_name ?? selectedConversation.subject ?? "Conversation" : "No thread selected"}</CardTitle>
-                <CardDescription>{selectedConversation?.channel?.provider ?? "CRM"} / {selectedConversation?.channel?.channel_type ?? "inbox"} · outbound only after UI click</CardDescription>
+                <CardDescription>{selectedConversation?.channel?.provider ?? "CRM"} / {selectedConversation?.channel?.channel_type ?? "inbox"} · outbound locked pending certification</CardDescription>
               </div>
               {selectedConversation ? <span className={`w-fit rounded-full border px-3 py-1 text-xs font-bold uppercase ${statusTone(selectedConversation.status)}`}>{selectedConversation.status}</span> : null}
             </div>
@@ -107,7 +107,6 @@ export default async function InboxPage({ params, searchParams }: { params: Prom
             ) : messages.map((message) => {
               const draft = draftsByMessage.get(message.id);
               const updateAction = draft ? updateAiMessageDraft.bind(null, orgSlug, draft.id) : null;
-              const sendAction = draft ? sendApprovedAiMessageDraft.bind(null, orgSlug, draft.id) : null;
               const sentMessage = draft ? outboundByDraft.get(draft.id) ?? null : null;
               return (
               <div key={message.id} className="space-y-3">
@@ -119,8 +118,8 @@ export default async function InboxPage({ params, searchParams }: { params: Prom
                   <p className="mt-3 text-xs text-slate-400">{new Date(message.occurred_at).toLocaleString()}{message.sent_at ? ` · sent ${new Date(message.sent_at).toLocaleString()}` : ""}</p>
                 </div>
 
-                {draft && updateAction && sendAction && message.direction === "inbound" ? (
-                  <DraftSuggestionCard draft={draft} sentMessage={sentMessage} updateAction={updateAction} sendAction={sendAction} />
+                {draft && updateAction && message.direction === "inbound" ? (
+                  <DraftSuggestionCard draft={draft} sentMessage={sentMessage} updateAction={updateAction} />
                 ) : null}
               </div>
             );})}
