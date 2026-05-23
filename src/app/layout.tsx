@@ -1,19 +1,24 @@
-import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+﻿import type { Metadata } from "next";
+import { Space_Grotesk, Inter } from "next/font/google";
+import { DemoProvider } from "@/lib/demo/provider";
 import "./globals.css";
 
-const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
-const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
+const spaceGrotesk = Space_Grotesk({ variable: "--font-space-grotesk", subsets: ["latin"] });
+const inter = Inter({ variable: "--font-inter", subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "AgentFlow AI",
-  description: "Premium multi-tenant real-estate lead conversion operating system by Gen I Labs.",
+  title: "AgentFlow AI | Operational Intelligence",
+  description: "Infrastructure-grade AI-native operational systems by Gen I Labs.",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
-      <body className="min-h-full bg-slate-50 text-slate-950">{children}</body>
+    <html lang="en" className="h-full antialiased">
+      <body className="min-h-full bg-[#050505] text-[#FAFAFA] font-sans selection:bg-[#00E599]/30 selection:text-white">
+        <DemoProvider>
+          {children}
+        </DemoProvider>
+      </body>
     </html>
   );
 }

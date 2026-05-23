@@ -1,8 +1,10 @@
-import { redirect } from "next/navigation";
+﻿import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { resolveTenantBySlug } from "@/lib/data/auth";
 import { displayMember, getOrgMembers } from "@/lib/data/crm";
 import type { Channel, Conversation, Lead, Message } from "@/lib/types";
+import { isDemoMode } from "@/lib/demo/config";
+import { demoConversations, demoLeads, demoMessages } from "@/lib/demo/data";
 
 export type ConversationListItem = Conversation & {
   channel?: Pick<Channel, "display_name" | "provider" | "channel_type"> | null;
@@ -17,7 +19,49 @@ export type ConversationThread = {
   members: Awaited<ReturnType<typeof getOrgMembers>>;
 };
 
-export async function getInbox(orgSlug: string, conversationId?: string): Promise<ConversationThread> {
+export async function getInbox(orgSlug: string, conversationId?: string, forceDemo?: boolean): Promise<ConversationThread> {
+  if (forceDemo || isDemoMode()) {
+    const tenant = await resolveTenantBySlug(orgSlug, true);
+    const members = await getOrgMembers(tenant.organization.id, true);
+    
+    const normalizedConversations = demoConversations.map((conversation) => {
+      const lead = demoLeads.find((l) => l.id === conversation.lead_id);
+      return {
+        ...conversation,
+        channel: { display_name: "WhatsApp Sandbox", provider: "twilio", channel_type: "whatsapp" },
+        lead: lead ? {
+          id: lead.id,
+          full_name: lead.full_name,
+          email: lead.email,
+          phone: lead.phone,
+          status: lead.status,
+          assigned_owner_user_id: lead.assigned_owner_user_id,
+          identity_confidence: lead.identity_confidence,
+        } : null,
+      };
+    }) as ConversationListItem[];
+
+    const selectedConversation = conversationId
+      ? normalizedConversations.find((conversation) => conversation.id === conversationId) ?? null
+      : normalizedConversations[0] ?? null;
+
+    if (conversationId && !selectedConversation) {
+      redirect(`/app/${orgSlug}/inbox?error=conversation-not-found`);
+    }
+
+    const messages = selectedConversation
+      ? demoMessages.filter((m) => m.conversation_id === selectedConversation.id)
+      : [];
+
+    return {
+      tenant,
+      conversations: normalizedConversations,
+      selectedConversation,
+      messages,
+      members,
+    };
+  }
+
   const tenant = await resolveTenantBySlug(orgSlug);
   const supabase = await createClient();
 

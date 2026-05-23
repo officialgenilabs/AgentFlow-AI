@@ -1,9 +1,10 @@
-"use server";
+﻿"use server";
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { resolveTenantBySlug } from "@/lib/data/auth";
+import { isDemoMode } from "@/lib/demo/config";
 
 function safeColor(value: FormDataEntryValue | null, fallback: string) {
   const color = typeof value === "string" ? value.trim() : "";
@@ -11,6 +12,10 @@ function safeColor(value: FormDataEntryValue | null, fallback: string) {
 }
 
 export async function updateBranding(orgSlug: string, formData: FormData) {
+  if (isDemoMode()) {
+    redirect(`/app/${orgSlug}/branding?saved=1`);
+  }
+
   const tenant = await resolveTenantBySlug(orgSlug);
   const supabase = await createClient();
 

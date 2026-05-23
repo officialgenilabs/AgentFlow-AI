@@ -1,6 +1,7 @@
-import { redirect } from "next/navigation";
+﻿import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { toSlug } from "@/lib/slug";
+import { isDemoMode } from "@/lib/demo/config";
 
 function safeColor(value: FormDataEntryValue | null, fallback: string) {
   const color = typeof value === "string" ? value.trim() : "";
@@ -8,6 +9,14 @@ function safeColor(value: FormDataEntryValue | null, fallback: string) {
 }
 
 export async function POST(request: Request) {
+  if (isDemoMode()) {
+    const formData = await request.formData();
+    const name = String(formData.get("name") ?? "").trim();
+    const requestedSlug = String(formData.get("slug") ?? "").trim();
+    const slug = toSlug(requestedSlug || name);
+    redirect(`/admin/tenants?created=${slug}`);
+  }
+
   const supabase = await createClient();
   const { data: authData, error: authError } = await supabase.auth.getUser();
 

@@ -1,8 +1,15 @@
+﻿/* eslint-disable @typescript-eslint/no-explicit-any */
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import type { Organization, OrganizationBranding, OrganizationMember, Profile, TenantContext } from "@/lib/types";
+import { isDemoMode } from "@/lib/demo/config";
+import { demoProfile, demoOrganization, demoBranding } from "@/lib/demo/data";
 
-export async function getAuthenticatedUser() {
+export async function getAuthenticatedUser(forceDemo?: boolean) {
+  if (forceDemo || isDemoMode()) {
+    return { supabase: null as any, user: { id: "demo-operator-id", email: "operator@genilabs.ai" } as any };
+  }
+
   const supabase = await createClient();
   const { data, error } = await supabase.auth.getUser();
 
@@ -13,7 +20,11 @@ export async function getAuthenticatedUser() {
   return { supabase, user: data.user };
 }
 
-export async function getCurrentProfile(): Promise<Profile> {
+export async function getCurrentProfile(forceDemo?: boolean): Promise<Profile> {
+  if (forceDemo || isDemoMode()) {
+    return demoProfile;
+  }
+
   const { supabase, user } = await getAuthenticatedUser();
   const { data, error } = await supabase
     .from("profiles")
@@ -28,15 +39,19 @@ export async function getCurrentProfile(): Promise<Profile> {
   return data as Profile;
 }
 
-export async function requirePlatformAdmin() {
-  const profile = await getCurrentProfile();
+export async function requirePlatformAdmin(forceDemo?: boolean) {
+  const profile = await getCurrentProfile(forceDemo);
   if (!profile.is_platform_admin) {
     redirect("/select-organization");
   }
   return profile;
 }
 
-export async function getUserOrganizations(): Promise<Organization[]> {
+export async function getUserOrganizations(forceDemo?: boolean): Promise<Organization[]> {
+  if (forceDemo || isDemoMode()) {
+    return [demoOrganization];
+  }
+
   const { supabase } = await getAuthenticatedUser();
   const profile = await getCurrentProfile();
 
@@ -59,12 +74,29 @@ export async function getUserOrganizations(): Promise<Organization[]> {
   if (error) return [];
 
   return (data ?? [])
-    .map((row) => row.organizations)
+    .map((row: any) => row.organizations)
     .filter(Boolean)
     .flat() as Organization[];
 }
 
-export async function resolveTenantBySlug(orgSlug: string): Promise<TenantContext> {
+export async function resolveTenantBySlug(orgSlug: string, forceDemo?: boolean): Promise<TenantContext> {
+  if (forceDemo || isDemoMode()) {
+    return {
+      profile: demoProfile,
+      organization: demoOrganization,
+      membership: {
+        id: "demo-member-id",
+        organization_id: "demo-org-id",
+        user_id: "demo-operator-id",
+        role: "admin",
+        status: "active",
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      } as any,
+      branding: demoBranding,
+    };
+  }
+
   const { supabase } = await getAuthenticatedUser();
   const profile = await getCurrentProfile();
 

@@ -1,4 +1,4 @@
-"use server";
+﻿"use server";
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 import { resolveTenantBySlug } from "@/lib/data/auth";
 import { getOrgMembers } from "@/lib/data/crm";
 import { normalizeLeadEmail, normalizePhoneToE164 } from "@/lib/lead-identity";
+import { isDemoMode } from "@/lib/demo/config";
 
 function text(value: FormDataEntryValue | null, fallback = "") {
   const next = typeof value === "string" ? value.trim() : "";
@@ -67,6 +68,11 @@ async function assertAssignable(organizationId: string, assignedUserId: string |
 }
 
 export async function createLead(orgSlug: string, formData: FormData) {
+  if (isDemoMode()) {
+    revalidatePath(`/app/${orgSlug}/dashboard`);
+    redirect(`/app/${orgSlug}/leads/lead-sibusiso?created=1`);
+  }
+
   const tenant = await resolveTenantBySlug(orgSlug);
   const supabase = await createClient();
 
@@ -134,6 +140,11 @@ export async function createLead(orgSlug: string, formData: FormData) {
 }
 
 export async function updateLeadState(orgSlug: string, leadId: string, formData: FormData) {
+  if (isDemoMode()) {
+    revalidatePath(`/app/${orgSlug}/leads/${leadId}`);
+    redirect(`/app/${orgSlug}/leads/${leadId}?saved=1`);
+  }
+
   const tenant = await resolveTenantBySlug(orgSlug);
   const supabase = await createClient();
   const assignedOwner = await assertAssignable(tenant.organization.id, nullableText(formData.get("assigned_owner_user_id")));
@@ -169,6 +180,11 @@ export async function updateLeadState(orgSlug: string, leadId: string, formData:
 }
 
 export async function addLeadNote(orgSlug: string, leadId: string, formData: FormData) {
+  if (isDemoMode()) {
+    revalidatePath(`/app/${orgSlug}/leads/${leadId}`);
+    redirect(`/app/${orgSlug}/leads/${leadId}?note=1`);
+  }
+
   const tenant = await resolveTenantBySlug(orgSlug);
   const supabase = await createClient();
   const body = text(formData.get("body"));
@@ -188,6 +204,15 @@ export async function addLeadNote(orgSlug: string, leadId: string, formData: For
 }
 
 export async function createLeadTask(orgSlug: string, leadId: string | null, formData: FormData) {
+  if (isDemoMode()) {
+    revalidatePath(`/app/${orgSlug}/tasks`);
+    if (leadId) {
+      revalidatePath(`/app/${orgSlug}/leads/${leadId}`);
+      redirect(`/app/${orgSlug}/leads/${leadId}?task=1`);
+    }
+    redirect(`/app/${orgSlug}/tasks?created=1`);
+  }
+
   const tenant = await resolveTenantBySlug(orgSlug);
   const supabase = await createClient();
   const title = text(formData.get("title"));
@@ -215,6 +240,11 @@ export async function createLeadTask(orgSlug: string, leadId: string | null, for
 }
 
 export async function updateLeadTaskStatus(orgSlug: string, taskId: string, formData: FormData) {
+  if (isDemoMode()) {
+    revalidatePath(`/app/${orgSlug}/tasks`);
+    redirect(`/app/${orgSlug}/tasks?saved=1`);
+  }
+
   const tenant = await resolveTenantBySlug(orgSlug);
   const supabase = await createClient();
   const status = text(formData.get("status"), "open");
