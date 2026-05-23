@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { isDemoMode } from "./config";
@@ -36,23 +36,17 @@ const DemoContext = createContext<DemoContextType>({
 export const useDemo = () => useContext(DemoContext);
 
 export function DemoProvider({ children }: { children: React.ReactNode }) {
-  const [isDemoActive, setIsDemoActive] = useState(false);
-  const [approvals, setApprovals] = useState<AIApprovalItem[]>([]);
-  const [calendarSlots, setCalendarSlots] = useState<CalendarSlot[]>([]);
-  const [leads, setLeads] = useState<Lead[]>([]);
-  const [tasks, setTasks] = useState<LeadTask[]>([]);
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [isDemoActive, setIsDemoActive] = useState(true);
+  const [approvals, setApprovals] = useState<AIApprovalItem[]>(demoApprovals);
+  const [calendarSlots, setCalendarSlots] = useState<CalendarSlot[]>(demoCalendarSlots);
+  const [leads, setLeads] = useState<Lead[]>(demoLeads);
+  const [tasks, setTasks] = useState<LeadTask[]>(demoTasks);
+  const [messages, setMessages] = useState<Message[]>(demoMessages);
 
   useEffect(() => {
+    // Sync active state from client environment
     const active = isDemoMode();
     setIsDemoActive(active);
-    if (active) {
-      setApprovals(demoApprovals);
-      setCalendarSlots(demoCalendarSlots);
-      setLeads(demoLeads);
-      setTasks(demoTasks);
-      setMessages(demoMessages);
-    }
   }, []);
 
   const approveItem = (id: string, updatedDraft?: string) => {

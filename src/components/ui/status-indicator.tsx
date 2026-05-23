@@ -1,8 +1,8 @@
-﻿import * as React from "react";
+import * as React from "react";
 import { cn } from "@/lib/utils";
 
 interface StatusIndicatorProps {
-  status: "active" | "warning" | "error" | "offline";
+  status: "active" | "warning" | "error" | "offline" | "governance";
   pulse?: boolean;
   className?: string;
   label?: string;
@@ -10,10 +10,13 @@ interface StatusIndicatorProps {
 
 export function StatusIndicator({
   status,
-  pulse = true,
+  pulse,
   className = "",
   label
 }: StatusIndicatorProps) {
+  // Pulse ONLY on warning (operator attention needed) by default unless explicitly overridden
+  const shouldPulse = pulse !== undefined ? pulse : (status === "warning");
+
   const statusConfig = {
     active: {
       color: "bg-[#00E599]",
@@ -34,6 +37,11 @@ export function StatusIndicator({
       color: "bg-white/30",
       glow: "rgba(255, 255, 255, 0.1)",
       borderColor: "border-white/10"
+    },
+    governance: {
+      color: "bg-[#6C63FF]",
+      glow: "rgba(108, 99, 255, 0.4)",
+      borderColor: "border-[#6C63FF]/20"
     }
   };
 
@@ -42,7 +50,7 @@ export function StatusIndicator({
   return (
     <div className={cn("flex items-center gap-2 select-none", className)}>
       <div className="relative flex items-center justify-center w-3 h-3">
-        {pulse && status !== "offline" && (
+        {shouldPulse && status !== "offline" && (
           <span
             className={cn(
               "absolute inline-flex h-full w-full rounded-full opacity-75 animate-ping",
@@ -54,7 +62,7 @@ export function StatusIndicator({
         <span
           className={cn("relative inline-flex rounded-full h-2 w-2", config.color)}
           style={{
-            boxShadow: pulse && status !== "offline" ? `0 0 8px ${config.glow}` : "none"
+            boxShadow: shouldPulse && status !== "offline" ? `0 0 8px ${config.glow}` : "none"
           }}
         />
       </div>

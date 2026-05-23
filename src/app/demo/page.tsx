@@ -1,4 +1,4 @@
-﻿import Link from "next/link";
+import Link from "next/link";
 import { ShieldCheck, Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,7 +13,7 @@ export default function DemoLandingPage() {
 
       <div className="w-full max-w-2xl z-10 space-y-8 text-center">
         <div className="flex flex-col items-center gap-4">
-          <LogoMark size={72} glow />
+          <LogoMark size={72} glow={false} />
           <div className="space-y-2 mt-4">
             <h1 className="text-xl font-heading font-extrabold tracking-[0.25em] text-white uppercase">
               AGENTFLOW <span className="text-[#00E599]">AI</span>
@@ -28,10 +28,10 @@ export default function DemoLandingPage() {
           <CardHeader className="p-0 space-y-2">
             <CardTitle className="text-xl font-heading font-extrabold text-white flex items-center gap-2">
               <ShieldCheck className="h-5 w-5 text-[#00E599]" />
-              Frictionless Sandbox Mode
+              Governed Sandbox Simulator
             </CardTitle>
             <CardDescription className="text-xs text-white/50 leading-relaxed">
-              Step into the shoes of a lead operational broker. This is a fully pre-seeded, zero-dependency environment representing the true Gen I Labs conversational wedge.
+              High-integrity simulated operational environment. Demonstrates structured, governed lead routing and transaction compliance metrics within the South African real estate vertical.
             </CardDescription>
           </CardHeader>
 
@@ -39,8 +39,8 @@ export default function DemoLandingPage() {
             <div className="flex items-start gap-3">
               <div className="size-5 rounded-full bg-[#00E599]/10 border border-[#00E599]/20 flex items-center justify-center shrink-0 mt-0.5 text-[#00E599] font-mono font-bold text-[10px]">1</div>
               <div>
-                <p className="font-bold text-white">Full Operational Access</p>
-                <p className="text-white/50 mt-0.5">Explore the dashboard cockpit, live WhatsApp queues, approvals panels, lead chronological timelines, and governance parameters.</p>
+                <p className="font-bold text-white">Complete Context Ledger Access</p>
+                <p className="text-white/50 mt-0.5">Explore the operations cockpit, governed inbound queues, human-in-the-loop approvals, chronological lead timelines, and outbound governance rules.</p>
               </div>
             </div>
 
@@ -48,7 +48,7 @@ export default function DemoLandingPage() {
               <div className="size-5 rounded-full bg-[#00E599]/10 border border-[#00E599]/20 flex items-center justify-center shrink-0 mt-0.5 text-[#00E599] font-mono font-bold text-[10px]">2</div>
               <div>
                 <p className="font-bold text-white">Zero Mutation Integrity</p>
-                <p className="text-white/50 mt-0.5">No database modifications, Supabase connections, or network actions are required. All pipeline operations are executed synthetically in your browser context.</p>
+                <p className="text-white/50 mt-0.5">No active Supabase database mutations or outbound network actions are executed. All pipeline processes remain strictly simulated within your local browser context.</p>
               </div>
             </div>
 
@@ -62,9 +62,9 @@ export default function DemoLandingPage() {
           </CardContent>
 
           <div className="pt-4 border-t border-white/[0.04]">
-            <Button asChild className="w-full h-12 bg-[#00E599] text-[#050505] hover:bg-[#00c584] rounded-xl font-bold uppercase tracking-wider text-xs shadow-[0_0_20px_rgba(0,229,153,0.15)] flex items-center justify-center gap-2">
+            <Button asChild className="w-full h-12 bg-[#00E599] text-[#050505] hover:bg-[#00c584] rounded-xl font-bold uppercase tracking-wider text-xs flex items-center justify-center gap-2">
               <Link href="/demo/dashboard">
-                Initialize Sandbox Operations <Play className="size-4 fill-current shrink-0" />
+                Initialize Governed Simulation <Play className="size-4 fill-current shrink-0" />
               </Link>
             </Button>
           </div>

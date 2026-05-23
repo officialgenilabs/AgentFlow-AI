@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import Link from "next/link";
 import Image from "next/image";
@@ -33,7 +33,7 @@ import { StatusIndicator } from "@/components/ui/status-indicator";
 function BrandMark({ organization, branding }: { organization?: Organization; branding?: OrganizationBranding }) {
   return (
     <div className="flex items-center gap-3">
-      <LogoMark size={36} glow className="shrink-0" />
+      <LogoMark size={36} glow={false} className="shrink-0" />
       <div className="select-none text-left">
         <p className="text-sm font-heading font-extrabold tracking-wide text-white leading-none">
           AGENTFLOW <span className="text-[#00E599]">AI</span>
@@ -69,17 +69,17 @@ export function AppShell({
         { href: "/admin/tenants", label: "Tenants", icon: Building2 },
       ]
     : [
-        { href: `${tenantHref}/dashboard`, label: "Operations", icon: LayoutDashboard },
-        { href: `${tenantHref}/inbox`, label: "Inbound Queue", icon: Inbox },
-        { href: `${tenantHref}/approvals`, label: "AI Approvals", icon: ShieldCheck },
-        { href: `${tenantHref}/leads`, label: "Lead Memory", icon: KanbanSquare },
-        { href: `${tenantHref}/routing`, label: "Routing Flow", icon: GitBranch },
-        { href: `${tenantHref}/calendar`, label: "Viewings Calendar", icon: CalendarDays },
-        { href: `${tenantHref}/tasks`, label: "Tasks", icon: ListChecks },
-        { href: `${tenantHref}/governance`, label: "Governance Layer", icon: Lock },
-        { href: `${tenantHref}/branding`, label: "Branding Context", icon: Palette },
-        { href: `${tenantHref}/positioning`, label: "Real Estate Wedge", icon: Layers },
-        { href: `${tenantHref}/vision`, label: "Future Vision", icon: Eye },
+        { href: `${tenantHref}/dashboard`, label: "Operations Cockpit", icon: LayoutDashboard },
+        { href: `${tenantHref}/inbox`, label: "Governed Inbound Queue", icon: Inbox },
+        { href: `${tenantHref}/approvals`, label: "Governed Approvals", icon: ShieldCheck },
+        { href: `${tenantHref}/leads`, label: "Context Memory Ledger", icon: KanbanSquare },
+        { href: `${tenantHref}/routing`, label: "Synthetic Routing Flow", icon: GitBranch },
+        { href: `${tenantHref}/calendar`, label: "Viewing Calendar", icon: CalendarDays },
+        { href: `${tenantHref}/tasks`, label: "Operator Follow-ups", icon: ListChecks },
+        { href: `${tenantHref}/governance`, label: "Outbound Governance", icon: Lock },
+        { href: `${tenantHref}/branding`, label: "Branding Parameters", icon: Palette },
+        { href: `${tenantHref}/positioning`, label: "Wedge Positioning", icon: Layers },
+        { href: `${tenantHref}/vision`, label: "Vision Roadmap", icon: Eye },
       ];
 
   const isActive = (href: string) => {
@@ -167,7 +167,7 @@ export function AppShell({
             </div>
 
             <div className="flex items-center gap-4">
-              <StatusIndicator status="active" pulse label={mode === "demo" ? "SIMULATOR" : "LIVE RUNTIME"} className="hidden sm:flex" />
+              <StatusIndicator status="active" pulse={false} label={mode === "demo" ? "SIMULATOR" : "LIVE RUNTIME"} className="hidden sm:flex" />
               <Button asChild variant="outline" size="sm" className="hidden sm:inline-flex">
                 <Link href={mode === "demo" ? "/demo" : "/select-organization"}>
                   <Building2 className="size-4 mr-2" /> {mode === "demo" ? "Restart Demo" : "Contexts"}
@@ -231,7 +231,7 @@ export function AppShell({
           
           <div className="mt-auto pt-6 border-t border-white/[0.06] flex flex-col gap-4">
             <div className="flex items-center justify-between">
-              <StatusIndicator status="active" pulse label={mode === "demo" ? "SIMULATOR" : "LIVE RUNTIME"} />
+              <StatusIndicator status="active" pulse={false} label={mode === "demo" ? "SIMULATOR" : "LIVE RUNTIME"} />
               <Button asChild variant="outline" size="sm" className="w-full sm:w-auto">
                 <Link href={mode === "demo" ? "/demo" : "/select-organization"} onClick={() => setMobileMenuOpen(false)}>
                   <Building2 className="size-4 mr-2" /> {mode === "demo" ? "Restart Demo" : "Contexts"}

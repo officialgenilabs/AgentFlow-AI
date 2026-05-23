@@ -1,4 +1,4 @@
-﻿import type { 
+import type { 
   Profile, 
   Organization, 
   OrganizationBranding, 
@@ -426,6 +426,54 @@ export const demoTimelineEvents: Record<string, LeadEvent[]> = {
       new_value: "ai_review_pending",
       metadata: { reasoning: "Inbound inquiry captures explicit property intent (Sandton Penthouse) and scheduled viewing request. High buying indicators detected." },
       created_at: new Date(Date.now() - 15 * 60 * 1000).toISOString()
+    },
+    {
+      id: "ev-sib-4",
+      organization_id: "demo-org-id",
+      lead_id: "lead-sibusiso",
+      actor_user_id: null,
+      event_type: "solar_concern_flagged",
+      field_name: "outbound_hold",
+      old_value: null,
+      new_value: "solar_discrepancy_check",
+      metadata: { reasoning: "Inbound inquiry mentions power grid instability / solar request. Sandton Penthouse verified battery inventory must be cross-referenced." },
+      created_at: new Date(Date.now() - 12 * 60 * 1000).toISOString()
+    },
+    {
+      id: "ev-sib-5",
+      organization_id: "demo-org-id",
+      lead_id: "lead-sibusiso",
+      actor_user_id: "demo-operator-id",
+      event_type: "operator_task_created",
+      field_name: "task",
+      old_value: null,
+      new_value: "Verify Backup Solar Details",
+      metadata: { assigned_to: "Lead Architect", status: "open" },
+      created_at: new Date(Date.now() - 10 * 60 * 1000).toISOString()
+    },
+    {
+      id: "ev-sib-6",
+      organization_id: "demo-org-id",
+      lead_id: "lead-sibusiso",
+      actor_user_id: null,
+      event_type: "ai_draft_generated",
+      field_name: "draft_response",
+      old_value: null,
+      new_value: "Hi Sibusiso! ...",
+      metadata: { confidence: "94%", matching: "saturday_opening, solar_backup" },
+      created_at: new Date(Date.now() - 8 * 60 * 1000).toISOString()
+    },
+    {
+      id: "ev-sib-7",
+      organization_id: "demo-org-id",
+      lead_id: "lead-sibusiso",
+      actor_user_id: "demo-operator-id",
+      event_type: "governance_hold",
+      field_name: "compliance_gate",
+      old_value: null,
+      new_value: "Mandatory Human-in-the-Loop",
+      metadata: { reasoning: "Sandton high-value premium listing requires operator confirmation before outbound dispatch." },
+      created_at: new Date(Date.now() - 5 * 60 * 1000).toISOString()
     }
   ],
   "lead-jessica": [
@@ -468,6 +516,11 @@ export interface AIApprovalItem {
   memoryContext: string[];
   routingRationale: string;
   channel: string;
+  status: "pending" | "hold" | "blocked";
+  verificationStatus: string;
+  governanceState: string;
+  limitations: string[];
+  nextAction: string;
 }
 
 export const demoApprovals: AIApprovalItem[] = [
@@ -485,7 +538,14 @@ export const demoApprovals: AIApprovalItem[] = [
       "Primary concern: load-shedding backup power reliability."
     ],
     routingRationale: "Addresses Saturday viewing request explicitly and satisfies the critical solar backup power inquiry using property record specifications (verified inventory item: solar + 10kWh battery).",
-    channel: "WhatsApp"
+    channel: "WhatsApp",
+    status: "pending",
+    verificationStatus: "Identity Resolved via Ndlovu Holdings CRM",
+    governanceState: "Pending Operator Verification",
+    limitations: [
+      "Cannot guarantee battery state-of-charge during consecutive multi-day grid outages."
+    ],
+    nextAction: "Verify if building battery storage matches exact layout specifications."
   },
   {
     id: "appr-sarah",
@@ -500,8 +560,37 @@ export const demoApprovals: AIApprovalItem[] = [
       "Identified Clifton premium listing preference.",
       "High business value indicator detected."
     ],
-    routingRationale: "Leverages resolved professional history context to outline corporate suitability, then references viewing guidelines to prompt calendar booking.",
-    channel: "WhatsApp"
+    routingRationale: "Held: Flagged by rule [SG-8: Solar backup validation]. Sandton/Clifton premium listings require manual validation of physical battery storage inventory.",
+    channel: "WhatsApp",
+    status: "hold",
+    verificationStatus: "Company Match Verified // High Value Context",
+    governanceState: "Solar Verification Hold",
+    limitations: [
+      "Manual survey of Clifton node switchboard required."
+    ],
+    nextAction: "Confirm physically deployed batteries match Sandton/Clifton node inventory records."
+  },
+  {
+    id: "appr-david",
+    leadId: "lead-david",
+    leadName: "David Pieterse",
+    propertyReference: "Stellenbosch Estate Villa (R8.9M)",
+    inboundMessage: "Hi, interested in Stellenbosch estate. Please send details to my secondary mail david.p@associate-re.co.za.",
+    draftResponse: "Hello David! I would be pleased to forward the comprehensive Stellenbosch Estate brochure and site details to your requested secondary email address. To ensure PII security and respect data-integrity rules, we must first verify your secondary address via security PIN. Shall I trigger the verification now?",
+    confidenceScore: 62,
+    memoryContext: [
+      "Secondary email requested differs from captured inbound lead form email.",
+      "Professional legal context detected via Pieterse & Associates."
+    ],
+    routingRationale: "Blocked: Rule [SG-3: Identity Verification Failed]. Secondary email request triggers automatic PII audit alert due to cross-domain mismatch.",
+    channel: "Email",
+    status: "blocked",
+    verificationStatus: "Identity Conflict Detected // Verification Required",
+    governanceState: "PII Security Block",
+    limitations: [
+      "Secondary address does not match primary CRM identity registration."
+    ],
+    nextAction: "Initiate manual phone verification to confirm secondary address validity before dispatching records."
   }
 ];
 

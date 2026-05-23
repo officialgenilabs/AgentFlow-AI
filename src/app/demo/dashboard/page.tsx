@@ -1,4 +1,4 @@
-﻿import Link from "next/link";
+import Link from "next/link";
 import { AppShell } from "@/components/layout/shell";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -34,60 +34,60 @@ export default async function DemoDashboardPage() {
         {/* KPI Overview Grid */}
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <MetricCard
-            title="Total Traceable Leads"
+            title="Simulated Leads"
             value={leadCount}
-            description="Leads with verified source attribution"
-            icon={<Users className="size-4" />}
+            description="Active lead incidents in simulation"
+            icon={<Users className="size-4 text-[#A29EFF]" />}
           />
           <MetricCard
-            title="Pipeline Volume"
+            title="Portfolio Volume"
             value={pipelineValue}
-            description="Aggregated potential context value"
-            glow={true}
+            description="Staged value under operational audit"
+            glow={false}
             icon={<TrendingUp className="size-4 text-[#00E599]" />}
           />
           <MetricCard
-            title="Active Operations"
+            title="Governed Channels"
             value={activeConversations}
-            description="Dynamic messaging threads currently active"
+            description="Simulated conversation loops"
             icon={<MessageSquare className="size-4 text-[#6C63FF]" />}
           />
           <MetricCard
-            title="Open Tasks"
+            title="Operator Tasks"
             value={openTaskCount}
-            description="Required manual operator actions"
-            icon={<ListChecks className="size-4" />}
+            description="Pending manual battery validations"
+            icon={<ListChecks className="size-4 text-amber-500" />}
           />
         </div>
 
         {/* Operational Efficiency Row */}
         <div className="grid gap-4 md:grid-cols-2">
           <Card className="border-white/[0.06] bg-[#111111]/70 backdrop-blur-xl relative overflow-hidden">
-            <div className="absolute -left-16 -bottom-16 w-32 h-32 bg-[#00E599] rounded-full blur-[80px] opacity-10 pointer-events-none" />
+            <div className="absolute -left-16 -bottom-16 w-32 h-32 bg-[#00E599] rounded-full blur-[80px] opacity-5 pointer-events-none" />
             <CardHeader className="pb-2">
-              <span className="text-[10px] font-mono font-bold tracking-widest text-[#00E599] uppercase">
-                LATENCY GATEWAY
+              <span className="text-[9px] font-mono font-bold tracking-widest text-white/30 uppercase">
+                STAGE GATE LATENCY
               </span>
-              <CardTitle className="text-xl font-heading font-extrabold mt-1">
-                Response Speed: {avgResponseTime}
+              <CardTitle className="text-lg font-heading font-extrabold mt-1 text-white">
+                Staged Response Speed: {avgResponseTime}
               </CardTitle>
               <CardDescription className="text-xs text-white/50 leading-relaxed">
-                Avg time for AgentFlow to qualify and draft outbound responses across WhatsApp & Web channels.
+                Simulated average duration to qualify inbound signal and stage outbound drafts.
               </CardDescription>
             </CardHeader>
           </Card>
 
           <Card className="border-white/[0.06] bg-[#111111]/70 backdrop-blur-xl relative overflow-hidden">
-            <div className="absolute -right-16 -bottom-16 w-32 h-32 bg-[#6C63FF] rounded-full blur-[80px] opacity-10 pointer-events-none" />
+            <div className="absolute -right-16 -bottom-16 w-32 h-32 bg-[#6C63FF] rounded-full blur-[80px] opacity-5 pointer-events-none" />
             <CardHeader className="pb-2">
-              <span className="text-[10px] font-mono font-bold tracking-widest text-[#A29EFF] uppercase">
-                GOVERNED CONVERSION
+              <span className="text-[9px] font-mono font-bold tracking-widest text-white/30 uppercase">
+                GOVERNED CONVERSION INDEX
               </span>
-              <CardTitle className="text-xl font-heading font-extrabold mt-1">
-                Qualification Rate: {qualificationRate}
+              <CardTitle className="text-lg font-heading font-extrabold mt-1 text-white">
+                Staged Qualification Index: {qualificationRate}
               </CardTitle>
               <CardDescription className="text-xs text-white/50 leading-relaxed">
-                Percentage of captured leads successfully resolving through AI and manual governance gates.
+                Staged qualification index resolving through simulated safety and manual validation gates.
               </CardDescription>
             </CardHeader>
           </Card>
@@ -99,14 +99,14 @@ export default async function DemoDashboardPage() {
           <CardHeader className="border-b border-white/[0.04] pb-5">
             <div className="flex flex-wrap items-center justify-between gap-4">
               <div>
-                <CardTitle className="text-lg">Operational Command Engine</CardTitle>
+                <CardTitle className="text-lg">Sovereign Command Simulator</CardTitle>
                 <CardDescription className="text-xs">
-                  Contextual lead flow pipelines, ingress control, and governance layers.
+                  Governed lead signal flow, validation status, and compliance parameters.
                 </CardDescription>
               </div>
               <Badge variant="mint">
-                <StatusIndicator status="active" className="mr-1.5" pulse={true} />
-                Demo Mode Staging Active
+                <StatusIndicator status="active" className="mr-1.5" pulse={false} />
+                Governed Simulator Staging Active
               </Badge>
             </div>
           </CardHeader>
@@ -116,21 +116,21 @@ export default async function DemoDashboardPage() {
                 {tenant.organization.name}
               </span>
               <h2 className="mt-2 text-2xl font-heading font-extrabold text-white leading-tight">
-                Traceable lead acquisition you can trust.
+                Traceable lead incident auditing.
               </h2>
               <p className="mt-3 max-w-2xl text-xs leading-relaxed text-white/55">
-                Every lead preserves exact source metadata, source subtype, original capture channel, timing logs, qualification confidence, AI decision path, and generated events. Completely governed, calm, and bulletproof.
+                Every lead preserves exact source metadata, original capture channel, timing logs, and decision paths. Completely simulated, calm, and audited.
               </p>
               
               <div className="mt-6 flex flex-wrap gap-3">
-                <Button asChild className="bg-[#00E599] text-[#050505] hover:bg-[#00c584] rounded-xl shadow-[0_0_15px_rgba(0,229,153,0.15)]">
+                <Button asChild className="bg-[#00E599] text-[#050505] hover:bg-[#00c584] rounded-xl">
                   <Link href={`/demo/leads/new`}>
-                    Create traceable lead <ArrowRight className="size-4 ml-1.5" />
+                    Create Staged Lead <ArrowRight className="size-4 ml-1.5" />
                   </Link>
                 </Button>
                 <Button asChild variant="secondary" className="bg-white/[0.03] border-white/[0.06] text-white hover:bg-white/[0.06] rounded-xl">
                   <Link href={`/demo/leads`}>
-                    View pipeline
+                    View Staging Pipeline
                   </Link>
                 </Button>
               </div>
@@ -181,7 +181,7 @@ export default async function DemoDashboardPage() {
             <CardHeader className="border-b border-white/[0.04] pb-4">
               <CardTitle className="text-base">Operational Pipeline Stages</CardTitle>
               <CardDescription className="text-xs">
-                Active real-time conversion tracks.
+                Simulated real-world transaction pipeline.
               </CardDescription>
             </CardHeader>
             <CardContent className="pt-4 space-y-2">
