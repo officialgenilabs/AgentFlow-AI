@@ -2,7 +2,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { resolveTenantBySlug } from "@/lib/data/auth";
 import { displayMember, getOrgMembers } from "@/lib/data/crm";
-import type { Channel, Conversation, Lead, Message } from "@/lib/types";
+import type { AiMessageDraft, Channel, Conversation, Lead, Message } from "@/lib/types";
 import { isDemoMode } from "@/lib/demo/config";
 import { demoConversations, demoLeads, demoMessages } from "@/lib/demo/data";
 
@@ -16,6 +16,7 @@ export type ConversationThread = {
   conversations: ConversationListItem[];
   selectedConversation: ConversationListItem | null;
   messages: Message[];
+  drafts: AiMessageDraft[];
   members: Awaited<ReturnType<typeof getOrgMembers>>;
 };
 
@@ -58,6 +59,7 @@ export async function getInbox(orgSlug: string, conversationId?: string, forceDe
       conversations: normalizedConversations,
       selectedConversation,
       messages,
+      drafts: [],
       members,
     };
   }
@@ -92,10 +94,19 @@ export async function getInbox(orgSlug: string, conversationId?: string, forceDe
   const { data: messages } = selectedConversation
     ? await supabase
         .from("messages")
-        .select("id, organization_id, channel_id, conversation_id, lead_id, direction, sender_type, sender_external_id, sender_display_name, external_message_id, body, occurred_at, raw_payload, created_at")
+        .select("id, organization_id, channel_id, conversation_id, lead_id, direction, sender_type, sender_external_id, sender_display_name, external_message_id, body, occurred_at, status, sent_at, raw_payload, created_at")
         .eq("organization_id", tenant.organization.id)
         .eq("conversation_id", selectedConversation.id)
         .order("occurred_at", { ascending: true })
+    : { data: [] };
+
+  const { data: drafts } = selectedConversation
+    ? await supabase
+        .from("ai_message_drafts")
+        .select("id, organization_id, conversation_id, message_id, lead_id, draft_content, status, generation_model, generation_context, edited_by_user_id, approved_by_user_id, approved_at, discarded_by_user_id, created_at, updated_at")
+        .eq("organization_id", tenant.organization.id)
+        .eq("conversation_id", selectedConversation.id)
+        .order("created_at", { ascending: true })
     : { data: [] };
 
   return {
@@ -103,6 +114,7 @@ export async function getInbox(orgSlug: string, conversationId?: string, forceDe
     conversations: normalizedConversations,
     selectedConversation,
     messages: (messages ?? []) as Message[],
+    drafts: (drafts ?? []) as AiMessageDraft[],
     members,
   };
 }

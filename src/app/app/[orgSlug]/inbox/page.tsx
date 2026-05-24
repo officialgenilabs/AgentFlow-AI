@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { getInbox, displayConversationOwner } from "@/lib/data/inbox";
 import { Badge } from "@/components/ui/badge";
-import { StatusIndicator } from "@/components/ui/status-indicator";
 
 function statusTone(status: string) {
   if (status === "handoff") return "warning";
@@ -15,8 +14,10 @@ function statusTone(status: string) {
 
 export default async function InboxPage({ params, searchParams }: { params: Promise<{ orgSlug: string }>; searchParams: Promise<{ conversationId?: string; error?: string }> }) {
   const [{ orgSlug }, query] = await Promise.all([params, searchParams]);
-  const { tenant, conversations, selectedConversation, messages, members } = await getInbox(orgSlug, query.conversationId);
+  const { tenant, conversations, selectedConversation, messages, drafts, members } = await getInbox(orgSlug, query.conversationId);
   const selectedLead = selectedConversation?.lead ?? null;
+  const draftsByMessage = new Map(drafts.map((draft) => [draft.message_id, draft]));
+  const pendingDraftCount = drafts.filter((draft) => draft.status === "draft").length;
 
   return (
     <AppShell profile={tenant.profile} organization={tenant.organization} branding={tenant.branding}>
@@ -81,7 +82,7 @@ export default async function InboxPage({ params, searchParams }: { params: Prom
                     </Badge>
                   </div>
                   <p className="mt-2 truncate font-mono text-[9px] font-bold text-white/40 uppercase tracking-widest leading-none">
-                    {conversation.channel?.display_name ?? "Channel"} // {conversation.external_conversation_id ?? "internal"}
+                    {conversation.channel?.display_name ?? "Channel"} {"//"} {conversation.external_conversation_id ?? "internal"}
                   </p>
                   <p className="mt-3 text-[9px] font-mono text-white/30 uppercase tracking-wider">
                     Owner: <span className="text-white/50">{displayConversationOwner(members, conversation)}</span>
@@ -103,7 +104,7 @@ export default async function InboxPage({ params, searchParams }: { params: Prom
                     : "Select a conversation"}
                 </CardTitle>
                 <CardDescription className="text-xs">
-                  {selectedConversation?.channel?.provider ?? "Ingress"} // {selectedConversation?.channel?.channel_type ?? "whatsapp"}
+                  {selectedConversation?.channel?.provider ?? "Ingress"} {"//"} {selectedConversation?.channel?.channel_type ?? "whatsapp"}
                 </CardDescription>
               </div>
               {selectedConversation && (
@@ -116,7 +117,7 @@ export default async function InboxPage({ params, searchParams }: { params: Prom
             {selectedConversation && (
               <div className="mt-3 rounded-xl border border-[#6C63FF]/20 bg-[#6C63FF]/5 px-3 py-2 text-[10px] text-[#A29EFF] font-mono font-bold flex items-center gap-2">
                 <ShieldAlert className="size-3.5 shrink-0" />
-                <span>OUTBOUND GOVERNANCE GATED: USE THE DEDICATED APPROVALS SCREEN TO DISPATCH OUTBOUND DRAFTS.</span>
+                <span>OUTBOUND GOVERNANCE GATED: {pendingDraftCount} DRAFT{pendingDraftCount === 1 ? "" : "S"} READY IN APPROVALS. SENDING REMAINS LOCKED.</span>
               </div>
             )}
           </CardHeader>
@@ -140,6 +141,7 @@ export default async function InboxPage({ params, searchParams }: { params: Prom
               messages.map((message) => {
                 const isOutbound = message.direction === "outbound";
                 const isSystem = message.direction === "system";
+                const draft = draftsByMessage.get(message.id);
                 
                 return (
                   <div 
@@ -165,6 +167,11 @@ export default async function InboxPage({ params, searchParams }: { params: Prom
                     <p className="mt-3 text-[8px] font-mono font-bold text-white/20 uppercase tracking-widest text-right leading-none">
                       {new Date(message.occurred_at).toLocaleTimeString()}
                     </p>
+                    {draft ? (
+                      <div className="mt-3 rounded-xl border border-[#6C63FF]/20 bg-[#6C63FF]/5 px-3 py-2 text-[9px] font-mono font-bold uppercase tracking-widest text-[#A29EFF]">
+                        Draft {draft.status} · Review in approvals
+                      </div>
+                    ) : null}
                   </div>
                 );
               })
