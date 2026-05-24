@@ -1,6 +1,6 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
 import { NextResponse } from "next/server";
-import { createAdminClient } from "@/lib/supabase/admin";
+import { createClient } from "@supabase/supabase-js";
 
 export const runtime = "nodejs";
 
@@ -50,6 +50,16 @@ function verifySignature(rawBody: string, timestamp: string | null, signature: s
   if (expectedBuffer.length !== receivedBuffer.length || !timingSafeEqual(expectedBuffer, receivedBuffer)) {
     throw new Error("invalid_ingress_signature");
   }
+}
+
+function createIngressClient() {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  if (!supabaseUrl || !supabaseAnonKey) throw new Error("supabase_ingress_client_not_configured");
+
+  return createClient(supabaseUrl, supabaseAnonKey, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
 }
 
 function normalizePayload(payload: JsonObject, request: Request) {
@@ -110,7 +120,9 @@ export async function POST(request: Request) {
 
     const payload = JSON.parse(rawBody) as unknown;
     const normalized = normalizePayload(asRecord(payload), request);
-    const supabase = createAdminClient();
+    const ingressSecret = process.env.PROPERTY24_INGRESS_SECRET;
+    if (!ingressSecret) throw new Error("property24_ingress_secret_not_configured");
+    const supabase = createIngressClient();
 
     const { data, error } = await supabase.rpc("ingest_property24_lead", {
       p_organization_slug: normalized.organizationSlug,
@@ -126,6 +138,7 @@ export async function POST(request: Request) {
       p_estimated_value: normalized.estimatedValue,
       p_raw_payload: asRecord(payload),
       p_replay_key: normalized.replayKey,
+      p_ingress_secret: ingressSecret,
     });
 
     if (error) {

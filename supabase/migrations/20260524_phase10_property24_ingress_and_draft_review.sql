@@ -31,6 +31,17 @@ create index if not exists ingress_replay_keys_expires_idx on public.ingress_rep
 alter table public.ingress_replay_keys enable row level security;
 revoke all on public.ingress_replay_keys from anon, authenticated;
 
+create table if not exists app_private.ingress_endpoint_secrets (
+  source text primary key,
+  secret_digest text not null,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  constraint ingress_endpoint_secrets_source_not_blank check (length(btrim(source)) > 0),
+  constraint ingress_endpoint_secrets_digest_not_blank check (length(btrim(secret_digest)) > 0)
+);
+
+revoke all on app_private.ingress_endpoint_secrets from public, anon, authenticated;
+
 create or replace function public.review_ai_message_draft(
   p_draft_id uuid,
   p_status text,
@@ -160,6 +171,8 @@ comment on function public.review_ai_message_draft(uuid, text, text) is
 revoke all on function public.review_ai_message_draft(uuid, text, text) from public;
 grant execute on function public.review_ai_message_draft(uuid, text, text) to authenticated;
 
+drop function if exists public.ingest_property24_lead(text, text, text, text, text, text, text, timestamptz, text, text, numeric, jsonb, text);
+
 create or replace function public.ingest_property24_lead(
   p_organization_slug text,
   p_external_lead_id text,
@@ -173,7 +186,8 @@ create or replace function public.ingest_property24_lead(
   p_property_title text default null,
   p_estimated_value numeric default null,
   p_raw_payload jsonb default '{}'::jsonb,
-  p_replay_key text default null
+  p_replay_key text default null,
+  p_ingress_secret text default null
 )
 returns table (
   organization_id uuid,
@@ -204,9 +218,16 @@ declare
   v_external_lead_id text := nullif(btrim(coalesce(p_external_lead_id, '')), '');
   v_external_message_id text := nullif(btrim(coalesce(p_external_message_id, '')), '');
   v_replay_key text := nullif(btrim(coalesce(p_replay_key, '')), '');
+  v_expected_secret_digest text;
 begin
-  if auth.role() <> 'service_role' then
-    raise exception 'service_role_required';
+  select s.secret_digest into v_expected_secret_digest
+  from app_private.ingress_endpoint_secrets s
+  where s.source = 'property24';
+
+  if v_expected_secret_digest is null
+    or nullif(btrim(coalesce(p_ingress_secret, '')), '') is null
+    or encode(extensions.digest(p_ingress_secret, 'sha256'), 'hex') <> v_expected_secret_digest then
+    raise exception 'invalid_ingress_secret';
   end if;
 
   if jsonb_typeof(v_raw_payload) <> 'object' then
@@ -440,8 +461,8 @@ begin
 end;
 $$;
 
-comment on function public.ingest_property24_lead(text, text, text, text, text, text, text, timestamptz, text, text, numeric, jsonb, text) is
-'Phase 10 canonical Property24 ingress. Requires service role, replay key, preserves exact source metadata, persists lead/conversation/message, and emits automation events. Draft generation is triggered by the existing message.received event pipeline.';
+comment on function public.ingest_property24_lead(text, text, text, text, text, text, text, timestamptz, text, text, numeric, jsonb, text, text) is
+'Phase 10 canonical Property24 ingress. Requires a server-held ingress secret, replay key, preserves exact source metadata, persists lead/conversation/message, and emits automation events. Draft generation is triggered by the existing message.received event pipeline.';
 
-revoke all on function public.ingest_property24_lead(text, text, text, text, text, text, text, timestamptz, text, text, numeric, jsonb, text) from public;
-grant execute on function public.ingest_property24_lead(text, text, text, text, text, text, text, timestamptz, text, text, numeric, jsonb, text) to service_role;
+revoke all on function public.ingest_property24_lead(text, text, text, text, text, text, text, timestamptz, text, text, numeric, jsonb, text, text) from public;
+grant execute on function public.ingest_property24_lead(text, text, text, text, text, text, text, timestamptz, text, text, numeric, jsonb, text, text) to anon;
