@@ -210,6 +210,9 @@ declare
   v_org public.organizations%rowtype;
   v_channel public.channels%rowtype;
   v_intake record;
+  v_match record;
+  v_lead_id uuid;
+  v_lead_metadata jsonb;
   v_conversation public.conversations%rowtype;
   v_message_id uuid;
   v_existing_message_id uuid;
@@ -284,32 +287,114 @@ begin
   do update set status = 'active', updated_at = now()
   returning * into v_channel;
 
-  select * into v_intake
-  from public.ingest_lead_from_intake(
-    v_org.id,
-    btrim(p_full_name),
-    'property24',
-    'lead_portal',
-    v_channel.id::text,
-    p_occurred_at,
-    p_email,
-    p_phone,
-    null,
-    coalesce(nullif(btrim(coalesce(p_listing_reference, '')), ''), v_external_lead_id),
-    jsonb_build_object(
-      'doctrine', 'phase_10_property24_ingestion',
-      'exact_source', 'property24',
-      'source_subtype', 'lead_portal',
-      'external_lead_id', v_external_lead_id,
-      'external_message_id', v_external_message_id,
-      'listing_reference', nullif(btrim(coalesce(p_listing_reference, '')), ''),
-      'property_title', nullif(btrim(coalesce(p_property_title, '')), ''),
-      'raw_payload', v_raw_payload
-    ),
-    'new',
-    'medium',
-    p_estimated_value
-  ) limit 1;
+  v_lead_metadata := jsonb_build_object(
+    'doctrine', 'phase_10_property24_ingestion',
+    'exact_source', 'property24',
+    'source_subtype', 'lead_portal',
+    'external_lead_id', v_external_lead_id,
+    'external_message_id', v_external_message_id,
+    'listing_reference', nullif(btrim(coalesce(p_listing_reference, '')), ''),
+    'property_title', nullif(btrim(coalesce(p_property_title, '')), ''),
+    'raw_payload', v_raw_payload
+  );
+
+  select * into v_match
+  from app_private.find_lead_identity_match(v_org.id, p_email, p_phone)
+  limit 1;
+
+  if v_match.lead_id is not null then
+    perform app_private.record_lead_event(
+      v_org.id,
+      v_match.lead_id,
+      'lead.intake_matched',
+      'lead_identity',
+      null,
+      jsonb_build_object(
+        'exact_source', 'property24',
+        'source_subtype', 'lead_portal',
+        'original_inbound_channel', v_channel.id::text,
+        'captured_at', p_occurred_at,
+        'source_reference', coalesce(nullif(btrim(coalesce(p_listing_reference, '')), ''), v_external_lead_id),
+        'match_rule', v_match.match_rule,
+        'identity_confidence', v_match.identity_confidence
+      ),
+      jsonb_build_object('doctrine', 'phase_10_property24_ingestion', 'metadata', v_lead_metadata)
+    );
+
+    select
+      v_match.lead_id as lead_id,
+      'matched_existing'::text as intake_action,
+      v_match.match_rule as match_rule,
+      v_match.identity_confidence as identity_confidence
+    into v_intake;
+  else
+    begin
+      insert into public.leads (
+        organization_id,
+        full_name,
+        email,
+        phone,
+        company,
+        status,
+        priority,
+        estimated_value,
+        exact_source,
+        source_subtype,
+        original_inbound_channel,
+        source_reference,
+        captured_at,
+        lead_origin_metadata,
+        created_by_user_id,
+        updated_by_user_id
+      ) values (
+        v_org.id,
+        btrim(p_full_name),
+        p_email,
+        p_phone,
+        null,
+        'new',
+        'medium',
+        p_estimated_value,
+        'property24',
+        'lead_portal',
+        v_channel.id::text,
+        coalesce(nullif(btrim(coalesce(p_listing_reference, '')), ''), v_external_lead_id),
+        p_occurred_at,
+        v_lead_metadata || jsonb_build_object('ingestion_shape', 'canonical_lead_intake_v1', 'ingested_by', 'ingest_property24_lead'),
+        null,
+        null
+      ) returning id into v_lead_id;
+    exception when unique_violation then
+      select * into v_match
+      from app_private.find_lead_identity_match(v_org.id, p_email, p_phone)
+      limit 1;
+
+      if v_match.lead_id is null then
+        raise;
+      end if;
+
+      select
+        v_match.lead_id as lead_id,
+        'matched_existing_after_unique_conflict'::text as intake_action,
+        v_match.match_rule as match_rule,
+        v_match.identity_confidence as identity_confidence
+      into v_intake;
+    end;
+
+    if v_lead_id is not null then
+      select
+        v_lead_id as lead_id,
+        'created'::text as intake_action,
+        null::text as match_rule,
+        case
+          when app_private.normalize_phone_e164(p_phone) is not null and app_private.normalize_lead_email(p_email) is not null then 'phone_email'
+          when app_private.normalize_phone_e164(p_phone) is not null then 'phone'
+          when app_private.normalize_lead_email(p_email) is not null then 'email'
+          else 'none'
+        end as identity_confidence
+      into v_intake;
+    end if;
+  end if;
 
   select * into v_conversation
   from public.conversations c
