@@ -11,7 +11,7 @@ export default async function AIApprovalsPage({
   searchParams,
 }: {
   params: Promise<{ orgSlug: string }>;
-  searchParams: Promise<{ error?: string; draft?: string }>;
+  searchParams: Promise<{ error?: string; draft?: string; sent?: string }>;
 }) {
   const [{ orgSlug }, query] = await Promise.all([params, searchParams]);
   const { tenant, items } = await getApprovalQueue(orgSlug);
@@ -53,7 +53,13 @@ export default async function AIApprovalsPage({
 
         {query.draft ? (
           <div className="rounded-xl border border-[#00E599]/20 bg-[#00E599]/5 px-4 py-3 text-xs font-semibold text-[#00E599] font-mono uppercase tracking-wider">
-            Draft {query.draft} persisted. Outbound sending remains locked.
+            Draft {query.draft} persisted. Outbound transport remains governed.
+          </div>
+        ) : null}
+
+        {query.sent ? (
+          <div className="rounded-xl border border-[#00E599]/20 bg-[#00E599]/5 px-4 py-3 text-xs font-semibold text-[#00E599] font-mono uppercase tracking-wider">
+            Approved outbound message delivered and audit evidence persisted.
           </div>
         ) : null}
 

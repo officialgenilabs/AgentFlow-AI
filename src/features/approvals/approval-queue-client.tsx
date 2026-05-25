@@ -187,7 +187,7 @@ export function ApprovalQueueClient({ orgSlug, items }: ApprovalQueueClientProps
                 value="approved"
                 className="bg-[#00E599] text-[#050505] hover:bg-[#00c584] rounded-xl shadow-[0_0_20px_rgba(0,229,153,0.3)]"
               >
-                <Send className="size-4 mr-2" /> Approve Draft
+                <Send className="size-4 mr-2" /> Approve &amp; Send
               </Button>
             </div>
           </div>
