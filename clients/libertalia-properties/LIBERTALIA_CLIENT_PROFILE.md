@@ -1,10 +1,10 @@
 # Libertalia Properties Client Profile
 
-**Branch:** `client/libertalia-properties-pilot`  
-**Setup date:** 2026-06-09 UTC  
-**Client status:** First active AgentFlow AI pilot client  
-**Trial status:** 7-Day Free Trial  
-**Trial window:** 2026-06-09 to 2026-06-16 UTC  
+**Branch:** `client/libertalia-properties-pilot`
+**Setup date:** 2026-06-09 UTC
+**Client status:** First active AgentFlow AI pilot client
+**Trial status:** 7-Day Free Trial
+**Trial window:** 2026-06-09 to 2026-06-16 UTC
 **Primary objective:** Get Kopano live and receiving operational value within 24–48 hours.
 
 ## Scope Lock
@@ -119,13 +119,12 @@ client_config:
     - "Qualification"
     - "Viewing Requested"
     - "Viewing Booked"
-    - "Viewing Completed"
 
   guided_workspace_views:
     - "New Leads"
     - "Awaiting Qualification"
-    - "Viewing Scheduled"
-    - "Viewing Completed"
+    - "Viewing Requests"
+    - "Booked Viewings"
     - "Follow-Up Required"
 
   first_48h_success_metric:
@@ -168,12 +167,8 @@ client_config:
 4. **Viewing Booked**
    - Viewing date/time is confirmed manually by Kopano or captured from conversation.
    - Task is created/updated for Kopano.
-   - Lead appears in **Viewing Scheduled**.
-
-5. **Viewing Completed**
-   - Kopano marks viewing as completed.
-   - Follow-up task is generated if outcome is not closed.
-   - Lead appears in **Viewing Completed** or **Follow-Up Required**.
+   - Lead appears in **Booked Viewings**.
+   - Phase 1 ends at the booked-viewing handoff; post-viewing outcomes are parked for a later phase.
 
 ## Guided Workspace Views
 
@@ -181,10 +176,10 @@ client_config:
 | --- | --- | --- |
 | New Leads | Fresh inbound leads requiring first action | Stage = Lead Received |
 | Awaiting Qualification | Leads missing core qualification context | Stage = Qualification |
-| Viewing Scheduled | Leads with booked upcoming viewings | Stage = Viewing Booked |
-| Viewing Completed | Leads where the viewing has happened | Stage = Viewing Completed |
-| Follow-Up Required | Leads needing next action after qualification or viewing | Open follow-up task exists |
+| Viewing Requests | Leads ready for booking coordination | Stage = Viewing Requested |
+| Booked Viewings | Leads with booked upcoming viewings | Stage = Viewing Booked |
+| Follow-Up Required | Leads needing a qualification/viewing-booking next action | Open follow-up task exists |
 
 ## Activation Principle
 
-The first 24–48 hours are successful if Kopano can see real leads, understand what needs to happen next, and use AgentFlow to move a lead toward a viewing without extra admin burden.
+The first 24–48 hours are successful if Kopano can see real leads, understand what needs to happen next, and use AgentFlow to move a lead to **Viewing Requested** or **Viewing Booked** without extra admin burden.

@@ -1,8 +1,8 @@
 # Libertalia Properties Onboarding Checklist
 
-**Client:** Libertalia Properties  
-**Primary user:** Kopano Nkotsi  
-**Trial status:** 7-Day Free Trial  
+**Client:** Libertalia Properties
+**Primary user:** Kopano Nkotsi
+**Trial status:** 7-Day Free Trial
 **Target:** Operational value within 24–48 hours
 
 ## Required Before Go-Live
@@ -25,15 +25,15 @@
 
 Temporary branding may use a text logo and neutral colors until assets are supplied.
 
-## Optional Inputs
+## Phase 2 Parking Lot Inputs
 
-These are useful, but they must not block the 24–48 hour pilot activation.
+These are not required for Phase 1 and must not block activation. Do not collect or operationalize them unless the founder explicitly opens a later phase.
 
-| Status | Optional item | Trial handling |
+| Status | Parking lot item | Trial handling |
 | --- | --- | --- |
-| [ ] | Application Forms | Store as reference only if provided. No advanced document verification. |
-| [ ] | Rental Forms | Store as reference only if provided. No compliance workflow. |
-| [ ] | Offer To Purchase Documents | Store as reference only if provided. No seller workflow or contract automation. |
+| [ ] | Application Forms | Park only. No advanced document verification. |
+| [ ] | Rental Forms | Park only. No compliance workflow. |
+| [ ] | Offer To Purchase Documents | Park only. No seller workflow or contract automation. |
 
 ## Minimum Viable Activation Checklist
 
@@ -42,8 +42,8 @@ These are useful, but they must not block the 24–48 hour pilot activation.
 | [ ] | Create Libertalia Properties client profile | Organization profile exists in client config package. |
 | [ ] | Create Kopano as primary agent | Kopano is default lead/task owner in client config package. |
 | [ ] | Apply branding placeholders | Agency name and placeholder colors/logo are configured. |
-| [ ] | Configure workflow stages | Lead Received → Qualification → Viewing Requested → Viewing Booked → Viewing Completed. |
-| [ ] | Configure guided views | New Leads, Awaiting Qualification, Viewing Scheduled, Viewing Completed, Follow-Up Required. |
+| [ ] | Configure workflow stages | Lead Received → Qualification → Viewing Requested → Viewing Booked. |
+| [ ] | Configure guided views | New Leads, Awaiting Qualification, Viewing Requests, Booked Viewings, Follow-Up Required. |
 | [ ] | Property24 email path ready | Forwarding email supplied and test lead can be ingested. |
 | [ ] | WhatsApp path ready | WhatsApp number supplied and Evolution path can be tested. |
 | [ ] | Lead qualification path ready | AgentFlow can capture basic intent, budget/area/timing, and viewing interest. |

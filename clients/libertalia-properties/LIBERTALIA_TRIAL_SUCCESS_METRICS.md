@@ -1,8 +1,8 @@
 # Libertalia Properties Trial Success Metrics
 
-**Client:** Libertalia Properties  
-**Primary user:** Kopano Nkotsi  
-**Trial status:** 7-Day Free Trial  
+**Client:** Libertalia Properties
+**Primary user:** Kopano Nkotsi
+**Trial status:** 7-Day Free Trial
 **North-star outcome:** Kopano receives a lead, AgentFlow qualifies it, AgentFlow assists with viewing booking, and Kopano sees immediate operational value.
 
 ## Trial Success Definition
@@ -32,7 +32,7 @@ Success does **not** depend on compliance automation, document verification, sel
 | Lead capture reliability | Most inbound leads captured without manual reconstruction | Focus on Property24 + WhatsApp only. |
 | Speed to first action | Kopano can see next action quickly | Exact SLA can be refined after pilot usage. |
 | Qualification usefulness | Kopano can tell what is known and what is missing | Avoid over-qualification. |
-| Viewing progression | At least one lead moves toward a viewing | Viewing Scheduled is the key value moment. |
+| Viewing progression | At least one lead moves toward a viewing | Viewing Requested / Viewing Booked is the key value moment. |
 | Follow-up discipline | Follow-up tasks created for unresolved leads | Prevents leads from disappearing after first contact. |
 | Agent adoption | Kopano uses the workspace as the source of truth | Practical daily use beats feature breadth. |
 | Scope discipline | No Phase 2 workflows pulled into the trial | Protects speed and reliability. |

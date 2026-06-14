@@ -1,9 +1,9 @@
 # Libertalia Properties Implementation Plan
 
-**Client:** Libertalia Properties  
-**Primary user:** Kopano Nkotsi  
-**Trial status:** 7-Day Free Trial  
-**Implementation mode:** Client onboarding only  
+**Client:** Libertalia Properties
+**Primary user:** Kopano Nkotsi
+**Trial status:** 7-Day Free Trial
+**Implementation mode:** Client onboarding only
 **Time target:** 24–48 hours to visible value
 
 ## Implementation Guardrails
@@ -62,13 +62,13 @@ Required from Kopano / Libertalia:
 3. WhatsApp Number
 4. Agency Logo
 
-Optional, non-blocking:
+Phase 2 parking lot, not required for Phase 1:
 
 - Application Forms
 - Rental Forms
 - Offer To Purchase Documents
 
-These optional documents are reference material only during the trial. They must not trigger compliance or verification workflows.
+These documents must not be collected as an activation dependency and must not trigger compliance, verification, or seller workflows during Phase 1.
 
 ### Phase 2 — Ingestion Wiring
 
@@ -128,7 +128,6 @@ Configure the initial workflow exactly as:
 2. **Qualification**
 3. **Viewing Requested**
 4. **Viewing Booked**
-5. **Viewing Completed**
 
 Stage handling:
 
@@ -138,7 +137,6 @@ Stage handling:
 | Qualification | Lead exists but needs context | Capture intent, budget/area/timing, viewing interest |
 | Viewing Requested | Lead asks to view or shows viewing intent | Ask/confirm available slot and property details |
 | Viewing Booked | Date/time agreed | Create viewing task and reminder |
-| Viewing Completed | Kopano marks viewing done | Create follow-up task if not closed |
 
 ### Phase 4 — Guided Workspace Views
 
@@ -150,12 +148,12 @@ Configure these guided views for Kopano:
    - Fresh leads in `Lead Received`.
 2. **Awaiting Qualification**
    - Leads in `Qualification` or missing key context.
-3. **Viewing Scheduled**
+3. **Viewing Requests**
+   - Leads in `Viewing Requested` needing slot coordination.
+4. **Booked Viewings**
    - Leads in `Viewing Booked` with upcoming viewing task.
-4. **Viewing Completed**
-   - Leads in `Viewing Completed`.
 5. **Follow-Up Required**
-   - Leads with open follow-up tasks or stale activity after qualification/viewing.
+   - Leads with open follow-up tasks after qualification or viewing-request coordination.
 
 ### Phase 5 — Lead Qualification
 
@@ -201,8 +199,7 @@ Implementation steps:
    - Date/time
    - Contact method
    - Notes/context
-6. After completion, move to **Viewing Completed**.
-7. Create follow-up task if outcome is pending.
+6. Phase 1 ends at the booked-viewing handoff. Post-viewing follow-up is parked unless manually handled by Kopano.
 
 Acceptance check:
 
@@ -218,7 +215,6 @@ Initial task types only:
 | Lead missing key context | Ask qualification question |
 | Viewing requested | Confirm viewing availability |
 | Viewing booked | Attend/prepare for viewing |
-| Viewing completed | Follow up with lead |
 | No response after qualification | Follow up |
 
 Default assignment:
