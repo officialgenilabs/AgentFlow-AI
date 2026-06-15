@@ -53,8 +53,8 @@ This is an onboarding implementation branch only.
 | Default lead owner | Yes |
 | Default task owner | Yes |
 | Platform admin | No |
-| Login email | Pending onboarding input |
-| WhatsApp number | Pending onboarding input |
+| Login email | `kopano@libertaliaproperties.co.za` |
+| WhatsApp number | 063 499 3639 / +27634993639 |
 
 ## Branding Placeholders
 
@@ -92,8 +92,8 @@ client_config:
     default_lead_owner: true
     default_task_owner: true
     platform_admin: false
-    login_email: "TODO:onboarding"
-    whatsapp_number: "TODO:onboarding"
+    login_email: "kopano@libertaliaproperties.co.za"
+    whatsapp_number: "+27634993639"
 
   branding:
     agency_name: "Libertalia Properties"

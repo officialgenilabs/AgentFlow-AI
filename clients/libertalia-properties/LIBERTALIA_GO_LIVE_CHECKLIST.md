@@ -61,13 +61,13 @@ Collect these before activation. Do not request compliance documents for Phase 1
 
 | Status | Field | Required value | Owner |
 | --- | --- | --- | --- |
-| [ ] | Full name | `Kopano Nkotsi` | Client |
-| [ ] | Login email | TODO | Client |
-| [ ] | Mobile/WhatsApp number | TODO | Client |
-| [ ] | Role | Primary Agent | Founder/Nova |
-| [ ] | Default lead owner | Yes | Founder/Nova |
-| [ ] | Default task owner | Yes | Founder/Nova |
-| [ ] | Platform admin | No | Founder/Nova |
+| [x] | Full name | `Kopano Nkotsi` | Client / Nova |
+| [x] | Login email | `kopano@libertaliaproperties.co.za` | Client / Nova |
+| [x] | Mobile/WhatsApp number | 063 499 3639 / +27634993639 | Client / Nova |
+| [x] | Role | AgentFlow tenant role `member`; operational role Primary Agent | Founder/Nova |
+| [ ] | Default lead owner | Yes — still needs pilot assignment/default-owner config proof | Founder/Nova |
+| [ ] | Default task owner | Yes — still needs pilot assignment/default-owner config proof | Founder/Nova |
+| [x] | Platform admin | No — verified `is_platform_admin=false` | Founder/Nova |
 
 ### Branding placeholders
 
@@ -154,11 +154,11 @@ Configure as Libertalia organization data only. Do not alter canonical migration
 
 | Status | Item | Acceptance check |
 | --- | --- | --- |
-| [ ] | Libertalia organization exists or is ready to create | `libertalia-properties` slug reserved and isolated |
-| [ ] | Kopano profile/user created | Login works |
-| [ ] | Kopano linked to Libertalia org | Role is member/agent, not platform admin |
-| [ ] | Kopano assigned as default owner | New pilot leads and tasks can be assigned to Kopano |
-| [ ] | Branding placeholders applied | Workspace visually identifiable as Libertalia |
+| [x] | Libertalia organization exists or is ready to create | `libertalia-properties` exists and is isolated |
+| [x] | Kopano profile/user created | Supabase Auth login verified |
+| [x] | Kopano linked to Libertalia org | Role is `member`; platform admin is false |
+| [x] | Kopano assigned as default operator | Active org membership exists; lead/task default-owner automation remains separate pilot config |
+| [x] | Branding placeholders applied | Placeholder colors/logo row exists |
 
 ### B. Property24 intake setup
 
@@ -208,7 +208,7 @@ Use this section as the founder/Nova execution list.
 
 ### During onboarding call with Kopano
 
-- [ ] Confirm Kopano login email.
+- [x] Confirm Kopano login email.
 - [ ] Confirm WhatsApp number and QR scan owner.
 - [ ] Confirm Property24 lead delivery settings.
 - [ ] Confirm typical viewing availability windows.
@@ -219,7 +219,7 @@ Use this section as the founder/Nova execution list.
 ### Technical activation
 
 - [ ] Create/verify Libertalia organization.
-- [ ] Create/verify Kopano user and membership.
+- [x] Create/verify Kopano user and membership.
 - [ ] Apply branding placeholders.
 - [ ] Apply pilot stages/views as org-specific config/data.
 - [ ] Configure Property24 parser bridge to signed JSON ingress.

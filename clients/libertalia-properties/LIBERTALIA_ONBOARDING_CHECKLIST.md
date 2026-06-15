@@ -39,10 +39,10 @@ These are not required for Phase 1 and must not block activation. Do not collect
 
 | Status | Activation item | Acceptance check |
 | --- | --- | --- |
-| [ ] | Create Libertalia Properties client profile | Organization profile exists in client config package. |
-| [ ] | Create Kopano as primary agent | Kopano is default lead/task owner in client config package. |
-| [ ] | Apply branding placeholders | Agency name and placeholder colors/logo are configured. |
-| [ ] | Configure workflow stages | Lead Received → Qualification → Viewing Requested → Viewing Booked. |
+| [x] | Create Libertalia Properties client profile | Organization exists as `libertalia-properties` and profile/config package is updated. |
+| [x] | Create Kopano as primary agent | Kopano Auth/profile/membership exists; default lead/task owner automation still needs pilot proof. |
+| [x] | Apply branding placeholders | Agency name and placeholder colors/logo are configured. |
+| [ ] | Configure workflow stages | Lead Received → Qualification → Viewing Requested → Viewing Booked still needs pilot-stage config proof. |
 | [ ] | Configure guided views | New Leads, Awaiting Qualification, Viewing Requests, Booked Viewings, Follow-Up Required. |
 | [ ] | Property24 email path ready | Forwarding email supplied and test lead can be ingested. |
 | [ ] | WhatsApp path ready | WhatsApp number supplied and Evolution path can be tested. |

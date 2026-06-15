@@ -37,8 +37,8 @@ This is pilot configuration around existing ingress capability. It must not beco
 | [ ] | Current enquiry destination email | Where Property24 sends leads today |
 | [ ] | Dedicated intake mailbox | Recommended: `leads@libertaliaproperties.co.za` or temporary founder-managed inbox |
 | [ ] | Sample Property24 lead email | Needed to verify parser fields |
-| [ ] | Kopano login email | Used to assign/review leads |
-| [ ] | Kopano mobile/WhatsApp | Used for identity and viewing follow-up |
+| [x] | Kopano login email | `kopano@libertaliaproperties.co.za` — active AgentFlow login |
+| [x] | Kopano mobile/WhatsApp | 063 499 3639 / +27634993639 |
 
 Do not request compliance, application forms, rental forms, FICA documents, mandates, or OTP documents for Phase 1.
 

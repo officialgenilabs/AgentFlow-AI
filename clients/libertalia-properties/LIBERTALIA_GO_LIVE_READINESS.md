@@ -14,8 +14,8 @@ Libertalia Phase 1 is structurally ready as a branch-scoped pilot package, but s
 ### Current decision
 
 ```text
-Status: CONDITIONAL GO-LIVE / NOT YET LIVE
-Reason: client inputs, signed Property24 email bridge, Kopano access, and Evolution health certification still need final proof.
+Status: LOGIN ACTIVATED / CONDITIONAL GO-LIVE STILL NOT LIVE
+Reason: Kopano access is verified; remaining blockers are Property24 client inputs, signed email bridge, and Evolution health/send certification.
 ```
 
 The activation should proceed only after a controlled end-to-end test proves:
@@ -65,7 +65,7 @@ No readiness item in this report requires changing canonical AgentFlow architect
 
 | Area | Status | Blocker / next action |
 | --- | --- | --- |
-| Client identity | Amber | Confirm Kopano login email and WhatsApp number. |
+| Client identity | Green | Kopano login email and WhatsApp number captured; login verified. |
 | Branding | Amber | Logo/colors pending; placeholders are acceptable for go-live. |
 | Property24 source | Amber | Need profile URL, current enquiry email, sample lead email. |
 | Email-to-ingress bridge | Amber | Configure parser + HMAC signed JSON POST. |
@@ -80,8 +80,8 @@ No readiness item in this report requires changing canonical AgentFlow architect
 
 ### Client-supplied
 
-- Kopano login email
-- Kopano WhatsApp/mobile number
+- Kopano login email: `kopano@libertaliaproperties.co.za` — supplied and activated
+- Kopano WhatsApp/mobile number: 063 499 3639 / +27634993639 — supplied
 - Property24 profile URL
 - Property24 lead/enquiry destination email
 - Sample Property24 enquiry email
