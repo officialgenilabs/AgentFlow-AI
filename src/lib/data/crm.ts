@@ -1,11 +1,26 @@
-import { redirect } from "next/navigation";
+﻿import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { resolveTenantBySlug } from "@/lib/data/auth";
 import type { Lead, LeadEvent, LeadNote, LeadPipelineStage, LeadTask, OrganizationMember, Profile } from "@/lib/types";
+import { isDemoMode } from "@/lib/demo/config";
+import { demoLeads, demoPipelineStages, demoTasks, demoTimelineEvents } from "@/lib/demo/data";
 
 export type OrgMemberWithProfile = OrganizationMember & { profile?: Pick<Profile, "full_name" | "email"> | null };
 
-export async function getOrgMembers(organizationId: string): Promise<OrgMemberWithProfile[]> {
+export async function getOrgMembers(organizationId: string, forceDemo?: boolean): Promise<OrgMemberWithProfile[]> {
+  if (forceDemo || isDemoMode()) {
+    return [
+      {
+        id: "demo-member-id",
+        organization_id: "demo-org-id",
+        user_id: "demo-operator-id",
+        role: "admin",
+        status: "active",
+        profile: { full_name: "Lead Architect", email: "operator@genilabs.ai" }
+      }
+    ] as OrgMemberWithProfile[];
+  }
+
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("organization_members")
@@ -26,7 +41,11 @@ export async function getOrgMembers(organizationId: string): Promise<OrgMemberWi
   })) as OrgMemberWithProfile[];
 }
 
-export async function getPipelineStages(organizationId: string): Promise<LeadPipelineStage[]> {
+export async function getPipelineStages(organizationId: string, forceDemo?: boolean): Promise<LeadPipelineStage[]> {
+  if (forceDemo || isDemoMode()) {
+    return demoPipelineStages;
+  }
+
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("lead_pipeline_stages")
@@ -38,7 +57,15 @@ export async function getPipelineStages(organizationId: string): Promise<LeadPip
   return (data ?? []) as LeadPipelineStage[];
 }
 
-export async function getLeadList(orgSlug: string): Promise<{ tenant: Awaited<ReturnType<typeof resolveTenantBySlug>>; leads: Lead[]; members: OrgMemberWithProfile[]; stages: LeadPipelineStage[] }> {
+export async function getLeadList(orgSlug: string, forceDemo?: boolean): Promise<{ tenant: Awaited<ReturnType<typeof resolveTenantBySlug>>; leads: Lead[]; members: OrgMemberWithProfile[]; stages: LeadPipelineStage[] }> {
+  if (forceDemo || isDemoMode()) {
+    const tenant = await resolveTenantBySlug(orgSlug, true);
+    const leads = demoLeads;
+    const members = await getOrgMembers(tenant.organization.id, true);
+    const stages = demoPipelineStages;
+    return { tenant, leads, members, stages };
+  }
+
   const tenant = await resolveTenantBySlug(orgSlug);
   const supabase = await createClient();
   const [{ data: leads }, members, stages] = await Promise.all([
@@ -54,7 +81,27 @@ export async function getLeadList(orgSlug: string): Promise<{ tenant: Awaited<Re
   return { tenant, leads: (leads ?? []) as Lead[], members, stages };
 }
 
-export async function getLeadDetail(orgSlug: string, leadId: string) {
+export async function getLeadDetail(orgSlug: string, leadId: string, forceDemo?: boolean) {
+  if (forceDemo || isDemoMode()) {
+    const tenant = await resolveTenantBySlug(orgSlug, true);
+    const lead = demoLeads.find((l) => l.id === leadId) || demoLeads[0];
+    const notes: LeadNote[] = [];
+    const events = demoTimelineEvents[lead.id] || [];
+    const tasks = demoTasks.filter((t) => t.lead_id === lead.id);
+    const stages = demoPipelineStages;
+    const members = await getOrgMembers(tenant.organization.id, true);
+
+    return {
+      tenant,
+      lead: lead as Lead,
+      notes,
+      events,
+      tasks,
+      members,
+      stages,
+    };
+  }
+
   const tenant = await resolveTenantBySlug(orgSlug);
   const supabase = await createClient();
 
@@ -102,7 +149,14 @@ export async function getLeadDetail(orgSlug: string, leadId: string) {
   };
 }
 
-export async function getTaskList(orgSlug: string) {
+export async function getTaskList(orgSlug: string, forceDemo?: boolean) {
+  if (forceDemo || isDemoMode()) {
+    const tenant = await resolveTenantBySlug(orgSlug, true);
+    const tasks = demoTasks;
+    const members = await getOrgMembers(tenant.organization.id, true);
+    return { tenant, tasks, members };
+  }
+
   const tenant = await resolveTenantBySlug(orgSlug);
   const supabase = await createClient();
   const [{ data: tasks }, members] = await Promise.all([

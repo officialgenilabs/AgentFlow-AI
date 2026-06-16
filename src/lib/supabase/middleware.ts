@@ -1,8 +1,22 @@
-import { createServerClient } from "@supabase/ssr";
+﻿import { createServerClient } from "@supabase/ssr";
 import { type NextRequest, NextResponse } from "next/server";
 
 export async function updateSession(request: NextRequest) {
+  if (process.env.NEXT_PUBLIC_DEMO_MODE === "true") {
+    return NextResponse.next({ request });
+  }
+
+  const pathname = request.nextUrl.pathname;
+  const isProtectedPath = pathname.startsWith("/app") || pathname.startsWith("/admin");
+
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+    if (isProtectedPath) {
+      const redirectUrl = request.nextUrl.clone();
+      redirectUrl.pathname = "/login";
+      redirectUrl.search = "?error=supabase-env-required";
+      return NextResponse.redirect(redirectUrl);
+    }
+
     return NextResponse.next({ request });
   }
 
@@ -28,7 +42,13 @@ export async function updateSession(request: NextRequest) {
   );
 
   const { data: { user } } = await supabase.auth.getUser();
-  const pathname = request.nextUrl.pathname;
+
+  if (pathname.startsWith("/app") && !user) {
+    const redirectUrl = request.nextUrl.clone();
+    redirectUrl.pathname = "/login";
+    redirectUrl.search = "";
+    return NextResponse.redirect(redirectUrl);
+  }
 
   if (pathname.startsWith("/admin")) {
     if (!user) {

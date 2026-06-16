@@ -169,6 +169,8 @@ export type Message = {
   external_message_id: string | null;
   body: string;
   occurred_at: string;
+  status?: "pending" | "sent" | "failed" | string;
+  sent_at?: string | null;
   raw_payload: Record<string, unknown>;
   created_at: string;
 };
@@ -186,4 +188,22 @@ export type AutomationEvent = {
   status: "pending" | "processing" | "processed" | "failed" | "ignored" | string;
   created_at: string;
   processed_at: string | null;
+};
+
+export type AiMessageDraft = {
+  id: string;
+  organization_id: string;
+  conversation_id: string;
+  message_id: string;
+  lead_id: string | null;
+  draft_content: string;
+  status: "draft" | "approved" | "discarded" | string;
+  generation_model: string;
+  generation_context: Record<string, unknown>;
+  edited_by_user_id: string | null;
+  approved_by_user_id: string | null;
+  approved_at: string | null;
+  discarded_by_user_id: string | null;
+  created_at: string;
+  updated_at: string;
 };
