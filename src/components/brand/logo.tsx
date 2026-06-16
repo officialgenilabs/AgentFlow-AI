@@ -7,6 +7,7 @@ interface LogoProps extends React.SVGProps<SVGSVGElement> {
   glow?: boolean;
 }
 
+// Canonical AgentFlow mark. Keep public/logo.svg generated from this geometry.
 export function LogoMark({ size = 32, className = "", glow = false, ...props }: LogoProps) {
   return (
     <svg
@@ -15,7 +16,11 @@ export function LogoMark({ size = 32, className = "", glow = false, ...props }: 
       width={size}
       height={(size * 12) / 8}
       fill="none"
-      className={cn("transition-all duration-300", className)}
+      className={cn(
+        "transition-all duration-300",
+        glow && "drop-shadow-[0_0_18px_rgba(0,229,153,0.28)]",
+        className
+      )}
       {...props}
     >
       <defs>
@@ -63,6 +68,14 @@ export function LogoMark({ size = 32, className = "", glow = false, ...props }: 
         />
       </g>
     </svg>
+  );
+}
+
+export function LogoFrame({ children, className = "" }: { children: React.ReactNode; className?: string }) {
+  return (
+    <div className={cn("flex size-12 items-center justify-center rounded-2xl border border-[#00E599]/15 bg-[#00E599]/5 shadow-[0_0_24px_rgba(0,229,153,0.08)]", className)}>
+      {children}
+    </div>
   );
 }
 

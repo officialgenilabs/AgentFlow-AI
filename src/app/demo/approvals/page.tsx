@@ -68,7 +68,7 @@ export default function DemoAIApprovalsPage() {
     slug: "boutique-properties",
     status: "active",
     industry: "Real Estate",
-    plan: "Enterprise Staging"
+    plan: "Enterprise Demo"
   };
   const mockProfile: Profile = {
     id: "demo-operator-id",
@@ -89,7 +89,7 @@ export default function DemoAIApprovalsPage() {
         {/* Metric Overview Row */}
         <div className="grid gap-4 md:grid-cols-3">
           <MetricCard
-            title="Staged Sim Approvals"
+            title="Pending Approvals Queue"
             value={totalPending}
             description="Responses requiring active human confirmation"
             glow={false}
@@ -103,7 +103,7 @@ export default function DemoAIApprovalsPage() {
           />
           <MetricCard
             title="Outbound Gate Status"
-            value="STAGE ONLY"
+            value="DEMO-SAFE"
             description="PII + solar safeguard filters fully engaged"
             icon={<StatusIndicator status="active" pulse={false} />}
           />
@@ -114,9 +114,9 @@ export default function DemoAIApprovalsPage() {
             <div className="rounded-full bg-[#00E599]/10 border border-[#00E599]/20 p-4 text-[#00E599]">
               <ShieldCheck className="size-10" />
             </div>
-            <h2 className="text-xl font-heading font-extrabold text-white">Staging Ledger Quiet</h2>
+            <h2 className="text-xl font-heading font-extrabold text-white">Approvals Queue Quiet</h2>
             <p className="max-w-md text-xs text-white/50 leading-relaxed uppercase tracking-wider">
-              Simulation outbound queue is empty. All synthetic ingress pipelines resolved under absolute staging compliance parameters.
+              Demo outbound queue is empty. All synthetic ingress pipelines resolved under demo-safe compliance parameters.
             </p>
           </Card>
         ) : (
@@ -124,7 +124,7 @@ export default function DemoAIApprovalsPage() {
             {/* Left Queue List grouped by severity */}
             <div className="space-y-4 max-h-[75vh] overflow-y-auto pr-1">
               <h2 className="text-xs font-mono font-bold uppercase tracking-widest text-white/40 px-1">
-                Staged Queue ({totalPending})
+                Pending Queue ({totalPending})
               </h2>
 
               {/* 1. Pending Column */}
@@ -248,7 +248,7 @@ export default function DemoAIApprovalsPage() {
                       <div>
                         <CardTitle className="text-lg font-heading font-extrabold text-white">{selectedItem.leadName}</CardTitle>
                         <CardDescription className="text-xs mt-1">
-                          Simulation Incident Context // {selectedItem.propertyReference}
+                          Approval Context // {selectedItem.propertyReference}
                         </CardDescription>
                       </div>
                     </div>
@@ -302,7 +302,7 @@ export default function DemoAIApprovalsPage() {
                         className="bg-[#00E599] text-[#050505] hover:bg-[#00c584] rounded-xl text-xs font-bold"
                         disabled={selectedItem.status === "blocked"}
                       >
-                        <Send className="size-4 mr-2" /> Approve Simulation
+                        <Send className="size-4 mr-2" /> Approve Draft
                       </Button>
                     </div>
                   </div>

@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { usePathname } from "next/navigation";
 import React, { useState } from "react";
 import {
@@ -12,25 +11,21 @@ import {
   ListChecks,
   Palette,
   ShieldCheck,
-  Sparkles,
-  UserRoundCheck,
   GitBranch,
   CalendarDays,
   Lock,
   Eye,
   Layers,
-  HelpCircle,
   Menu,
-  X,
-  LogOut
+  X
 } from "lucide-react";
 import type { Organization, OrganizationBranding, Profile } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { LogoFull, LogoMark } from "@/components/brand/logo";
+import { LogoMark } from "@/components/brand/logo";
 import { StatusIndicator } from "@/components/ui/status-indicator";
 
-function BrandMark({ organization, branding }: { organization?: Organization; branding?: OrganizationBranding }) {
+function BrandMark() {
   return (
     <div className="flex items-center gap-3">
       <LogoMark size={36} glow={false} className="shrink-0" />
@@ -70,16 +65,16 @@ export function AppShell({
       ]
     : [
         { href: `${tenantHref}/dashboard`, label: "Operations Cockpit", icon: LayoutDashboard },
-        { href: `${tenantHref}/inbox`, label: "Governed Inbound Queue", icon: Inbox },
-        { href: `${tenantHref}/approvals`, label: "Governed Approvals", icon: ShieldCheck },
-        { href: `${tenantHref}/leads`, label: "Context Memory Ledger", icon: KanbanSquare },
-        { href: `${tenantHref}/routing`, label: "Synthetic Routing Flow", icon: GitBranch },
+        { href: `${tenantHref}/inbox`, label: "Governed Queue", icon: Inbox },
+        { href: `${tenantHref}/approvals`, label: "Approvals", icon: ShieldCheck },
+        { href: `${tenantHref}/leads`, label: "Sovereign Pipeline", icon: KanbanSquare },
+        { href: `${tenantHref}/routing`, label: "Routing Flow", icon: GitBranch },
         { href: `${tenantHref}/calendar`, label: "Viewing Calendar", icon: CalendarDays },
-        { href: `${tenantHref}/tasks`, label: "Operator Follow-ups", icon: ListChecks },
-        { href: `${tenantHref}/governance`, label: "Outbound Governance", icon: Lock },
-        { href: `${tenantHref}/branding`, label: "Branding Parameters", icon: Palette },
-        { href: `${tenantHref}/positioning`, label: "Wedge Positioning", icon: Layers },
-        { href: `${tenantHref}/vision`, label: "Vision Roadmap", icon: Eye },
+        { href: `${tenantHref}/tasks`, label: "Operator Tasks", icon: ListChecks },
+        { href: `${tenantHref}/governance`, label: "Compliance Settings", icon: Lock },
+        { href: `${tenantHref}/branding`, label: "Brand System", icon: Palette },
+        { href: `${tenantHref}/positioning`, label: "Positioning", icon: Layers },
+        { href: `${tenantHref}/vision`, label: "Roadmap", icon: Eye },
       ];
 
   const isActive = (href: string) => {
@@ -104,7 +99,7 @@ export function AppShell({
         {/* Desktop Sidebar */}
         <aside className="hidden w-72 shrink-0 rounded-[2rem] border border-white/[0.06] bg-[#111111]/85 p-6 backdrop-blur-xl lg:flex lg:flex-col justify-between shadow-2xl">
           <div>
-            <BrandMark organization={organization} branding={branding} />
+            <BrandMark />
             <nav className="mt-8 space-y-1.5 max-h-[60vh] overflow-y-auto pr-1">
               {nav.map((item) => {
                 const active = isActive(item.href);
@@ -140,11 +135,11 @@ export function AppShell({
             <p className={cn(
               "text-[10px] font-bold uppercase tracking-[0.2em]",
               mode === "demo" ? "text-[#00E599]" : "text-[#A29EFF]"
-            )}>{mode === "demo" ? "Simulation Active" : "Gen I Labs"}</p>
+            )}>{mode === "demo" ? "Demo-Safe Preview" : "Gen I Labs"}</p>
             <p className="mt-2 text-xs leading-5 text-white/70 font-medium">
               {mode === "demo"
-                ? "Interactive guided demonstration. All database operations are synthetic."
-                : "Human-supervised AI routing active. Outbound governance layer engaged."}
+                ? "Interactive guided preview. Outbound actions are disabled and all demo data is isolated."
+                : "Human-supervised operational intelligence active. Outbound remains governed by approval controls."}
             </p>
           </div>
         </aside>
@@ -154,20 +149,20 @@ export function AppShell({
           {/* Header */}
           <header className="mb-6 flex items-center justify-between rounded-[2rem] border border-white/[0.06] bg-[#111111]/80 px-6 py-4 shadow-xl backdrop-blur-xl">
             <div className="lg:hidden">
-              <BrandMark organization={organization} branding={branding} />
+              <BrandMark />
             </div>
 
             <div className="hidden lg:block select-none text-left">
               <p className="text-[9px] uppercase tracking-[0.3em] text-white/40 font-bold">
-                {mode === "admin" ? "Founder Context" : mode === "demo" ? "Simulation Layer" : "Tenant Operations"}
+                {mode === "admin" ? "Founder Context" : mode === "demo" ? "Demo-Safe Layer" : "Tenant Operations"}
               </p>
               <h1 className="text-xl font-heading font-extrabold text-white mt-1">
-                {mode === "admin" ? "Founder Cockpit" : mode === "demo" ? "Sandton Operations Sandbox" : organization?.name}
+                {mode === "admin" ? "Founder Cockpit" : mode === "demo" ? "Protected Demo Workspace" : organization?.name}
               </h1>
             </div>
 
             <div className="flex items-center gap-4">
-              <StatusIndicator status="active" pulse={false} label={mode === "demo" ? "SIMULATOR" : "LIVE RUNTIME"} className="hidden sm:flex" />
+              <StatusIndicator status="active" pulse={false} label={mode === "demo" ? "DEMO-SAFE" : "LIVE RUNTIME"} className="hidden sm:flex" />
               <Button asChild variant="outline" size="sm" className="hidden sm:inline-flex">
                 <Link href={mode === "demo" ? "/demo" : "/select-organization"}>
                   <Building2 className="size-4 mr-2" /> {mode === "demo" ? "Restart Demo" : "Contexts"}
@@ -197,7 +192,7 @@ export function AppShell({
       {mobileMenuOpen && (
         <div className="fixed inset-0 z-50 bg-[#050505]/95 backdrop-blur-md flex flex-col p-6 lg:hidden animate-in fade-in duration-200">
           <div className="flex items-center justify-between">
-            <BrandMark organization={organization} branding={branding} />
+            <BrandMark />
             <button
               onClick={() => setMobileMenuOpen(false)}
               className="p-2 text-white/70 hover:text-white"
@@ -231,7 +226,7 @@ export function AppShell({
 
           <div className="mt-auto pt-6 border-t border-white/[0.06] flex flex-col gap-4">
             <div className="flex items-center justify-between">
-              <StatusIndicator status="active" pulse={false} label={mode === "demo" ? "SIMULATOR" : "LIVE RUNTIME"} />
+              <StatusIndicator status="active" pulse={false} label={mode === "demo" ? "DEMO-SAFE" : "LIVE RUNTIME"} />
               <Button asChild variant="outline" size="sm" className="w-full sm:w-auto">
                 <Link href={mode === "demo" ? "/demo" : "/select-organization"} onClick={() => setMobileMenuOpen(false)}>
                   <Building2 className="size-4 mr-2" /> {mode === "demo" ? "Restart Demo" : "Contexts"}
@@ -241,7 +236,7 @@ export function AppShell({
             <div className="rounded-xl border border-[#6C63FF]/20 bg-[#6C63FF]/5 p-4">
               <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#A29EFF]">Gen I Labs</p>
               <p className="mt-1 text-xs text-white/60 leading-5">
-                Human-supervised AI routing engaged.
+                Human-supervised operational intelligence active.
               </p>
             </div>
           </div>

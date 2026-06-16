@@ -14,6 +14,7 @@ interface MetricCardProps {
   glow?: boolean;
   className?: string;
   icon?: React.ReactNode;
+  tone?: "default" | "safe" | "intelligence" | "warning" | "blocked";
 }
 
 export function MetricCard({
@@ -23,12 +24,22 @@ export function MetricCard({
   trend,
   glow = false,
   className = "",
-  icon
+  icon,
+  tone = "default"
 }: MetricCardProps) {
+  const toneClasses = {
+    default: "",
+    safe: "border-[#00E599]/20 bg-[#00E599]/[0.025]",
+    intelligence: "border-[#6C63FF]/20 bg-[#6C63FF]/[0.025]",
+    warning: "border-amber-500/20 bg-amber-500/[0.025]",
+    blocked: "border-red-500/20 bg-red-500/[0.025]"
+  };
+
   return (
     <Card
       className={cn(
         "relative overflow-hidden transition-all duration-300",
+        toneClasses[tone],
         glow && "border-[#00E599]/30 shadow-[0_0_30px_rgba(0,229,153,0.06)] hover:border-[#00E599]/50",
         className
       )}

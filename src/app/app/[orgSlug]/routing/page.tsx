@@ -1,7 +1,7 @@
-﻿import { AppShell } from "@/components/layout/shell";
+import { AppShell } from "@/components/layout/shell";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { resolveTenantBySlug } from "@/lib/data/auth";
-import { GitBranch, Inbox, ShieldCheck, CalendarDays, ArrowRight, Activity, Zap, CheckCircle2 } from "lucide-react";
+import { GitBranch, Activity, Zap, CheckCircle2 } from "lucide-react";
 
 export default async function RoutingPage({ params }: { params: Promise<{ orgSlug: string }> }) {
   const { orgSlug } = await params;
@@ -12,7 +12,7 @@ export default async function RoutingPage({ params }: { params: Promise<{ orgSlu
       id: "capture",
       title: "1. Capture",
       desc: "Ingress gateways normalizing incoming signal.",
-      stats: "47 Leads Intake",
+      stats: "47 Ingested",
       activeGates: ["WhatsApp Ingress", "Property24 API", "Website Webhook"],
       status: "nominal"
     },
@@ -27,8 +27,8 @@ export default async function RoutingPage({ params }: { params: Promise<{ orgSlu
     {
       id: "route",
       title: "3. Route",
-      desc: "Dispatch to appropriate operational cluster.",
-      stats: "28 Dispatched",
+      desc: "Route qualified signals to the appropriate operational cluster.",
+      stats: "28 Routed",
       activeGates: ["Sandton Broker Matcher", "Priority Dispatcher"],
       status: "nominal"
     },
@@ -36,7 +36,7 @@ export default async function RoutingPage({ params }: { params: Promise<{ orgSlu
       id: "govern",
       title: "4. Govern",
       desc: "Strict safety filters and manual override loops.",
-      stats: "24 Supervised",
+      stats: "2 Staged",
       activeGates: ["Outbound lock (95%)", "PII Redaction"],
       status: "active"
     },
@@ -63,16 +63,16 @@ export default async function RoutingPage({ params }: { params: Promise<{ orgSlu
         <div className="flex flex-col gap-1">
           <h1 className="text-2xl font-bold tracking-tight text-[#FAFAFA] font-sans flex items-center gap-2">
             <GitBranch className="h-6 w-6 text-[#00E599]" />
-            Intelligent Conversational Routing
+            Routing Flow
           </h1>
           <p className="text-sm text-[#888888]">
-            Visualize live signal propagation from raw message ingestion to governed agent delegation and viewings booking.
+            Visualize governed signal propagation from raw message capture to agent delegation and viewing coordination.
           </p>
         </div>
 
         {/* Dynamic Connected Flowchart */}
         <div className="grid gap-4 lg:grid-cols-5 md:grid-cols-3 grid-cols-1 relative">
-          {stages.map((stage, idx) => (
+          {stages.map((stage) => (
             <Card key={stage.id} className="bg-[#111111]/80 border-white/[0.06] backdrop-blur-xl hover:border-white/[0.12] transition-all relative overflow-hidden flex flex-col justify-between">
               {stage.status === "active" && (
                 <div className="absolute top-0 left-0 right-0 h-[2px] bg-[#6C63FF] animate-pulse" />
@@ -135,7 +135,7 @@ export default async function RoutingPage({ params }: { params: Promise<{ orgSlu
             </CardContent>
           </Card>
 
-          {/* Live Pipeline Audit Logs */}
+          {/* Live Routing Audit Trail */}
           <Card className="bg-[#111111]/80 border-white/[0.06] backdrop-blur-xl lg:col-span-2">
             <CardHeader className="flex flex-row items-center justify-between pb-4 border-b border-white/[0.06]">
               <div>

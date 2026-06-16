@@ -1,5 +1,5 @@
-﻿import { AppShell } from "@/components/layout/shell";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { AppShell } from "@/components/layout/shell";
+import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { getTaskList } from "@/lib/data/crm";
 import { ListChecks } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -14,10 +14,10 @@ export default async function DemoTasksPage() {
         <div className="flex flex-col gap-1">
           <h1 className="text-2xl font-bold tracking-tight text-[#FAFAFA] font-sans flex items-center gap-2">
             <ListChecks className="h-6 w-6 text-[#00E599]" />
-            Shared Tasks Ledger
+            Operator Tasks
           </h1>
           <p className="text-sm text-[#888888]">
-            Track manual actions, follow-up alerts, and verification tasks assigned to your broker nodes.
+            Track manual actions, follow-up alerts, and verification tasks assigned to operator nodes.
           </p>
         </div>
 

@@ -22,7 +22,7 @@ export default async function DemoGovernancePage() {
   const auditLogs: TrustLedgerEntry[] = [
     {
       timestamp: new Date(DEMO_GOVERNANCE_BASE_TIME - 5 * 60 * 1000).toISOString(), // 5m ago
-      event: "Compliance Hold: Flagged by rule [SG-8: Outbound Staging] for Sarah Jenkins. Solar backup battery details require manual validation.",
+      event: "Compliance Hold: Flagged by rule [SG-8: Outbound Governance] for Sarah Jenkins. Solar backup battery details require manual validation.",
       actor: "Governance Guard",
       status: "hold"
     },
@@ -52,10 +52,10 @@ export default async function DemoGovernancePage() {
         <div className="flex flex-col gap-1">
           <h1 className="text-2xl font-bold tracking-tight text-[#FAFAFA] font-sans flex items-center gap-2">
             <Lock className="h-6 w-6 text-[#6C63FF]" />
-            Outbound Governance Dashboard
+            Compliance Settings
           </h1>
           <p className="text-sm text-[#888888]">
-            Enforce compliance boundaries, PII redactions, and manual override constraints on staged communication tunnels.
+            Review demo-safe compliance boundaries, PII redactions, and manual override constraints for governed communication flows.
           </p>
         </div>
 
@@ -66,7 +66,7 @@ export default async function DemoGovernancePage() {
               <span className="text-[9px] font-mono font-bold tracking-widest text-[#6C63FF] uppercase">Breaker Gate</span>
               <CardTitle className="text-lg font-heading font-extrabold text-white mt-2">Emergency Breaker Switch</CardTitle>
               <CardDescription className="text-xs text-[#888888]">
-                Instantly disconnect and freeze all simulated WhatsApp and email outbound dispatches across this tenant.
+                Instantly disconnect and freeze all demo WhatsApp and email outbound dispatches across this tenant.
               </CardDescription>
             </CardHeader>
             <CardContent className="pt-4 border-t border-white/[0.04] mt-4">
@@ -81,7 +81,7 @@ export default async function DemoGovernancePage() {
           <Card className="bg-[#111111]/80 border-white/[0.06] backdrop-blur-xl lg:col-span-2 shadow-xl">
             <CardHeader className="pb-3">
               <CardTitle className="text-base font-heading font-extrabold text-white">Active Regulatory Guard Checklist</CardTitle>
-              <CardDescription className="text-xs text-[#888888]">Active real-time assertions governing automated lead interactions.</CardDescription>
+              <CardDescription className="text-xs text-[#888888]">Demo-safe assertions governing automated lead interactions.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
               {safeguards.map((sg) => (
@@ -99,7 +99,7 @@ export default async function DemoGovernancePage() {
         {/* Dynamic TrustLedger Audit Trail Card */}
         <TrustLedger
           entries={auditLogs}
-          title="Staging Compliance Audit Trail"
+          title="Compliance Audit Trail"
           description="High-integrity system event log tracking signal ingress, security scans, and manual approval gates."
         />
       </div>

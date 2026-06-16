@@ -1,0 +1,17 @@
+COPY_EVIDENCE_FINAL
+--- /demo
+Demo-Safe Operational Preview Demo-Safe Workspace Governed Demo Workspace No Production Writes 
+--- /demo/dashboard
+Compliance Settings Demo-Safe Preview Live Routing Audit Trail No Production Writes Operator Tasks Pending Approvals Queue Signal Orchestration Sovereign Pipeline 
+--- /demo/inbox
+Compliance Settings Demo-Safe Preview Governed Inbound Threads Operator Tasks Sovereign Pipeline 
+--- /demo/governance
+Compliance Settings Demo-Safe Preview Operator Tasks Sovereign Pipeline 
+--- /demo/routing
+Compliance Settings Demo-Safe Preview Live Routing Audit Trail Operator Tasks Signal Orchestration Sovereign Pipeline 
+--- /demo/leads
+Compliance Settings Demo-Safe Preview Operator Tasks Sovereign Pipeline 
+--- /demo/tasks
+Compliance Settings Demo-Safe Preview Operator Tasks Sovereign Pipeline 
+--- /login
+Secure Client Workspace 

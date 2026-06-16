@@ -19,7 +19,7 @@ export default function DemoLandingPage() {
               AGENTFLOW <span className="text-[#00E599]">AI</span>
             </h1>
             <p className="text-xs uppercase tracking-[0.2em] text-white/40 font-semibold font-mono">
-              Guided Operational Simulator
+              Demo-Safe Operational Preview
             </p>
           </div>
         </div>
@@ -28,10 +28,10 @@ export default function DemoLandingPage() {
           <CardHeader className="p-0 space-y-2">
             <CardTitle className="text-xl font-heading font-extrabold text-white flex items-center gap-2">
               <ShieldCheck className="h-5 w-5 text-[#00E599]" />
-              Governed Sandbox Simulator
+              Governed Demo Workspace
             </CardTitle>
             <CardDescription className="text-xs text-white/50 leading-relaxed">
-              High-integrity simulated operational environment. Demonstrates structured, governed lead routing and transaction compliance metrics within the South African real estate vertical.
+              High-integrity demo-safe operational environment. Demonstrates structured, governed lead routing and transaction compliance metrics within the South African real estate vertical.
             </CardDescription>
           </CardHeader>
 
@@ -40,7 +40,7 @@ export default function DemoLandingPage() {
               <div className="size-5 rounded-full bg-[#00E599]/10 border border-[#00E599]/20 flex items-center justify-center shrink-0 mt-0.5 text-[#00E599] font-mono font-bold text-[10px]">1</div>
               <div>
                 <p className="font-bold text-white">Complete Context Ledger Access</p>
-                <p className="text-white/50 mt-0.5">Explore the operations cockpit, governed inbound queues, human-in-the-loop approvals, chronological lead timelines, and outbound governance rules.</p>
+                <p className="text-white/50 mt-0.5">Explore the operations cockpit, governed queues, human-in-the-loop approvals, chronological lead timelines, and compliance settings.</p>
               </div>
             </div>
 
@@ -48,7 +48,7 @@ export default function DemoLandingPage() {
               <div className="size-5 rounded-full bg-[#00E599]/10 border border-[#00E599]/20 flex items-center justify-center shrink-0 mt-0.5 text-[#00E599] font-mono font-bold text-[10px]">2</div>
               <div>
                 <p className="font-bold text-white">Zero Mutation Integrity</p>
-                <p className="text-white/50 mt-0.5">No active Supabase database mutations or outbound network actions are executed. All pipeline processes remain strictly simulated within your local browser context.</p>
+                <p className="text-white/50 mt-0.5">No active Supabase database mutations or outbound network actions are executed. All demo workflows remain isolated and write-safe.</p>
               </div>
             </div>
 
@@ -64,16 +64,16 @@ export default function DemoLandingPage() {
           <div className="pt-4 border-t border-white/[0.04]">
             <Button asChild className="w-full h-12 bg-[#00E599] text-[#050505] hover:bg-[#00c584] rounded-xl font-bold uppercase tracking-wider text-xs flex items-center justify-center gap-2">
               <Link href="/demo/dashboard">
-                Initialize Governed Simulation <Play className="size-4 fill-current shrink-0" />
+                Enter Demo-Safe Workspace <Play className="size-4 fill-current shrink-0" />
               </Link>
             </Button>
           </div>
         </Card>
 
         <div className="flex items-center justify-center gap-4 text-[10px] font-mono tracking-wider text-white/30 uppercase select-none">
-          <span>Staging v1.0.4</span>
+          <span>Demo Preview v1.1</span>
           <span>•</span>
-          <span>Zero-Dependency Mode</span>
+          <span>No Production Writes</span>
           <span>•</span>
           <span>Public Access OK</span>
         </div>

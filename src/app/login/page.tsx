@@ -1,4 +1,4 @@
-﻿import { Suspense } from "react";
+import { Suspense } from "react";
 import { LoginForm } from "@/features/auth/login-form";
 import { LogoMark } from "@/components/brand/logo";
 
@@ -30,7 +30,7 @@ export default function LoginPage() {
 
         <div className="flex items-center gap-4">
           <span className="text-[10px] font-mono tracking-widest text-white/30 uppercase">
-            Gen I Labs © 2026 // Staging Environment
+            Gen I Labs © 2026 // Secure Client Workspace
           </span>
         </div>
       </section>

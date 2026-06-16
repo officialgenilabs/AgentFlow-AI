@@ -1,10 +1,9 @@
-﻿import Link from "next/link";
+import Link from "next/link";
 import { AppShell } from "@/components/layout/shell";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { updateLeadTaskStatus } from "@/features/crm/actions";
 import { displayMember, getTaskList } from "@/lib/data/crm";
-import { Badge } from "@/components/ui/badge";
 
 function fmt(value: string | null) {
   return value ? new Date(value).toLocaleString("en-ZA", { dateStyle: "medium", timeStyle: "short" }) : "No due date";
@@ -29,10 +28,10 @@ export default async function TasksPage({ params, searchParams }: { params: Prom
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div className="flex flex-col gap-1">
             <h1 className="text-2xl font-bold tracking-tight text-[#FAFAFA] font-sans">
-              Operational Follow-Ups
+              Operator Tasks
             </h1>
             <p className="text-sm text-[#888888]">
-              Manage physical viewings, outbound calls, and administrative compliance gates.
+              Manage physical viewings, governed follow-ups, and administrative compliance gates.
             </p>
           </div>
         </div>
@@ -52,9 +51,9 @@ export default async function TasksPage({ params, searchParams }: { params: Prom
         <Card className="bg-[#111111]/80 border-white/[0.06] backdrop-blur-xl">
           <CardHeader className="border-b border-white/[0.06] pb-5 flex flex-row items-center justify-between">
             <div>
-              <CardTitle className="text-lg font-bold text-[#FAFAFA]">{tasks.length} Pending Tasks</CardTitle>
+              <CardTitle className="text-lg font-bold text-[#FAFAFA]">{tasks.length} Operator Tasks</CardTitle>
               <CardDescription className="text-[#888888] mt-1">
-                Active instructions assigned across agents.
+                Active instructions assigned across operator nodes.
               </CardDescription>
             </div>
             <span className="flex items-center gap-1.5 text-xs text-[#888888]">

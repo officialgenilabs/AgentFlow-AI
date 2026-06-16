@@ -7,7 +7,6 @@ import type {
   Message,
   LeadTask,
   LeadEvent,
-  LeadNote,
   LeadPipelineStage
 } from "@/lib/types";
 
@@ -31,7 +30,7 @@ export const demoOrganization: Organization = {
 
 export const demoBranding: OrganizationBranding = {
   organization_id: "demo-org-id",
-  logo_url: "/logo.svg",
+  logo_url: null,
   primary_color: "#00E599",
   secondary_color: "#6C63FF",
   accent_color: "#00E599",
@@ -663,3 +662,67 @@ export const demoMetrics = {
   governanceLocked: true,
   ingressAudited: true
 };
+
+export type SignalStepTone = "safe" | "intelligence" | "warning" | "blocked";
+
+export interface SignalOrchestrationStep {
+  label: string;
+  value: string;
+  detail: string;
+  tone: SignalStepTone;
+}
+
+export const demoSignalOrchestrationSteps: SignalOrchestrationStep[] = [
+  { label: "Capture", value: "47 Ingested", detail: "Ingress gateways active", tone: "safe" },
+  { label: "Qualify", value: "32 Decided", detail: "Autonomous budget check", tone: "intelligence" },
+  { label: "Route", value: "28 Routed", detail: "Broker node allocation", tone: "safe" },
+  { label: "Govern", value: "2 Staged", detail: "Mandatory human override", tone: "warning" },
+  { label: "Schedule", value: "18 Booked", detail: "Viewing/tour sync", tone: "intelligence" }
+];
+
+export interface PendingApprovalSummaryItem {
+  leadName: string;
+  property: string;
+  status: "pending" | "hold" | "blocked";
+  confidence?: number;
+}
+
+export const demoPendingApprovalsSummary: PendingApprovalSummaryItem[] = [
+  { leadName: "Sibusiso Ndlovu", property: "Sandton Penthouse", status: "pending", confidence: 94 },
+  { leadName: "Sarah Jenkins", property: "Clifton Cliffside", status: "hold", confidence: 86 },
+  { leadName: "David Pieterse", property: "Stellenbosch Estate Villa", status: "blocked", confidence: 72 }
+];
+
+export interface RoutingAuditSummaryEntry {
+  timestamp: string;
+  event: string;
+  actor: string;
+  status: "verified" | "hold" | "blocked" | "system";
+}
+
+export const demoRoutingAuditEntries: RoutingAuditSummaryEntry[] = [
+  {
+    timestamp: new Date(Date.now() - 5 * 60 * 1000).toISOString(),
+    event: "Compliance Hold: solar backup details require operator validation before reply.",
+    actor: "Governance Guard",
+    status: "hold"
+  },
+  {
+    timestamp: new Date(Date.now() - 12 * 60 * 1000).toISOString(),
+    event: "Security Block: outbound identity mismatch detected on secondary email.",
+    actor: "PII Shield Node",
+    status: "blocked"
+  },
+  {
+    timestamp: new Date(Date.now() - 31 * 60 * 1000).toISOString(),
+    event: "Staged Response Verified: Saturday viewing slots locked for operator approval.",
+    actor: "Lead Architect",
+    status: "verified"
+  },
+  {
+    timestamp: new Date(Date.now() - 58 * 60 * 1000).toISOString(),
+    event: "Channel Verification Active: secured inbound Property24 WhatsApp path checked.",
+    actor: "System Ingress Guard",
+    status: "system"
+  }
+];

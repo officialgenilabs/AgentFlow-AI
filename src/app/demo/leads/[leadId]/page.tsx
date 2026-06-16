@@ -1,7 +1,6 @@
 import { AppShell } from "@/components/layout/shell";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { getLeadDetail } from "@/lib/data/crm";
-import { Badge } from "@/components/ui/badge";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
@@ -94,8 +93,8 @@ export default async function DemoLeadDetailPage({ params }: { params: Promise<{
                   desc = `Staged outbound response draft generated with ${confidence} accuracy intent matching property record details.`;
                   dotColor = "bg-[#6C63FF]";
                 } else if (ev.event_type === "governance_hold") {
-                  title = "Staging Compliance Hold";
-                  desc = `Staged response locked by rule [SG-8: Outbound Staging]. Awaiting explicit human-in-the-loop operator verification before dispatch.`;
+                  title = "Compliance Hold";
+                  desc = `Demo-safe response locked by rule [SG-8: Outbound Governance]. Awaiting explicit human-in-the-loop operator verification before dispatch.`;
                   dotColor = "bg-[#6C63FF]";
                 }
 
@@ -119,7 +118,7 @@ export default async function DemoLeadDetailPage({ params }: { params: Promise<{
                     </p>
                     <div className="flex items-center gap-1.5 text-[9px] font-mono font-bold text-white/30 uppercase tracking-widest pt-0.5">
                       <span>{new Date(ev.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>
-                      <span>â€¢</span>
+                      <span>•</span>
                       <span>Actor: {ev.actor_user_id ? "Operator" : "System Guard"}</span>
                     </div>
                   </div>

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { AppShell } from "@/components/layout/shell";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { getLeadList } from "@/lib/data/crm";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -17,10 +17,10 @@ export default async function DemoLeadsPage() {
           <div className="flex flex-col gap-1">
             <h1 className="text-2xl font-bold tracking-tight text-[#FAFAFA] font-sans flex items-center gap-2">
               <KanbanSquare className="h-6 w-6 text-[#00E599]" />
-              Context Memory Ledger
+              Sovereign Pipeline
             </h1>
             <p className="text-sm text-[#888888]">
-              Monitor simulated lead contexts, source integrity markers, and staged qualification checks.
+              Monitor demo-safe lead contexts, source integrity markers, and staged qualification checks.
             </p>
           </div>
           <Button asChild className="bg-[#00E599] text-[#0A0A0A] hover:bg-[#00E599]/90 font-semibold rounded-xl">
@@ -44,7 +44,7 @@ export default async function DemoLeadsPage() {
                   </CardDescription>
                 </div>
                 <Button asChild variant="outline" className="border-white/[0.08] hover:bg-white/[0.06] text-[#FAFAFA] rounded-xl" size="sm">
-                  <Link href={`/demo/leads/${lead.id}`}>Open Incident Ledger</Link>
+                  <Link href={`/demo/leads/${lead.id}`}>Open Pipeline Record</Link>
                 </Button>
               </CardHeader>
             </Card>

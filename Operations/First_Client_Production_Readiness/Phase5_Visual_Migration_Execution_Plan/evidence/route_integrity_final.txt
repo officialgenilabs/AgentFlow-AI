@@ -1,0 +1,26 @@
+LOCAL_ROUTE_CHECKS_FINAL
+/login 200 18387 bytes
+/demo 200 23000 bytes
+/demo/dashboard 200 99910 bytes
+/demo/inbox 200 52817 bytes
+/demo/governance 200 44116 bytes
+/demo/routing 200 64781 bytes
+/demo/leads 200 44615 bytes
+/demo/tasks 200 32834 bytes
+/demo/approvals 200 43094 bytes
+/app/boutique-properties/routing 307 34 bytes
+/app/boutique-properties/inbox 307 34 bytes
+/app/boutique-properties/governance 307 34 bytes
+/app/boutique-properties/leads 307 34 bytes
+/app/boutique-properties/tasks 307 34 bytes
+
+PROPERTY24_UNSIGNED_WITH_DUMMY_SECRET
+HTTP/1.1 401 Unauthorized
+vary: rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch
+content-type: application/json
+Date: Tue, 16 Jun 2026 12:57:16 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+{"ok":false,"error":"signed_ingress_required"}

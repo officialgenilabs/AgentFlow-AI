@@ -1,5 +1,5 @@
-﻿import Link from "next/link";
-import { Plus, User, Layers, Calendar, HelpCircle } from "lucide-react";
+import Link from "next/link";
+import { Plus, User, Layers, Calendar } from "lucide-react";
 import { AppShell } from "@/components/layout/shell";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -16,9 +16,9 @@ export default async function LeadsPage({ params, searchParams }: { params: Prom
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <span className="text-[10px] font-mono font-bold tracking-widest text-[#00E599] uppercase">
-            OPERATIONAL LEDGER
+            SOVEREIGN PIPELINE
           </span>
-          <h2 className="text-3xl font-heading font-extrabold text-white mt-1">Leads Registry</h2>
+          <h2 className="text-3xl font-heading font-extrabold text-white mt-1">Lead Registry</h2>
           <p className="mt-2 text-xs text-white/50 leading-relaxed uppercase tracking-wider">
             Traceable lead attribution, identity matching, and pipeline tracking.
           </p>
@@ -38,7 +38,7 @@ export default async function LeadsPage({ params, searchParams }: { params: Prom
 
       <Card className="border-white/[0.06] bg-[#111111]/70 backdrop-blur-xl">
         <CardHeader className="border-b border-white/[0.04] pb-4">
-          <CardTitle className="text-sm">Traceable Pipeline Leads</CardTitle>
+          <CardTitle className="text-sm">Sovereign Pipeline Leads</CardTitle>
           <CardDescription className="text-xs">
             {leads.length} active CRM records across {stages.length} pipeline stages.
           </CardDescription>

@@ -6,17 +6,26 @@ import { getLeadList } from "@/lib/data/crm";
 import { MetricCard } from "@/components/ui/metric-card";
 import { StatusIndicator } from "@/components/ui/status-indicator";
 import { Badge } from "@/components/ui/badge";
+import { SignalOrchestrationFlow } from "@/components/dashboard/signal-orchestration-flow";
+import { PendingApprovalsSummary } from "@/components/dashboard/pending-approvals-summary";
+import { RoutingAuditTrail } from "@/components/dashboard/routing-audit-trail";
+import {
+  demoPendingApprovalsSummary,
+  demoRoutingAuditEntries,
+  demoSignalOrchestrationSteps
+} from "@/lib/demo/data";
 import {
   Users,
   ListChecks,
   TrendingUp,
   ArrowRight,
-  MessageSquare
+  MessageSquare,
+  ShieldCheck
 } from "lucide-react";
 
 export default async function DemoDashboardPage() {
   const orgSlug = "boutique-properties";
-  const { tenant, leads, members, stages } = await getLeadList(orgSlug, true);
+  const { tenant, leads, stages } = await getLeadList(orgSlug, true);
 
   const leadCount = leads.length;
   const openTaskCount = 2; // static seeded open tasks
@@ -24,19 +33,17 @@ export default async function DemoDashboardPage() {
   const pipeline = stages;
   const pipelineValue = "R8.2M";
   const activeConversations = 12;
-  const avgResponseTime = "2m 34s";
-  const qualificationRate = "68%";
 
   return (
     <AppShell profile={tenant.profile} organization={tenant.organization} branding={tenant.branding} mode="demo">
       <div className="space-y-6">
-
         {/* KPI Overview Grid */}
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <MetricCard
-            title="Simulated Leads"
+            title="Staged Leads"
             value={leadCount}
-            description="Active lead incidents in simulation"
+            description="Active lead incidents in demo-safe preview"
+            tone="intelligence"
             icon={<Users className="size-4 text-[#A29EFF]" />}
           />
           <MetricCard
@@ -44,69 +51,55 @@ export default async function DemoDashboardPage() {
             value={pipelineValue}
             description="Staged value under operational audit"
             glow={false}
+            tone="safe"
             icon={<TrendingUp className="size-4 text-[#00E599]" />}
           />
           <MetricCard
             title="Governed Channels"
             value={activeConversations}
-            description="Simulated conversation loops"
+            description="Demo-safe conversation loops"
+            tone="intelligence"
             icon={<MessageSquare className="size-4 text-[#6C63FF]" />}
           />
           <MetricCard
             title="Operator Tasks"
             value={openTaskCount}
             description="Pending manual battery validations"
+            tone="warning"
             icon={<ListChecks className="size-4 text-amber-500" />}
           />
         </div>
 
-        {/* Operational Efficiency Row */}
-        <div className="grid gap-4 md:grid-cols-2">
-          <Card className="border-white/[0.06] bg-[#111111]/70 backdrop-blur-xl relative overflow-hidden">
-            <div className="absolute -left-16 -bottom-16 w-32 h-32 bg-[#00E599] rounded-full blur-[80px] opacity-5 pointer-events-none" />
-            <CardHeader className="pb-2">
-              <span className="text-[9px] font-mono font-bold tracking-widest text-white/30 uppercase">
-                STAGE GATE LATENCY
-              </span>
-              <CardTitle className="text-lg font-heading font-extrabold mt-1 text-white">
-                Staged Response Speed: {avgResponseTime}
-              </CardTitle>
-              <CardDescription className="text-xs text-white/50 leading-relaxed">
-                Simulated average duration to qualify inbound signal and stage outbound drafts.
-              </CardDescription>
-            </CardHeader>
-          </Card>
+        <SignalOrchestrationFlow
+          title="Signal Orchestration"
+          description="Conversational routing infrastructure from raw signal capture to governed agent delegation."
+          steps={demoSignalOrchestrationSteps}
+          mode="demo"
+        />
 
-          <Card className="border-white/[0.06] bg-[#111111]/70 backdrop-blur-xl relative overflow-hidden">
-            <div className="absolute -right-16 -bottom-16 w-32 h-32 bg-[#6C63FF] rounded-full blur-[80px] opacity-5 pointer-events-none" />
-            <CardHeader className="pb-2">
-              <span className="text-[9px] font-mono font-bold tracking-widest text-white/30 uppercase">
-                GOVERNED CONVERSION INDEX
-              </span>
-              <CardTitle className="text-lg font-heading font-extrabold mt-1 text-white">
-                Staged Qualification Index: {qualificationRate}
-              </CardTitle>
-              <CardDescription className="text-xs text-white/50 leading-relaxed">
-                Staged qualification index resolving through simulated safety and manual validation gates.
-              </CardDescription>
-            </CardHeader>
-          </Card>
+        <div className="grid gap-6 xl:grid-cols-[0.9fr_1.1fr]">
+          <PendingApprovalsSummary
+            items={demoPendingApprovalsSummary}
+            href="/demo/approvals"
+            emptyState="No demo-safe outbound approvals pending"
+          />
+          <RoutingAuditTrail entries={demoRoutingAuditEntries} />
         </div>
 
-        {/* Centerpiece Interactive Console */}
+        {/* Centerpiece Demo-Safe Console */}
         <Card className="border-white/[0.06] bg-[#111111]/70 backdrop-blur-xl relative overflow-hidden">
           <div className="absolute inset-0 bg-radial-at-t from-[#00E599]/[0.02] via-transparent to-transparent pointer-events-none" />
           <CardHeader className="border-b border-white/[0.04] pb-5">
             <div className="flex flex-wrap items-center justify-between gap-4">
               <div>
-                <CardTitle className="text-lg">Sovereign Command Simulator</CardTitle>
+                <CardTitle className="text-lg">Protected Demo Workspace</CardTitle>
                 <CardDescription className="text-xs">
-                  Governed lead signal flow, validation status, and compliance parameters.
+                  Governed lead signal flow, validation state, and compliance posture with no production writes.
                 </CardDescription>
               </div>
               <Badge variant="mint">
                 <StatusIndicator status="active" className="mr-1.5" pulse={false} />
-                Governed Simulator Staging Active
+                Demo-Safe Preview Active
               </Badge>
             </div>
           </CardHeader>
@@ -119,7 +112,7 @@ export default async function DemoDashboardPage() {
                 Traceable lead incident auditing.
               </h2>
               <p className="mt-3 max-w-2xl text-xs leading-relaxed text-white/55">
-                Every lead preserves exact source metadata, original capture channel, timing logs, and decision paths. Completely simulated, calm, and audited.
+                Every lead preserves exact source metadata, original capture channel, timing logs, and decision paths. Demo data stays isolated, reviewed, and visibly governed.
               </p>
 
               <div className="mt-6 flex flex-wrap gap-3">
@@ -130,7 +123,12 @@ export default async function DemoDashboardPage() {
                 </Button>
                 <Button asChild variant="secondary" className="bg-white/[0.03] border-white/[0.06] text-white hover:bg-white/[0.06] rounded-xl">
                   <Link href={`/demo/leads`}>
-                    View Staging Pipeline
+                    View Sovereign Pipeline
+                  </Link>
+                </Button>
+                <Button asChild variant="secondary" className="bg-[#6C63FF]/10 border-[#6C63FF]/20 text-[#A29EFF] hover:bg-[#6C63FF]/15 rounded-xl">
+                  <Link href={`/demo/governance`}>
+                    Compliance Settings <ShieldCheck className="size-4 ml-1.5" />
                   </Link>
                 </Button>
               </div>
@@ -140,7 +138,6 @@ export default async function DemoDashboardPage() {
 
         {/* Pipeline Stage Tracker & Recent Leads */}
         <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
-
           {/* Recent Leads list */}
           <Card className="border-white/[0.06] bg-[#111111]/70 backdrop-blur-xl">
             <CardHeader className="border-b border-white/[0.04] pb-4">
@@ -181,7 +178,7 @@ export default async function DemoDashboardPage() {
             <CardHeader className="border-b border-white/[0.04] pb-4">
               <CardTitle className="text-base">Operational Pipeline Stages</CardTitle>
               <CardDescription className="text-xs">
-                Simulated real-world transaction pipeline.
+                Demo-safe real-world transaction pipeline.
               </CardDescription>
             </CardHeader>
             <CardContent className="pt-4 space-y-2">
@@ -201,9 +198,7 @@ export default async function DemoDashboardPage() {
               ))}
             </CardContent>
           </Card>
-
         </div>
-
       </div>
     </AppShell>
   );

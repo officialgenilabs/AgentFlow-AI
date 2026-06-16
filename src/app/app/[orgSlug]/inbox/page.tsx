@@ -1,4 +1,4 @@
-﻿import Link from "next/link";
+import Link from "next/link";
 import { ArrowRight, Circle, MessageSquare, UserRound, ShieldAlert, CheckCircle } from "lucide-react";
 import { AppShell } from "@/components/layout/shell";
 import { Button } from "@/components/ui/button";
@@ -24,11 +24,11 @@ export default async function InboxPage({ params, searchParams }: { params: Prom
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <span className="text-[10px] font-mono font-bold tracking-widest text-[#00E599] uppercase">
-            COMMUNICATION INGRESS
+            GOVERNED QUEUE
           </span>
-          <h2 className="text-3xl font-heading font-extrabold text-white mt-1">Live Inbound Queue</h2>
+          <h2 className="text-3xl font-heading font-extrabold text-white mt-1">Governed Inbound Threads</h2>
           <p className="mt-2 text-xs text-white/50 leading-relaxed uppercase tracking-wider">
-            CRM-backed inbound threads. Every message is attached through identity + intake layers first.
+            CRM-backed inbound threads. Every message is attached through identity + intake layers before outbound approval.
           </p>
         </div>
         <Badge variant="mint">
@@ -46,7 +46,7 @@ export default async function InboxPage({ params, searchParams }: { params: Prom
         {/* Left Side: Conversation list */}
         <Card className="border-white/[0.06] bg-[#111111]/70 backdrop-blur-xl flex flex-col h-[75vh]">
           <CardHeader className="border-b border-white/[0.04] pb-4">
-            <CardTitle className="text-sm">Inbound Conversations</CardTitle>
+            <CardTitle className="text-sm">Governed Threads</CardTitle>
             <CardDescription className="text-xs">
               Open, handoff, and closed threads.
             </CardDescription>
@@ -57,7 +57,7 @@ export default async function InboxPage({ params, searchParams }: { params: Prom
                 <MessageSquare className="size-8 text-white/20 animate-pulse" />
                 <p className="mt-3 text-xs font-bold text-white/60 uppercase tracking-wider">No conversations yet</p>
                 <p className="mt-2 text-[10px] text-white/40 leading-relaxed">
-                  Ingress routing will automatically ingest dynamic messaging streams.
+                  Ingress routing will surface governed messaging streams here.
                 </p>
               </div>
             ) : conversations.map((conversation) => {
@@ -129,7 +129,7 @@ export default async function InboxPage({ params, searchParams }: { params: Prom
                   <MessageSquare className="size-10 text-white/20 mb-3 animate-pulse" />
                   <p className="text-xs font-bold text-white/60 uppercase tracking-widest">Waiting for ingress</p>
                   <p className="mt-2 text-[10px] text-white/40 leading-relaxed uppercase">
-                    Select a conversation thread from the queue list to inspect live communications.
+                    Select a conversation thread from the queue list to inspect governed communications.
                   </p>
                 </div>
               </div>

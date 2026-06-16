@@ -1,7 +1,7 @@
-﻿import { AppShell } from "@/components/layout/shell";
+import { AppShell } from "@/components/layout/shell";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { resolveTenantBySlug } from "@/lib/data/auth";
-import { Lock, ShieldCheck, Eye, Activity, CheckCircle2, AlertTriangle, ToggleLeft, ShieldAlert } from "lucide-react";
+import { Lock, Activity, ShieldAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export default async function GovernancePage({ params }: { params: Promise<{ orgSlug: string }> }) {
@@ -44,10 +44,10 @@ export default async function GovernancePage({ params }: { params: Promise<{ org
         <div className="flex flex-col gap-1">
           <h1 className="text-2xl font-bold tracking-tight text-[#FAFAFA] font-sans flex items-center gap-2">
             <Lock className="h-6 w-6 text-[#6C63FF]" />
-            Staging Governance safeguards
+            Compliance Settings
           </h1>
           <p className="text-sm text-[#888888]">
-            Configure autonomous gate limits, monitor raw PII redaction metrics, and audit outbound transmission queues.
+            Review compliance boundaries, PII redaction posture, and approval-gated outbound queues.
           </p>
         </div>
 

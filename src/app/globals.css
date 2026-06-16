@@ -11,9 +11,15 @@
   --accent-primary: #00E599;
   --accent-primary-hover: #00CC88;
   --accent-primary-glow: rgba(0, 229, 153, 0.15);
+  --accent-safe: #00E599;
+  --accent-safe-hover: #00CC88;
 
   --accent-secondary: #6C63FF;
   --accent-secondary-glow: rgba(108, 99, 255, 0.15);
+  --accent-intelligence: #6C63FF;
+  --accent-intelligence-soft: #A29EFF;
+  --accent-warning: #F59E0B;
+  --accent-blocked: #EF4444;
 
   --text-muted: #888888;
   --text-secondary: #E5E5E5;

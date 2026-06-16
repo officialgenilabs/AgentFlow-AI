@@ -1,4 +1,4 @@
-﻿import { AppShell } from "@/components/layout/shell";
+import { AppShell } from "@/components/layout/shell";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { resolveTenantBySlug } from "@/lib/data/auth";
 import { GitBranch, Zap, CheckCircle2, Activity } from "lucide-react";
@@ -12,7 +12,7 @@ export default async function DemoRoutingPage() {
       id: "capture",
       title: "1. Capture",
       desc: "Ingress gateways normalizing incoming signal.",
-      stats: "47 Leads Intake",
+      stats: "47 Ingested",
       activeGates: ["WhatsApp Ingress", "Property24 API", "Website Webhook"],
       status: "nominal"
     },
@@ -27,8 +27,8 @@ export default async function DemoRoutingPage() {
     {
       id: "route",
       title: "3. Route",
-      desc: "Dispatch to appropriate operational cluster.",
-      stats: "28 Dispatched",
+      desc: "Route qualified signals to the appropriate operational cluster.",
+      stats: "28 Routed",
       activeGates: ["Sandton Broker Matcher", "Priority Dispatcher"],
       status: "nominal"
     },
@@ -36,7 +36,7 @@ export default async function DemoRoutingPage() {
       id: "govern",
       title: "4. Govern",
       desc: "Strict safety filters and manual override loops.",
-      stats: "24 Supervised",
+      stats: "2 Staged",
       activeGates: ["Outbound lock (95%)", "PII Redaction"],
       status: "active"
     },
@@ -63,10 +63,10 @@ export default async function DemoRoutingPage() {
         <div className="flex flex-col gap-1">
           <h1 className="text-2xl font-bold tracking-tight text-[#FAFAFA] font-sans flex items-center gap-2">
             <GitBranch className="h-6 w-6 text-[#00E599]" />
-            Intelligent Conversational Routing
+            Signal Orchestration
           </h1>
           <p className="text-sm text-[#888888]">
-            Visualize live signal propagation from raw message ingestion to governed agent delegation and viewings booking.
+            Visualize demo-safe signal propagation from raw message capture to governed agent delegation and viewing coordination.
           </p>
         </div>
 
@@ -139,12 +139,12 @@ export default async function DemoRoutingPage() {
           <Card className="bg-[#111111]/80 border-white/[0.06] backdrop-blur-xl lg:col-span-2">
             <CardHeader className="flex flex-row items-center justify-between pb-4 border-b border-white/[0.06]">
               <div>
-                <CardTitle className="text-base font-bold text-[#FAFAFA]">Live Routing Audit trail</CardTitle>
-                <CardDescription className="text-[#888888] text-xs">Realtime ledger of lead processing events.</CardDescription>
+                <CardTitle className="text-base font-bold text-[#FAFAFA]">Live Routing Audit Trail</CardTitle>
+                <CardDescription className="text-[#888888] text-xs">Demo-safe ledger of signal routing and governance events.</CardDescription>
               </div>
               <span className="flex items-center gap-1 text-[10px] text-[#888888] font-semibold bg-white/[0.04] px-2.5 py-1 rounded-full uppercase">
                 <Activity className="h-3 w-3 text-[#00E599] animate-pulse" />
-                System Listening
+                Demo Listening
               </span>
             </CardHeader>
             <CardContent className="pt-6 space-y-3">

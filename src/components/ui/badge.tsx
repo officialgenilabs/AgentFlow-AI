@@ -12,7 +12,10 @@ const badgeVariants = cva(
         warning: "bg-amber-500/10 text-amber-400 border-amber-500/20",
         error: "bg-red-500/10 text-red-400 border-red-500/20",
         mint: "bg-[#00E599]/10 text-[#00E599] border-[#00E599]/20",
-        orchestration: "bg-[#6C63FF]/10 text-[#A29EFF] border-[#6C63FF]/20"
+        orchestration: "bg-[#6C63FF]/10 text-[#A29EFF] border-[#6C63FF]/20",
+        hold: "bg-amber-500/10 text-amber-400 border-amber-500/20",
+        blocked: "bg-red-500/10 text-red-400 border-red-500/20",
+        context: "bg-[#6C63FF]/10 text-[#A29EFF] border-[#6C63FF]/20"
       }
     },
     defaultVariants: { variant: "neutral" }
