@@ -4,15 +4,15 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import React, { useState } from "react";
-import { 
-  Building2, 
-  Inbox, 
-  KanbanSquare, 
-  LayoutDashboard, 
-  ListChecks, 
-  Palette, 
-  ShieldCheck, 
-  Sparkles, 
+import {
+  Building2,
+  Inbox,
+  KanbanSquare,
+  LayoutDashboard,
+  ListChecks,
+  Palette,
+  ShieldCheck,
+  Sparkles,
   UserRoundCheck,
   GitBranch,
   CalendarDays,
@@ -46,23 +46,23 @@ function BrandMark({ organization, branding }: { organization?: Organization; br
   );
 }
 
-export function AppShell({ 
-  children, 
-  organization, 
-  branding, 
-  profile, 
-  mode = "tenant" 
-}: { 
-  children: React.ReactNode; 
-  organization?: Organization; 
-  branding?: OrganizationBranding; 
-  profile: Profile; 
-  mode?: "tenant" | "admin" | "demo" 
+export function AppShell({
+  children,
+  organization,
+  branding,
+  profile,
+  mode = "tenant"
+}: {
+  children: React.ReactNode;
+  organization?: Organization;
+  branding?: OrganizationBranding;
+  profile: Profile;
+  mode?: "tenant" | "admin" | "demo"
 }) {
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const tenantHref = mode === "demo" ? "/demo" : (organization ? `/app/${organization.slug}` : "/select-organization");
-  
+
   const nav = mode === "admin"
     ? [
         { href: "/admin/dashboard", label: "Founder Control", icon: ShieldCheck },
@@ -99,7 +99,7 @@ export function AppShell({
       {/* Background Cinematic Orbs */}
       <div className="absolute -left-40 -top-40 w-96 h-96 bg-[#00E599] rounded-full blur-[140px] opacity-10 pointer-events-none" />
       <div className="absolute -right-40 -bottom-40 w-96 h-96 bg-[#6C63FF] rounded-full blur-[140px] opacity-8 pointer-events-none" />
-      
+
       <div className="mx-auto flex min-h-screen w-full max-w-7xl gap-6 p-4 lg:p-6 flex-1">
         {/* Desktop Sidebar */}
         <aside className="hidden w-72 shrink-0 rounded-[2rem] border border-white/[0.06] bg-[#111111]/85 p-6 backdrop-blur-xl lg:flex lg:flex-col justify-between shadow-2xl">
@@ -109,13 +109,13 @@ export function AppShell({
               {nav.map((item) => {
                 const active = isActive(item.href);
                 return (
-                  <Link 
-                    key={item.href} 
-                    href={item.href} 
+                  <Link
+                    key={item.href}
+                    href={item.href}
                     className={cn(
                       "flex items-center gap-3 rounded-xl px-4 py-3 text-xs font-semibold uppercase tracking-wider transition-all duration-200 select-none border border-transparent",
-                      active 
-                        ? "bg-[#00E599]/10 text-[#00E599] border-[#00E599]/20" 
+                      active
+                        ? "bg-[#00E599]/10 text-[#00E599] border-[#00E599]/20"
                         : "text-white/60 hover:text-white hover:bg-white/[0.03]"
                     )}
                   >
@@ -126,12 +126,12 @@ export function AppShell({
               })}
             </nav>
           </div>
-          
+
           {/* Sidebar Footer */}
           <div className={cn(
             "mt-6 rounded-2xl border p-4 relative overflow-hidden select-none",
-            mode === "demo" 
-              ? "border-[#00E599]/20 bg-[#00E599]/5" 
+            mode === "demo"
+              ? "border-[#00E599]/20 bg-[#00E599]/5"
               : "border-[#6C63FF]/20 bg-[#6C63FF]/5"
           )}>
             <div className="absolute right-2 top-2">
@@ -156,7 +156,7 @@ export function AppShell({
             <div className="lg:hidden">
               <BrandMark organization={organization} branding={branding} />
             </div>
-            
+
             <div className="hidden lg:block select-none text-left">
               <p className="text-[9px] uppercase tracking-[0.3em] text-white/40 font-bold">
                 {mode === "admin" ? "Founder Context" : mode === "demo" ? "Simulation Layer" : "Tenant Operations"}
@@ -176,7 +176,7 @@ export function AppShell({
               <div className="rounded-full border border-white/[0.06] bg-white/[0.04] px-4 py-2 text-xs font-mono font-bold text-white/70 tracking-tight">
                 {profile.email}
               </div>
-              <button 
+              <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                 className="lg:hidden p-2 text-white/70 hover:text-white"
                 aria-label="Toggle Menu"
@@ -198,7 +198,7 @@ export function AppShell({
         <div className="fixed inset-0 z-50 bg-[#050505]/95 backdrop-blur-md flex flex-col p-6 lg:hidden animate-in fade-in duration-200">
           <div className="flex items-center justify-between">
             <BrandMark organization={organization} branding={branding} />
-            <button 
+            <button
               onClick={() => setMobileMenuOpen(false)}
               className="p-2 text-white/70 hover:text-white"
               aria-label="Close Menu"
@@ -206,19 +206,19 @@ export function AppShell({
               <X className="size-6" />
             </button>
           </div>
-          
+
           <nav className="mt-8 space-y-1.5 overflow-y-auto flex-1">
             {nav.map((item) => {
               const active = isActive(item.href);
               return (
-                <Link 
-                  key={item.href} 
-                  href={item.href} 
+                <Link
+                  key={item.href}
+                  href={item.href}
                   onClick={() => setMobileMenuOpen(false)}
                   className={cn(
                     "flex items-center gap-3 rounded-xl px-4 py-3 text-xs font-semibold uppercase tracking-wider transition-all border border-transparent",
-                    active 
-                      ? "bg-[#00E599]/10 text-[#00E599] border-[#00E599]/20" 
+                    active
+                      ? "bg-[#00E599]/10 text-[#00E599] border-[#00E599]/20"
                       : "text-white/60 hover:text-white hover:bg-white/[0.03]"
                   )}
                 >
@@ -228,7 +228,7 @@ export function AppShell({
               );
             })}
           </nav>
-          
+
           <div className="mt-auto pt-6 border-t border-white/[0.06] flex flex-col gap-4">
             <div className="flex items-center justify-between">
               <StatusIndicator status="active" pulse={false} label={mode === "demo" ? "SIMULATOR" : "LIVE RUNTIME"} />

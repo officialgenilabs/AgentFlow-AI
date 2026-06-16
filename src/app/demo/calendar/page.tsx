@@ -33,8 +33,8 @@ export default async function DemoCalendarPage() {
                 <div className="flex items-center justify-between">
                   <span className="text-[10px] font-mono font-bold tracking-widest text-[#00E599] uppercase">Viewing Schedule</span>
                   <span className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase ${
-                    view.status.includes("Pending") 
-                      ? "bg-amber-500/10 text-amber-400" 
+                    view.status.includes("Pending")
+                      ? "bg-amber-500/10 text-amber-400"
                       : "bg-[#00E599]/10 text-[#00E599]"
                   }`}>
                     {view.status}

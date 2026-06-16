@@ -9,12 +9,12 @@ import { demoMetrics, demoGovernance } from "@/lib/demo/data";
 import { MetricCard } from "@/components/ui/metric-card";
 import { StatusIndicator } from "@/components/ui/status-indicator";
 import { Badge } from "@/components/ui/badge";
-import { 
-  Building, 
-  Users, 
-  Clock, 
-  Activity, 
-  Lock, 
+import {
+  Building,
+  Users,
+  Clock,
+  Activity,
+  Lock,
   ArrowUpRight,
   ShieldCheck,
   Cpu
@@ -22,12 +22,12 @@ import {
 
 export default async function AdminDashboardPage() {
   const profile = await requirePlatformAdmin();
-  
+
   let orgCount = 0;
   let memberCount = 0;
   let uptime = "99.98%";
   let avgLatency = "2m 34s";
-  let activeAuditTrail: any[] = [];
+  let activeAuditTrail: { timestamp: string; event: string; actor: string }[] = [];
 
   if (isDemoMode()) {
     orgCount = 1;
@@ -41,7 +41,7 @@ export default async function AdminDashboardPage() {
       supabase.from("organizations").select("id", { count: "exact", head: true }),
       supabase.from("organization_members").select("id", { count: "exact", head: true }),
     ]);
-    
+
     orgCount = oCount ?? 0;
     memberCount = mCount ?? 0;
     activeAuditTrail = [
@@ -52,7 +52,7 @@ export default async function AdminDashboardPage() {
   return (
     <AppShell profile={profile} mode="admin">
       <div className="space-y-6">
-        
+
         {/* Row 1: Primary Metrics */}
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <MetricCard
@@ -84,7 +84,7 @@ export default async function AdminDashboardPage() {
 
         {/* Row 2: Controls & Status Indicator */}
         <div className="grid gap-6 md:grid-cols-3">
-          
+
           <Card className="border-white/[0.06] bg-[#111111]/70 backdrop-blur-xl md:col-span-2 relative overflow-hidden">
             {/* Subtle background glow */}
             <div className="absolute -left-16 -top-16 w-32 h-32 bg-[#00E599] rounded-full blur-[80px] opacity-10 pointer-events-none" />

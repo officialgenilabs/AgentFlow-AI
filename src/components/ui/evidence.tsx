@@ -1,15 +1,15 @@
 "use client";
 
 import * as React from "react";
-import { 
-  ShieldCheck, 
-  ShieldAlert, 
-  ShieldQuestion, 
-  Clock, 
-  CheckCircle2, 
-  AlertTriangle, 
-  Lock, 
-  UserCheck, 
+import {
+  ShieldCheck,
+  ShieldAlert,
+  ShieldQuestion,
+  Clock,
+  CheckCircle2,
+  AlertTriangle,
+  Lock,
+  UserCheck,
   Database,
   ArrowRight,
   HelpCircle
@@ -32,13 +32,13 @@ export function SourceTrace({ source, subtype, reference, className }: SourceTra
       <span className="text-white/60">{source}</span>
       {subtype && (
         <>
-          <span className="text-white/20">//</span>
+          <span className="text-white/20">{"//"}</span>
           <span>{subtype}</span>
         </>
       )}
       {reference && (
         <>
-          <span className="text-white/20">//</span>
+          <span className="text-white/20">{"//"}</span>
           <span className="text-[#A29EFF]">{reference}</span>
         </>
       )}
@@ -191,7 +191,7 @@ export function EvidenceCard({
             <span className="text-[9px] font-mono font-bold text-white/20 uppercase">Accuracy Intent</span>
           </div>
         </div>
-        
+
         <div className="rounded-2xl border border-white/[0.04] bg-white/[0.01] p-3 text-left">
           <span className="text-[9px] font-mono font-bold tracking-widest text-white/30 uppercase block">Trust Index</span>
           <div className="flex items-center gap-1.5 mt-2">
@@ -276,7 +276,7 @@ export function TrustLedger({ entries, title, description, className }: TrustLed
           {description && <p className="text-white/40 text-[11px] font-semibold">{description}</p>}
         </div>
       )}
-      
+
       <div className="overflow-x-auto">
         <table className="w-full text-left font-mono text-[10px] leading-5">
           <thead>

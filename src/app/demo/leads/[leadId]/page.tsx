@@ -20,7 +20,7 @@ export default async function DemoLeadDetailPage({ params }: { params: Promise<{
           </Link>
           <div className="flex flex-col gap-1">
             <h1 className="text-2xl font-bold tracking-tight text-[#FAFAFA] font-sans">
-              {lead.full_name} // Lead Memory
+              {lead.full_name}{" // "} Lead Memory
             </h1>
             <p className="text-sm text-[#888888]">
               Exhaustive chronological events, communication ledgers, and priority tracking logs.
@@ -59,10 +59,15 @@ export default async function DemoLeadDetailPage({ params }: { params: Promise<{
             <CardContent className="pt-4 space-y-6 relative border-l border-white/[0.08] ml-4 pl-6 select-none">
               {events.map((ev, i) => {
                 // Get custom descriptive text based on event type
+                const metadata = ev.metadata;
+                const matchRate = typeof metadata.match_rate === "number" ? metadata.match_rate : 0.99;
+                const matches = Array.isArray(metadata.matches) ? metadata.matches.join(", ") : "Phone/Email matches";
+                const reasoning = typeof metadata.reasoning === "string" ? metadata.reasoning : undefined;
+                const assignedTo = typeof metadata.assigned_to === "string" ? metadata.assigned_to : "Lead Architect";
+                const confidence = typeof metadata.confidence === "string" || typeof metadata.confidence === "number" ? metadata.confidence : "94%";
                 let title = ev.event_type.replace(/_/g, " ").toUpperCase();
                 let desc = `Field modified: ${ev.field_name} to "${ev.new_value}".`;
                 let dotColor = "bg-[#6C63FF]"; // Default system state purple
-                let textColor = "text-white/60";
 
                 if (ev.event_type === "capture") {
                   title = "Ingress Signal Captured";
@@ -70,11 +75,11 @@ export default async function DemoLeadDetailPage({ params }: { params: Promise<{
                   dotColor = "bg-[#6C63FF]";
                 } else if (ev.event_type === "identity_resolve") {
                   title = "Identity Resolved";
-                  desc = `Matched profile via Gen I Labs Identity Engine (Match Rate: ${(ev.metadata as any)?.match_rate * 100 || 99}%). Linked database profiles: "${(ev.metadata as any)?.matches?.join(", ") || "Phone/Email matches"}".`;
+                  desc = `Matched profile via Gen I Labs Identity Engine (Match Rate: ${Math.round(matchRate * 100)}%). Linked database profiles: "${matches}".`;
                   dotColor = "bg-[#00E599]"; // green
                 } else if (ev.event_type === "qualification_check") {
                   title = "Audited Qualification Check";
-                  desc = (ev.metadata as any)?.reasoning || desc;
+                  desc = reasoning || desc;
                   dotColor = "bg-[#00E599]";
                 } else if (ev.event_type === "solar_concern_flagged") {
                   title = "Compliance Concern Flagged";
@@ -82,11 +87,11 @@ export default async function DemoLeadDetailPage({ params }: { params: Promise<{
                   dotColor = "bg-amber-500 font-bold"; // amber
                 } else if (ev.event_type === "operator_task_created") {
                   title = "Manual Operator Action Needed";
-                  desc = `Operator follow-up created: "${ev.new_value}". Assigned to: ${(ev.metadata as any)?.assigned_to || "Lead Architect"}. State: pending verification.`;
+                  desc = `Operator follow-up created: "${ev.new_value}". Assigned to: ${assignedTo}. State: pending verification.`;
                   dotColor = "bg-amber-500 font-bold";
                 } else if (ev.event_type === "ai_draft_generated") {
                   title = "Staged Response Draft";
-                  desc = `Staged outbound response draft generated with ${(ev.metadata as any)?.confidence || "94%"} accuracy intent matching property record details.`;
+                  desc = `Staged outbound response draft generated with ${confidence} accuracy intent matching property record details.`;
                   dotColor = "bg-[#6C63FF]";
                 } else if (ev.event_type === "governance_hold") {
                   title = "Staging Compliance Hold";
@@ -105,7 +110,7 @@ export default async function DemoLeadDetailPage({ params }: { params: Promise<{
                       )}
                       <span className={cn("relative inline-flex rounded-full h-2.5 w-2.5", dotColor)} />
                     </div>
-                    
+
                     <h4 className="text-xs font-heading font-extrabold text-white tracking-wider uppercase flex items-center gap-2">
                       {title}
                     </h4>

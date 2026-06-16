@@ -24,7 +24,7 @@ export async function getInbox(orgSlug: string, conversationId?: string, forceDe
   if (forceDemo || isDemoMode()) {
     const tenant = await resolveTenantBySlug(orgSlug, true);
     const members = await getOrgMembers(tenant.organization.id, true);
-    
+
     const normalizedConversations = demoConversations.map((conversation) => {
       const lead = demoLeads.find((l) => l.id === conversation.lead_id);
       return {

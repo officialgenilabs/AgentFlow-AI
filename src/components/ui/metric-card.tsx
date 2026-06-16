@@ -37,7 +37,7 @@ export function MetricCard({
       {glow && (
         <div className="absolute -right-16 -top-16 w-32 h-32 bg-[#00E599] rounded-full blur-[80px] opacity-20 pointer-events-none" />
       )}
-      
+
       <CardContent className="p-6">
         <div className="flex items-center justify-between">
           <span className="text-xs font-semibold tracking-wider text-white/40 uppercase font-sans">
@@ -45,7 +45,7 @@ export function MetricCard({
           </span>
           {icon && <div className="text-white/40">{icon}</div>}
         </div>
-        
+
         <div className="mt-4 flex items-baseline gap-2">
           <span className="text-3xl font-bold tracking-tight font-heading text-white">
             {value}
@@ -64,7 +64,7 @@ export function MetricCard({
             </span>
           )}
         </div>
-        
+
         {(description || (trend && trend.label)) && (
           <p className="mt-2 text-xs text-white/40 font-medium">
             {description || trend?.label}

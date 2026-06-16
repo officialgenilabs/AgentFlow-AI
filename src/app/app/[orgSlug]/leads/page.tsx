@@ -54,9 +54,9 @@ export default async function LeadsPage({ params, searchParams }: { params: Prom
           ) : leads.map((lead) => {
             const stage = lead.pipeline_stage_id ? stageById.get(lead.pipeline_stage_id) : null;
             return (
-              <Link 
-                key={lead.id} 
-                href={`/app/${orgSlug}/leads/${lead.id}`} 
+              <Link
+                key={lead.id}
+                href={`/app/${orgSlug}/leads/${lead.id}`}
                 className="block rounded-2xl border border-white/[0.04] bg-white/[0.01] hover:bg-white/[0.03] p-5 hover:border-white/[0.08] transition-all duration-200"
               >
                 <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
@@ -92,7 +92,7 @@ export default async function LeadsPage({ params, searchParams }: { params: Prom
                       <span>Channel: {lead.original_inbound_channel}</span>
                     </div>
                   </div>
-                  
+
                   <div className="grid gap-2 text-xs text-white/70 sm:grid-cols-3 lg:min-w-[480px]">
                     <div className="rounded-xl border border-white/[0.04] bg-white/[0.01] p-3 flex flex-col justify-between">
                       <span className="text-[9px] font-mono font-bold tracking-widest text-white/30 uppercase flex items-center gap-1">
@@ -102,7 +102,7 @@ export default async function LeadsPage({ params, searchParams }: { params: Prom
                         {stage?.name ?? "Unstaged"}
                       </span>
                     </div>
-                    
+
                     <div className="rounded-xl border border-white/[0.04] bg-white/[0.01] p-3 flex flex-col justify-between">
                       <span className="text-[9px] font-mono font-bold tracking-widest text-white/30 uppercase flex items-center gap-1">
                         <User className="size-3 text-[#6C63FF]" /> Owner
@@ -111,7 +111,7 @@ export default async function LeadsPage({ params, searchParams }: { params: Prom
                         {displayMember(members, lead.assigned_owner_user_id)}
                       </span>
                     </div>
-                    
+
                     <div className="rounded-xl border border-white/[0.04] bg-white/[0.01] p-3 flex flex-col justify-between">
                       <span className="text-[9px] font-mono font-bold tracking-widest text-white/30 uppercase flex items-center gap-1">
                         <Calendar className="size-3 text-white/30" /> Ingestion

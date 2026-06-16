@@ -2,22 +2,21 @@
 
 import React, { useState } from "react";
 import { AppShell } from "@/components/layout/shell";
+import type { Organization, Profile } from "@/lib/types";
+import type { AIApprovalItem } from "@/lib/demo/data";
 import { useDemo } from "@/lib/demo/provider";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatusIndicator } from "@/components/ui/status-indicator";
 import { MetricCard } from "@/components/ui/metric-card";
 import { EvidenceCard } from "@/components/ui/evidence";
-import { 
-  ShieldCheck, 
-  Clock, 
-  Sparkles, 
-  BookOpen, 
+import {
+  ShieldCheck,
+  Clock,
+  Sparkles,
   MessageSquare,
-  Network,
   Send,
   X,
-  Lock,
   AlertOctagon
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -25,24 +24,23 @@ import { cn } from "@/lib/utils";
 export default function DemoAIApprovalsPage() {
   const { approvals, approveItem, rejectItem } = useDemo();
   const [selectedId, setSelectedId] = useState<string>(approvals[0]?.id || "");
-  const [draftText, setDraftText] = useState<string>("");
+  const [draftText, setDraftText] = useState<string>(approvals[0]?.draftResponse || "");
   const [editing, setEditing] = useState<boolean>(false);
 
   const selectedItem = approvals.find(a => a.id === selectedId) || approvals[0];
 
-  React.useEffect(() => {
-    if (selectedItem) {
-      setDraftText(selectedItem.draftResponse);
-      setEditing(false);
-    }
-  }, [selectedItem]);
+  const selectApproval = (item: AIApprovalItem) => {
+    setSelectedId(item.id);
+    setDraftText(item.draftResponse);
+    setEditing(false);
+  };
 
   const handleApprove = () => {
     if (!selectedItem) return;
     approveItem(selectedItem.id, draftText);
     const remaining = approvals.filter(a => a.id !== selectedItem.id);
     if (remaining.length > 0) {
-      setSelectedId(remaining[0].id);
+      selectApproval(remaining[0]);
     } else {
       setSelectedId("");
     }
@@ -53,19 +51,32 @@ export default function DemoAIApprovalsPage() {
     rejectItem(selectedItem.id);
     const remaining = approvals.filter(a => a.id !== selectedItem.id);
     if (remaining.length > 0) {
-      setSelectedId(remaining[0].id);
+      selectApproval(remaining[0]);
     } else {
       setSelectedId("");
     }
   };
 
   const totalPending = approvals.length;
-  const avgConfidence = approvals.length > 0 
-    ? Math.round(approvals.reduce((acc, curr) => acc + curr.confidenceScore, 0) / approvals.length) 
+  const avgConfidence = approvals.length > 0
+    ? Math.round(approvals.reduce((acc, curr) => acc + curr.confidenceScore, 0) / approvals.length)
     : 0;
 
-  const mockOrg = { name: "Boutique Properties", slug: "boutique-properties" };
-  const mockProfile = { full_name: "Lead Architect", email: "operator@genilabs.ai" };
+  const mockOrg: Organization = {
+    id: "demo-org-id",
+    name: "Boutique Properties",
+    slug: "boutique-properties",
+    status: "active",
+    industry: "Real Estate",
+    plan: "Enterprise Staging"
+  };
+  const mockProfile: Profile = {
+    id: "demo-operator-id",
+    full_name: "Lead Architect",
+    email: "operator@genilabs.ai",
+    avatar_url: null,
+    is_platform_admin: true
+  };
 
   // Group queue by state
   const pendingItems = approvals.filter(a => a.status === "pending");
@@ -73,7 +84,7 @@ export default function DemoAIApprovalsPage() {
   const blockedItems = approvals.filter(a => a.status === "blocked");
 
   return (
-    <AppShell profile={mockProfile as any} organization={mockOrg as any} mode="demo">
+    <AppShell profile={mockProfile} organization={mockOrg} mode="demo">
       <div className="space-y-6 select-none text-left">
         {/* Metric Overview Row */}
         <div className="grid gap-4 md:grid-cols-3">
@@ -128,7 +139,7 @@ export default function DemoAIApprovalsPage() {
                     return (
                       <button
                         key={item.id}
-                        onClick={() => setSelectedId(item.id)}
+                        onClick={() => selectApproval(item)}
                         className={cn(
                           "w-full text-left rounded-2xl border p-4 transition-all duration-200 backdrop-blur-md flex flex-col gap-1.5 select-none",
                           isSelected
@@ -165,7 +176,7 @@ export default function DemoAIApprovalsPage() {
                     return (
                       <button
                         key={item.id}
-                        onClick={() => setSelectedId(item.id)}
+                        onClick={() => selectApproval(item)}
                         className={cn(
                           "w-full text-left rounded-2xl border p-4 transition-all duration-200 backdrop-blur-md flex flex-col gap-1.5 select-none",
                           isSelected
@@ -202,7 +213,7 @@ export default function DemoAIApprovalsPage() {
                     return (
                       <button
                         key={item.id}
-                        onClick={() => setSelectedId(item.id)}
+                        onClick={() => selectApproval(item)}
                         className={cn(
                           "w-full text-left rounded-2xl border p-4 transition-all duration-200 backdrop-blur-md flex flex-col gap-1.5 select-none",
                           isSelected
@@ -242,7 +253,7 @@ export default function DemoAIApprovalsPage() {
                       </div>
                     </div>
                   </CardHeader>
-                  
+
                   <CardContent className="space-y-5 pt-6 flex-1">
                     {/* Inbound Context */}
                     <div className="space-y-1.5">
@@ -250,7 +261,7 @@ export default function DemoAIApprovalsPage() {
                         <MessageSquare className="size-3 text-[#00E599]" /> Inbound Customer Signal ({selectedItem.channel})
                       </span>
                       <div className="rounded-xl border border-white/[0.04] bg-white/[0.02] p-4 text-xs text-white/80 leading-relaxed font-semibold italic">
-                        "{selectedItem.inboundMessage}"
+                        &ldquo;{selectedItem.inboundMessage}&rdquo;
                       </div>
                     </div>
 
@@ -279,14 +290,14 @@ export default function DemoAIApprovalsPage() {
                   {/* Footer Controls */}
                   <div className="border-t border-white/[0.04] p-6 bg-white/[0.01] flex flex-wrap gap-3 items-center justify-between">
                     <div className="flex gap-2 w-full justify-end">
-                      <Button 
+                      <Button
                         onClick={handleReject}
-                        variant="outline" 
+                        variant="outline"
                         className="border-red-500/20 bg-red-500/5 text-red-400 hover:bg-red-500/10 hover:border-red-500/40 rounded-xl text-xs font-bold"
                       >
                         <X className="size-4 mr-2" /> Reject Draft
                       </Button>
-                      <Button 
+                      <Button
                         onClick={handleApprove}
                         className="bg-[#00E599] text-[#050505] hover:bg-[#00c584] rounded-xl text-xs font-bold"
                         disabled={selectedItem.status === "blocked"}

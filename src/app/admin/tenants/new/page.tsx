@@ -33,24 +33,24 @@ export default async function NewTenantPage() {
                 <Label htmlFor="name" className="text-xs font-semibold uppercase tracking-wider text-[#888888]">
                   Organization Name
                 </Label>
-                <Input 
-                  id="name" 
-                  name="name" 
-                  required 
-                  placeholder="Demo Realty Group" 
-                  className="bg-[#1A1A1A] border-white/[0.08] text-[#FAFAFA] focus:ring-2 focus:ring-[#00E599]/50" 
+                <Input
+                  id="name"
+                  name="name"
+                  required
+                  placeholder="Demo Realty Group"
+                  className="bg-[#1A1A1A] border-white/[0.08] text-[#FAFAFA] focus:ring-2 focus:ring-[#00E599]/50"
                 />
               </div>
-              
+
               <div className="space-y-2">
                 <Label htmlFor="slug" className="text-xs font-semibold uppercase tracking-wider text-[#888888]">
                   Workplace Routing Slug
                 </Label>
-                <Input 
-                  id="slug" 
-                  name="slug" 
-                  placeholder="demo-realty-group" 
-                  className="bg-[#1A1A1A] border-white/[0.08] text-[#FAFAFA] focus:ring-2 focus:ring-[#00E599]/50" 
+                <Input
+                  id="slug"
+                  name="slug"
+                  placeholder="demo-realty-group"
+                  className="bg-[#1A1A1A] border-white/[0.08] text-[#FAFAFA] focus:ring-2 focus:ring-[#00E599]/50"
                 />
               </div>
 
@@ -62,7 +62,7 @@ export default async function NewTenantPage() {
                     <span className="text-xs text-[#FAFAFA] font-mono">#111827</span>
                   </div>
                 </div>
-                
+
                 <div className="space-y-2">
                   <Label htmlFor="secondary_color" className="text-xs font-semibold uppercase tracking-wider text-[#888888]">Surface Color</Label>
                   <div className="flex gap-2 items-center bg-[#1A1A1A] border border-white/[0.08] rounded-xl p-1 px-2 h-10">
@@ -70,7 +70,7 @@ export default async function NewTenantPage() {
                     <span className="text-xs text-[#FAFAFA] font-mono">#F8FAFC</span>
                   </div>
                 </div>
-                
+
                 <div className="space-y-2">
                   <Label htmlFor="accent_color" className="text-xs font-semibold uppercase tracking-wider text-[#888888]">Accent Color</Label>
                   <div className="flex gap-2 items-center bg-[#1A1A1A] border border-white/[0.08] rounded-xl p-1 px-2 h-10">

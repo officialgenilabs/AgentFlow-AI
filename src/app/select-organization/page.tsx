@@ -12,7 +12,7 @@ export default async function SelectOrganizationPage() {
 
   // Bypass redirects if in demo mode to let the user select context, or if they only have 1 org
   const isDemoMode = process.env.NEXT_PUBLIC_DEMO_MODE === "true";
-  
+
   if (!isDemoMode && !profile.is_platform_admin && organizations.length === 1) {
     redirect(`/app/${organizations[0].slug}/dashboard`);
   }
@@ -54,7 +54,7 @@ export default async function SelectOrganizationPage() {
                 </Link>
               </Button>
             ) : null}
-            
+
             {organizations.map((org) => (
               <Button key={org.id} asChild className="w-full justify-start h-12 bg-white/[0.03] text-white border border-white/[0.06] hover:bg-[#00E599]/10 hover:border-[#00E599]/30 hover:text-white transition-all group" variant="outline">
                 <Link href={`/app/${org.slug}/dashboard`}>
@@ -72,7 +72,7 @@ export default async function SelectOrganizationPage() {
                 </Link>
               </Button>
             ))}
-            
+
             {organizations.length === 0 && !profile.is_platform_admin ? (
               <p className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-4 text-xs text-white/40 leading-relaxed text-left font-medium select-none">
                 No active organization memberships found associated with your operator profile. Dynamic organization auto-provisioning requires founder escalation.
@@ -80,7 +80,7 @@ export default async function SelectOrganizationPage() {
             ) : null}
           </CardContent>
         </Card>
-        
+
         <p className="text-[9px] font-mono tracking-widest text-white/30 uppercase text-center">
           Cryptographic security resolved via staging/canonical-frontend-elevation
         </p>

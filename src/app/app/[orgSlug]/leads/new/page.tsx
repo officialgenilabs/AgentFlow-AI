@@ -143,7 +143,7 @@ export default async function NewLeadPage({ params, searchParams }: { params: Pr
                 <Label htmlFor="ai_qualification_decision_path" className="text-xs font-semibold uppercase tracking-wider text-[#888888]">AI qualification decision path</Label>
                 <textarea id="ai_qualification_decision_path" name="ai_qualification_decision_path" rows={4} className="w-full rounded-xl border border-white/[0.08] bg-[#1A1A1A] text-[#FAFAFA] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#00E599]/50 transition-all duration-200" placeholder='[{"step":"manual_capture","decision":"awaiting_ai"}]' />
               </div>
-              
+
               <div className="flex justify-end pt-4 border-t border-white/[0.06]">
                 <Button type="submit" className="w-fit bg-[#00E599] text-[#0A0A0A] hover:bg-[#00E599]/90 font-semibold px-6 py-2.5 rounded-xl shadow-lg shadow-[#00E599]/10">
                   Register Intake Record

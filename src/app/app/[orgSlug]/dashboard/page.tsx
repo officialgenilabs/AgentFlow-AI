@@ -9,10 +9,11 @@ import { demoLeads, demoPipelineStages, demoTasks, demoMetrics } from "@/lib/dem
 import { MetricCard } from "@/components/ui/metric-card";
 import { StatusIndicator } from "@/components/ui/status-indicator";
 import { Badge } from "@/components/ui/badge";
-import { 
-  Users, 
-  ListChecks, 
-  TrendingUp, 
+import type { Lead, LeadPipelineStage } from "@/lib/types";
+import {
+  Users,
+  ListChecks,
+  TrendingUp,
   ArrowRight,
   MessageSquare
 } from "lucide-react";
@@ -23,8 +24,8 @@ export default async function TenantDashboardPage({ params }: { params: Promise<
 
   let leadCount = 0;
   let openTaskCount = 0;
-  let recentLeads: any[] = [];
-  let pipeline: any[] = [];
+  let recentLeads: (Pick<Lead, "id" | "full_name" | "status" | "qualification_status" | "exact_source" | "original_inbound_channel"> & { priority?: string | null })[] = [];
+  let pipeline: Pick<LeadPipelineStage, "id" | "name" | "probability">[] = [];
   let pipelineValue = "R0.00";
   let activeConversations = 0;
   let avgResponseTime = "N/A";
@@ -52,14 +53,14 @@ export default async function TenantDashboardPage({ params }: { params: Promise<
     openTaskCount = taskRes.count ?? 0;
     recentLeads = recentRes.data ?? [];
     pipeline = pipelineRes.data ?? [];
-    
+
     // Estimate a real pipeline value or use a fallback
     const { data: valueData } = await supabase
       .from("leads")
       .select("estimated_value")
       .eq("organization_id", tenant.organization.id);
     const sum = (valueData ?? []).reduce((acc, curr) => acc + (curr.estimated_value || 0), 0);
-    pipelineValue = sum > 0 
+    pipelineValue = sum > 0
       ? `R${(sum / 1000000).toFixed(1)}M`
       : "R0";
 
@@ -72,7 +73,7 @@ export default async function TenantDashboardPage({ params }: { params: Promise<
   return (
     <AppShell profile={tenant.profile} organization={tenant.organization} branding={tenant.branding}>
       <div className="space-y-6">
-        
+
         {/* KPI Overview Grid */}
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <MetricCard
@@ -164,7 +165,7 @@ export default async function TenantDashboardPage({ params }: { params: Promise<
               <p className="mt-3 max-w-2xl text-xs leading-relaxed text-white/55">
                 Every lead preserves exact source metadata, source subtype, original capture channel, timing logs, qualification confidence, AI decision path, and generated events. Completely governed, calm, and bulletproof.
               </p>
-              
+
               {/* Quick Navigation Panel */}
               <div className="mt-6 flex flex-wrap gap-3">
                 <Button asChild className="bg-[#00E599] text-[#050505] hover:bg-[#00c584] rounded-xl shadow-[0_0_15px_rgba(0,229,153,0.15)]">
@@ -184,7 +185,7 @@ export default async function TenantDashboardPage({ params }: { params: Promise<
 
         {/* Pipeline Stage Tracker & Recent Leads */}
         <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
-          
+
           {/* Recent Leads list */}
           <Card className="border-white/[0.06] bg-[#111111]/70 backdrop-blur-xl">
             <CardHeader className="border-b border-white/[0.04] pb-4">
@@ -195,9 +196,9 @@ export default async function TenantDashboardPage({ params }: { params: Promise<
             </CardHeader>
             <CardContent className="pt-4 space-y-3">
               {recentLeads.slice(0, 4).map((lead) => (
-                <Link 
-                  key={lead.id} 
-                  href={`/app/${orgSlug}/leads/${lead.id}`} 
+                <Link
+                  key={lead.id}
+                  href={`/app/${orgSlug}/leads/${lead.id}`}
                   className="block rounded-xl border border-white/[0.04] bg-white/[0.01] hover:bg-white/[0.03] p-4 hover:border-white/[0.08] transition-all duration-200"
                 >
                   <div className="flex justify-between items-start">
@@ -235,8 +236,8 @@ export default async function TenantDashboardPage({ params }: { params: Promise<
             </CardHeader>
             <CardContent className="pt-4 space-y-2">
               {pipeline.map((stage) => (
-                <div 
-                  key={stage.id} 
+                <div
+                  key={stage.id}
                   className="flex items-center justify-between rounded-xl border border-white/[0.04] bg-white/[0.01] px-4 py-3 hover:border-white/[0.08] transition-all"
                 >
                   <span className="font-heading font-extrabold text-xs text-white uppercase tracking-wider flex items-center gap-2">

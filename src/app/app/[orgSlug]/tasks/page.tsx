@@ -71,8 +71,8 @@ export default async function TasksPage({ params, searchParams }: { params: Prom
               tasks.map((task) => {
                 const action = updateLeadTaskStatus.bind(null, orgSlug, task.id);
                 return (
-                  <div 
-                    key={task.id} 
+                  <div
+                    key={task.id}
                     className="rounded-xl border border-white/[0.06] bg-[#161616]/40 p-5 hover:bg-[#1A1A1A]/80 transition-all duration-200"
                   >
                     <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
@@ -85,15 +85,15 @@ export default async function TasksPage({ params, searchParams }: { params: Prom
                             Due: {fmt(task.due_at)}
                           </span>
                         </div>
-                        
+
                         <p className="font-bold text-[#FAFAFA] text-base">{task.title}</p>
-                        
+
                         <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-[#888888]">
                           <span className="flex items-center gap-1">
-                            Lead Reference: 
+                            Lead Reference:
                             {task.leads ? (
-                              <Link 
-                                className="text-[#00E599] hover:underline font-semibold" 
+                              <Link
+                                className="text-[#00E599] hover:underline font-semibold"
                                 href={`/app/${orgSlug}/leads/${task.lead_id}`}
                               >
                                 {task.leads.full_name}
@@ -108,11 +108,11 @@ export default async function TasksPage({ params, searchParams }: { params: Prom
                           </span>
                         </div>
                       </div>
-                      
+
                       <form action={action} className="flex items-center gap-3">
-                        <select 
-                          name="status" 
-                          defaultValue={task.status} 
+                        <select
+                          name="status"
+                          defaultValue={task.status}
                           className="h-10 rounded-xl border border-white/[0.08] bg-[#1A1A1A] text-[#FAFAFA] px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#00E599]/50 transition-all"
                         >
                           <option value="open">Open</option>
@@ -120,8 +120,8 @@ export default async function TasksPage({ params, searchParams }: { params: Prom
                           <option value="completed">Completed</option>
                           <option value="cancelled">Cancelled</option>
                         </select>
-                        <Button 
-                          type="submit" 
+                        <Button
+                          type="submit"
                           className="bg-white/[0.06] border border-white/[0.08] text-[#FAFAFA] hover:bg-white/[0.12] transition-colors"
                         >
                           Update

@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/browser";
 import { Button } from "@/components/ui/button";
@@ -10,20 +10,13 @@ import { Label } from "@/components/ui/label";
 export function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  
-  const isDemoMode = process.env.NEXT_PUBLIC_DEMO_MODE === "true";
-  
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [message, setMessage] = useState(searchParams.get("error") ?? "");
-  const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    if (isDemoMode) {
-      setEmail("operator@genilabs.ai");
-      setPassword("infrastructure-calm");
-    }
-  }, [isDemoMode]);
+  const isDemoMode = process.env.NEXT_PUBLIC_DEMO_MODE === "true";
+
+  const [email, setEmail] = useState(() => isDemoMode ? "operator@genilabs.ai" : "");
+  const [password, setPassword] = useState(() => isDemoMode ? "infrastructure-calm" : "");
+  const [message, setMessage] = useState(() => searchParams.get("error") ?? "");
+  const [loading, setLoading] = useState(false);
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -51,8 +44,9 @@ export function LoginForm() {
 
       router.push("/select-organization");
       router.refresh();
-    } catch (err: any) {
-      setMessage(err?.message ?? "An unexpected error occurred during secure gateway verification.");
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : "An unexpected error occurred during secure gateway verification.";
+      setMessage(errorMessage);
       setLoading(false);
     }
   }
@@ -61,28 +55,28 @@ export function LoginForm() {
     <form onSubmit={onSubmit} className="space-y-6 text-left">
       <div className="space-y-2">
         <Label htmlFor="email">Operator Identity</Label>
-        <Input 
-          id="email" 
-          type="email" 
-          value={email} 
-          onChange={(event) => setEmail(event.target.value)} 
-          required 
-          placeholder="operator@genilabs.ai" 
+        <Input
+          id="email"
+          type="email"
+          value={email}
+          onChange={(event) => setEmail(event.target.value)}
+          required
+          placeholder="operator@genilabs.ai"
         />
       </div>
-      
+
       <div className="space-y-2">
         <Label htmlFor="password">Operations Key</Label>
-        <Input 
-          id="password" 
-          type="password" 
-          value={password} 
-          onChange={(event) => setPassword(event.target.value)} 
-          required 
-          placeholder="••••••••••••" 
+        <Input
+          id="password"
+          type="password"
+          value={password}
+          onChange={(event) => setPassword(event.target.value)}
+          required
+          placeholder="••••••••••••"
         />
       </div>
-      
+
       {message && (
         <p className="rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-xs font-mono font-bold text-red-400">
           {message}
@@ -103,7 +97,7 @@ export function LoginForm() {
           </p>
         </div>
       )}
-      
+
       <Button className="w-full text-xs font-bold uppercase tracking-wider h-11" type="submit" disabled={loading}>
         {loading ? "Decrypting gateway credentials..." : isDemoMode ? "Enter Demo Workspace" : "Enter Secure Workspace"}
       </Button>

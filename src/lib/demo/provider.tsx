@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useState } from "react";
 import { isDemoMode } from "./config";
 import { demoApprovals, demoCalendarSlots, demoLeads, demoTasks, demoMessages, AIApprovalItem, CalendarSlot } from "./data";
 import { Lead, LeadTask, Message } from "@/lib/types";
@@ -36,18 +36,13 @@ const DemoContext = createContext<DemoContextType>({
 export const useDemo = () => useContext(DemoContext);
 
 export function DemoProvider({ children }: { children: React.ReactNode }) {
-  const [isDemoActive, setIsDemoActive] = useState(true);
+  const [isDemoActive] = useState(() => isDemoMode());
   const [approvals, setApprovals] = useState<AIApprovalItem[]>(demoApprovals);
   const [calendarSlots, setCalendarSlots] = useState<CalendarSlot[]>(demoCalendarSlots);
   const [leads, setLeads] = useState<Lead[]>(demoLeads);
   const [tasks, setTasks] = useState<LeadTask[]>(demoTasks);
   const [messages, setMessages] = useState<Message[]>(demoMessages);
 
-  useEffect(() => {
-    // Sync active state from client environment
-    const active = isDemoMode();
-    setIsDemoActive(active);
-  }, []);
 
   const approveItem = (id: string, updatedDraft?: string) => {
     const item = approvals.find((a) => a.id === id);

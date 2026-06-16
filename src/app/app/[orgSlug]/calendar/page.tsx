@@ -103,8 +103,8 @@ export default async function CalendarPage({ params }: { params: Promise<{ orgSl
             </CardHeader>
             <CardContent className="pt-6 space-y-4">
               {viewings.map((viewing) => (
-                <div 
-                  key={viewing.id} 
+                <div
+                  key={viewing.id}
                   className="rounded-xl border border-white/[0.06] bg-[#161616]/40 p-5 hover:bg-[#1A1A1A]/80 transition-all duration-200"
                 >
                   <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
@@ -114,16 +114,16 @@ export default async function CalendarPage({ params }: { params: Promise<{ orgSl
                           {viewing.time}
                         </span>
                         <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase border ${
-                          viewing.status === "confirmed" 
-                            ? "bg-[#00E599]/10 text-[#00E599] border-[#00E599]/20" 
+                          viewing.status === "confirmed"
+                            ? "bg-[#00E599]/10 text-[#00E599] border-[#00E599]/20"
                             : "bg-amber-500/10 text-amber-400 border-amber-500/20"
                         }`}>
                           {viewing.status}
                         </span>
                       </div>
-                      
+
                       <p className="font-bold text-[#FAFAFA] text-base">{viewing.property}</p>
-                      
+
                       <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-[#888888]">
                         <span className="flex items-center gap-1.5">
                           <User className="h-3.5 w-3.5 text-[#888888]" />
@@ -136,7 +136,7 @@ export default async function CalendarPage({ params }: { params: Promise<{ orgSl
                         </span>
                       </div>
                     </div>
-                    
+
                     <div className="flex items-center gap-2">
                       <Button variant="outline" className="border-white/[0.08] hover:bg-white/[0.06] text-[#FAFAFA] rounded-xl text-xs px-4" size="sm">
                         Reschedule

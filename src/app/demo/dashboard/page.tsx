@@ -6,10 +6,10 @@ import { getLeadList } from "@/lib/data/crm";
 import { MetricCard } from "@/components/ui/metric-card";
 import { StatusIndicator } from "@/components/ui/status-indicator";
 import { Badge } from "@/components/ui/badge";
-import { 
-  Users, 
-  ListChecks, 
-  TrendingUp, 
+import {
+  Users,
+  ListChecks,
+  TrendingUp,
   ArrowRight,
   MessageSquare
 } from "lucide-react";
@@ -30,7 +30,7 @@ export default async function DemoDashboardPage() {
   return (
     <AppShell profile={tenant.profile} organization={tenant.organization} branding={tenant.branding} mode="demo">
       <div className="space-y-6">
-        
+
         {/* KPI Overview Grid */}
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <MetricCard
@@ -121,7 +121,7 @@ export default async function DemoDashboardPage() {
               <p className="mt-3 max-w-2xl text-xs leading-relaxed text-white/55">
                 Every lead preserves exact source metadata, original capture channel, timing logs, and decision paths. Completely simulated, calm, and audited.
               </p>
-              
+
               <div className="mt-6 flex flex-wrap gap-3">
                 <Button asChild className="bg-[#00E599] text-[#050505] hover:bg-[#00c584] rounded-xl">
                   <Link href={`/demo/leads/new`}>
@@ -140,7 +140,7 @@ export default async function DemoDashboardPage() {
 
         {/* Pipeline Stage Tracker & Recent Leads */}
         <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
-          
+
           {/* Recent Leads list */}
           <Card className="border-white/[0.06] bg-[#111111]/70 backdrop-blur-xl">
             <CardHeader className="border-b border-white/[0.04] pb-4">
@@ -151,9 +151,9 @@ export default async function DemoDashboardPage() {
             </CardHeader>
             <CardContent className="pt-4 space-y-3">
               {recentLeads.slice(0, 4).map((lead) => (
-                <Link 
-                  key={lead.id} 
-                  href={`/demo/leads/${lead.id}`} 
+                <Link
+                  key={lead.id}
+                  href={`/demo/leads/${lead.id}`}
                   className="block rounded-xl border border-white/[0.04] bg-white/[0.01] hover:bg-white/[0.03] p-4 hover:border-white/[0.08] transition-all duration-200"
                 >
                   <div className="flex justify-between items-start">
@@ -186,8 +186,8 @@ export default async function DemoDashboardPage() {
             </CardHeader>
             <CardContent className="pt-4 space-y-2">
               {pipeline.map((stage) => (
-                <div 
-                  key={stage.id} 
+                <div
+                  key={stage.id}
                   className="flex items-center justify-between rounded-xl border border-white/[0.04] bg-white/[0.01] px-4 py-3 hover:border-white/[0.08] transition-all"
                 >
                   <span className="font-heading font-extrabold text-xs text-white uppercase tracking-wider flex items-center gap-2">

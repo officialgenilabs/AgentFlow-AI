@@ -16,12 +16,12 @@ export function BrandingForm({ organization, branding }: { organization: Organiz
             Tenant Logo Mark
           </Label>
           <div className="relative flex items-center justify-center border border-dashed border-white/[0.08] hover:border-white/[0.15] bg-[#1A1A1A] rounded-xl p-6 transition-all duration-200 cursor-pointer group">
-            <input 
-              id="logo" 
-              name="logo" 
-              type="file" 
-              accept="image/*" 
-              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" 
+            <input
+              id="logo"
+              name="logo"
+              type="file"
+              accept="image/*"
+              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
             />
             <div className="text-center space-y-1">
               <svg className="mx-auto h-8 w-8 text-[#888888] group-hover:text-[#FAFAFA] transition-colors" stroke="currentColor" fill="none" viewBox="0 0 48 48" aria-hidden="true">
@@ -67,7 +67,7 @@ export function BrandingForm({ organization, branding }: { organization: Organiz
           <Label className="text-xs font-semibold uppercase tracking-wider text-[#888888]">
             Interactive White-Label Preview
           </Label>
-          
+
           <div className="rounded-2xl bg-[var(--brand-secondary)] border border-white/[0.04] p-5 space-y-6">
             <div className="flex items-center gap-3">
               <div className="flex size-12 items-center justify-center overflow-hidden rounded-xl bg-[var(--brand-primary)] text-[#FAFAFA] font-sans font-bold shadow-lg">
@@ -82,7 +82,7 @@ export function BrandingForm({ organization, branding }: { organization: Organiz
                 <p className="text-[10px] text-[#888888] uppercase tracking-wider">Dynamic Tenant Preview</p>
               </div>
             </div>
-            
+
             <div className="rounded-xl bg-[#1A1A1A]/80 border border-white/[0.06] p-4">
               <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[var(--brand-accent)]">
                 Intelligent Ingress

@@ -5,6 +5,8 @@ import { Lock, CheckCircle, Octagon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { TrustLedger, TrustLedgerEntry } from "@/components/ui/evidence";
 
+const DEMO_GOVERNANCE_BASE_TIME = 1781524800000;
+
 export default async function DemoGovernancePage() {
   const orgSlug = "boutique-properties";
   const tenant = await resolveTenantBySlug(orgSlug, true);
@@ -19,25 +21,25 @@ export default async function DemoGovernancePage() {
 
   const auditLogs: TrustLedgerEntry[] = [
     {
-      timestamp: new Date(Date.now() - 5 * 60 * 1000).toISOString(), // 5m ago
+      timestamp: new Date(DEMO_GOVERNANCE_BASE_TIME - 5 * 60 * 1000).toISOString(), // 5m ago
       event: "Compliance Hold: Flagged by rule [SG-8: Outbound Staging] for Sarah Jenkins. Solar backup battery details require manual validation.",
       actor: "Governance Guard",
       status: "hold"
     },
     {
-      timestamp: new Date(Date.now() - 12 * 60 * 1000).toISOString(), // 12m ago
+      timestamp: new Date(DEMO_GOVERNANCE_BASE_TIME - 12 * 60 * 1000).toISOString(), // 12m ago
       event: "Security Block: Flagged by rule [SG-3: Identity Match] for David Pieterse. Outbound secondary email differs from primary CRM record.",
       actor: "PII Shield Node",
       status: "blocked"
     },
     {
-      timestamp: new Date(Date.now() - 2 * 3600 * 1000).toISOString(), // 2h ago
+      timestamp: new Date(DEMO_GOVERNANCE_BASE_TIME - 2 * 3600 * 1000).toISOString(), // 2h ago
       event: "Staged Response Verified: Outbound simulation message approved for Sibusiso Ndlovu. Saturday viewing slots locked.",
       actor: "Operator (Lead Architect)",
       status: "verified"
     },
     {
-      timestamp: new Date(Date.now() - 4 * 3600 * 1000).toISOString(), // 4h ago
+      timestamp: new Date(DEMO_GOVERNANCE_BASE_TIME - 4 * 3600 * 1000).toISOString(), // 4h ago
       event: "Channel Verification Active: Secured inbound Property24 WhatsApp channel connection. Port integrity check completed.",
       actor: "System Ingress Guard",
       status: "system"
@@ -95,9 +97,9 @@ export default async function DemoGovernancePage() {
         </div>
 
         {/* Dynamic TrustLedger Audit Trail Card */}
-        <TrustLedger 
-          entries={auditLogs} 
-          title="Staging Compliance Audit Trail" 
+        <TrustLedger
+          entries={auditLogs}
+          title="Staging Compliance Audit Trail"
           description="High-integrity system event log tracking signal ingress, security scans, and manual approval gates."
         />
       </div>

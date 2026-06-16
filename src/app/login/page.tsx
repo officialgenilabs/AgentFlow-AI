@@ -43,7 +43,7 @@ export default function LoginPage() {
           <p className="mt-2 text-xs leading-5 text-white/40 text-left">
             Authorized runtime operators are resolved into isolated tenant structures. Outbound governance defaults to strict human-verification.
           </p>
-          
+
           <div className="mt-8">
             <Suspense fallback={<div className="h-48 flex items-center justify-center text-xs font-mono text-white/30">Loading gateway...</div>}>
               <LoginForm />

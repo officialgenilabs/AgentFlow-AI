@@ -1,12 +1,12 @@
-import type { 
-  Profile, 
-  Organization, 
-  OrganizationBranding, 
-  Lead, 
-  Conversation, 
-  Message, 
-  LeadTask, 
-  LeadEvent, 
+import type {
+  Profile,
+  Organization,
+  OrganizationBranding,
+  Lead,
+  Conversation,
+  Message,
+  LeadTask,
+  LeadEvent,
   LeadNote,
   LeadPipelineStage
 } from "@/lib/types";
@@ -300,7 +300,7 @@ export const demoMessages: Message[] = [
     raw_payload: {},
     created_at: new Date(Date.now() - 15 * 60 * 1000).toISOString()
   },
-  
+
   // Jessica chat history
   {
     id: "msg-jes-1",

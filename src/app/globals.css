@@ -3,18 +3,18 @@
 :root {
   --background: #050505;
   --foreground: #FAFAFA;
-  
+
   --color-card: rgba(17, 17, 17, 0.75);
   --color-card-border: rgba(255, 255, 255, 0.05);
   --color-card-border-hover: rgba(0, 229, 153, 0.15);
-  
+
   --accent-primary: #00E599;
   --accent-primary-hover: #00CC88;
   --accent-primary-glow: rgba(0, 229, 153, 0.15);
-  
+
   --accent-secondary: #6C63FF;
   --accent-secondary-glow: rgba(108, 99, 255, 0.15);
-  
+
   --text-muted: #888888;
   --text-secondary: #E5E5E5;
 }

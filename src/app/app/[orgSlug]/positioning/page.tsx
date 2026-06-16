@@ -50,7 +50,7 @@ export default async function PositioningPage({ params }: { params: Promise<{ or
                   <AlertTriangle className="h-5 w-5 text-amber-500 shrink-0" />
                   <h3 className="text-sm font-bold text-[#FAFAFA] uppercase tracking-wider">{vec.title}</h3>
                 </div>
-                
+
                 <p className="text-xs text-[#888888] leading-relaxed">
                   {vec.problem}
                 </p>
@@ -76,7 +76,7 @@ export default async function PositioningPage({ params }: { params: Promise<{ or
               The Inevitability of Gen I Labs
             </h2>
             <p className="text-xs text-[#888888] leading-relaxed font-sans">
-              Gen I Labs is not built as a simple chatbot CRM wrapper. The real estate market serves as our wedge to solve fundamental infrastructure-level problem patterns: context memory failure, scheduling coordination delays, and governed communication gates. 
+              Gen I Labs is not built as a simple chatbot CRM wrapper. The real estate market serves as our wedge to solve fundamental infrastructure-level problem patterns: context memory failure, scheduling coordination delays, and governed communication gates.
             </p>
             <p className="text-xs text-[#888888] leading-relaxed font-sans">
               By deploying AgentFlow AI within highly specialized high-value boutique brokerages, we construct the foundation of a general-purpose operational intelligence platform that manages context memory and governs autonomous customer relations across dozens of physical service sectors.

@@ -72,9 +72,9 @@ export default async function AgentLeadViewPage({ params }: { params: Promise<{ 
               </div>
             ) : (
               visibleLeads.map((lead) => (
-                <Link 
-                  key={lead.id} 
-                  href={`/app/${orgSlug}/leads/${lead.id}`} 
+                <Link
+                  key={lead.id}
+                  href={`/app/${orgSlug}/leads/${lead.id}`}
                   className="block rounded-xl border border-white/[0.06] bg-[#161616]/40 p-5 hover:bg-[#1A1A1A]/80 transition-all duration-200 group"
                 >
                   <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">

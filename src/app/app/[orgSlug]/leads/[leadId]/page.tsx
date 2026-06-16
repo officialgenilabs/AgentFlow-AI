@@ -7,15 +7,10 @@ import { addLeadNote, createLeadTask, updateLeadState } from "@/features/crm/act
 import { displayMember, getLeadDetail } from "@/lib/data/crm";
 import { Badge } from "@/components/ui/badge";
 import { StatusIndicator } from "@/components/ui/status-indicator";
-import { 
-  ShieldCheck, 
-  User, 
-  CheckCircle, 
-  MapPin, 
-  MessageSquare,
-  Sparkles,
-  ClipboardList,
-  GitCommit
+import {
+  ShieldCheck,
+  User,
+  CheckCircle,
 } from "lucide-react";
 
 function formatDate(value: string | null) {
@@ -114,10 +109,10 @@ export default async function LeadDetailPage({ params, searchParams }: { params:
             <form action={updateAction} className="grid gap-4 md:grid-cols-2">
               <div className="space-y-1.5">
                 <Label htmlFor="status" className="text-xs font-mono font-bold text-white/50 uppercase">Status</Label>
-                <select 
-                  id="status" 
-                  name="status" 
-                  defaultValue={lead.status} 
+                <select
+                  id="status"
+                  name="status"
+                  defaultValue={lead.status}
                   className="h-10 w-full rounded-xl border border-white/[0.08] bg-[#1A1A1A] px-3 text-xs text-white focus:outline-none focus:border-[#00E599] transition-colors"
                 >
                   <option value="new">New</option>
@@ -132,10 +127,10 @@ export default async function LeadDetailPage({ params, searchParams }: { params:
 
               <div className="space-y-1.5">
                 <Label htmlFor="priority" className="text-xs font-mono font-bold text-white/50 uppercase">Priority</Label>
-                <select 
-                  id="priority" 
-                  name="priority" 
-                  defaultValue={lead.priority} 
+                <select
+                  id="priority"
+                  name="priority"
+                  defaultValue={lead.priority}
                   className="h-10 w-full rounded-xl border border-white/[0.08] bg-[#1A1A1A] px-3 text-xs text-white focus:outline-none focus:border-[#00E599] transition-colors"
                 >
                   <option value="low">Low</option>
@@ -147,10 +142,10 @@ export default async function LeadDetailPage({ params, searchParams }: { params:
 
               <div className="space-y-1.5">
                 <Label htmlFor="pipeline_stage_id" className="text-xs font-mono font-bold text-white/50 uppercase">Pipeline Stage</Label>
-                <select 
-                  id="pipeline_stage_id" 
-                  name="pipeline_stage_id" 
-                  defaultValue={lead.pipeline_stage_id ?? ""} 
+                <select
+                  id="pipeline_stage_id"
+                  name="pipeline_stage_id"
+                  defaultValue={lead.pipeline_stage_id ?? ""}
                   className="h-10 w-full rounded-xl border border-white/[0.08] bg-[#1A1A1A] px-3 text-xs text-white focus:outline-none focus:border-[#00E599] transition-colors"
                 >
                   <option value="">Unstaged</option>
@@ -162,10 +157,10 @@ export default async function LeadDetailPage({ params, searchParams }: { params:
 
               <div className="space-y-1.5">
                 <Label htmlFor="assigned_owner_user_id" className="text-xs font-mono font-bold text-white/50 uppercase">Assigned Owner</Label>
-                <select 
-                  id="assigned_owner_user_id" 
-                  name="assigned_owner_user_id" 
-                  defaultValue={lead.assigned_owner_user_id ?? ""} 
+                <select
+                  id="assigned_owner_user_id"
+                  name="assigned_owner_user_id"
+                  defaultValue={lead.assigned_owner_user_id ?? ""}
                   className="h-10 w-full rounded-xl border border-white/[0.08] bg-[#1A1A1A] px-3 text-xs text-white focus:outline-none focus:border-[#00E599] transition-colors"
                 >
                   <option value="">Unassigned</option>
@@ -179,10 +174,10 @@ export default async function LeadDetailPage({ params, searchParams }: { params:
 
               <div className="space-y-1.5">
                 <Label htmlFor="qualification_status" className="text-xs font-mono font-bold text-white/50 uppercase">Qualification</Label>
-                <select 
-                  id="qualification_status" 
-                  name="qualification_status" 
-                  defaultValue={lead.qualification_status} 
+                <select
+                  id="qualification_status"
+                  name="qualification_status"
+                  defaultValue={lead.qualification_status}
                   className="h-10 w-full rounded-xl border border-white/[0.08] bg-[#1A1A1A] px-3 text-xs text-white focus:outline-none focus:border-[#00E599] transition-colors"
                 >
                   <option value="unqualified">Unqualified</option>
@@ -196,10 +191,10 @@ export default async function LeadDetailPage({ params, searchParams }: { params:
 
               <div className="space-y-1.5">
                 <Label htmlFor="first_contact_at" className="text-xs font-mono font-bold text-white/50 uppercase">First Contact At</Label>
-                <Input 
-                  id="first_contact_at" 
-                  name="first_contact_at" 
-                  type="datetime-local" 
+                <Input
+                  id="first_contact_at"
+                  name="first_contact_at"
+                  type="datetime-local"
                   className="rounded-xl border border-white/[0.08] bg-[#1A1A1A] text-white focus:border-[#00E599] text-xs h-10 w-full"
                 />
               </div>
@@ -208,11 +203,11 @@ export default async function LeadDetailPage({ params, searchParams }: { params:
                 <Label htmlFor="ai_qualification_decision_path" className="text-xs font-mono font-bold text-white/50 uppercase">
                   AI Qualification Decision Path Log
                 </Label>
-                <textarea 
-                  id="ai_qualification_decision_path" 
-                  name="ai_qualification_decision_path" 
-                  rows={4} 
-                  defaultValue={JSON.stringify(lead.ai_qualification_decision_path ?? [], null, 2)} 
+                <textarea
+                  id="ai_qualification_decision_path"
+                  name="ai_qualification_decision_path"
+                  rows={4}
+                  defaultValue={JSON.stringify(lead.ai_qualification_decision_path ?? [], null, 2)}
                   className="w-full rounded-2xl border border-white/[0.08] bg-[#1A1A1A] p-4 text-xs font-mono text-white focus:outline-none focus:border-[#00E599] transition-colors resize-none"
                 />
               </div>
@@ -240,7 +235,7 @@ export default async function LeadDetailPage({ params, searchParams }: { params:
 
             <div className="rounded-xl border border-white/[0.04] bg-white/[0.01] p-3">
               <p className="text-[9px] font-mono font-bold tracking-widest text-white/30 uppercase">Campaign Subtype / Channel</p>
-              <p className="font-heading font-extrabold text-white uppercase mt-1">{lead.source_subtype} // {lead.original_inbound_channel}</p>
+              <p className="font-heading font-extrabold text-white uppercase mt-1">{lead.source_subtype}{" // "}{lead.original_inbound_channel}</p>
             </div>
 
             <div className="rounded-xl border border-white/[0.04] bg-white/[0.01] p-3">
@@ -252,7 +247,7 @@ export default async function LeadDetailPage({ params, searchParams }: { params:
               <p className="text-[9px] font-mono font-bold tracking-widest text-white/30 uppercase">Strong Deduplication Key</p>
               <div className="flex items-center gap-1.5 mt-1 text-[#00E599] font-mono font-bold">
                 <CheckCircle className="size-3.5" />
-                <span>{lead.identity_confidence?.toUpperCase() || "RESOLVED"} // {lead.normalized_phone_e164 || lead.normalized_email || "NO STRONG ID"}</span>
+                <span>{lead.identity_confidence?.toUpperCase() || "RESOLVED"}{" // "}{lead.normalized_phone_e164 || lead.normalized_email || "NO STRONG ID"}</span>
               </div>
             </div>
 
@@ -276,12 +271,12 @@ export default async function LeadDetailPage({ params, searchParams }: { params:
           </CardHeader>
           <CardContent className="pt-6 space-y-4">
             <form action={noteAction} className="space-y-3">
-              <textarea 
-                name="body" 
-                rows={3} 
-                required 
-                className="w-full rounded-2xl border border-white/[0.08] bg-[#1A1A1A] p-4 text-xs leading-relaxed text-white focus:outline-none focus:border-[#00E599] transition-colors resize-none" 
-                placeholder="Log internal context notes..." 
+              <textarea
+                name="body"
+                rows={3}
+                required
+                className="w-full rounded-2xl border border-white/[0.08] bg-[#1A1A1A] p-4 text-xs leading-relaxed text-white focus:outline-none focus:border-[#00E599] transition-colors resize-none"
+                placeholder="Log internal context notes..."
               />
               <Button type="submit" size="sm" className="bg-white/[0.03] border-white/[0.06] text-white hover:bg-white/[0.06] rounded-xl font-bold uppercase tracking-wider text-[10px] px-4 py-2 border">
                 Record internal log
@@ -290,7 +285,7 @@ export default async function LeadDetailPage({ params, searchParams }: { params:
             <div className="space-y-2 max-h-[300px] overflow-y-auto pr-1">
               {notes.map((note) => (
                 <div key={note.id} className="rounded-xl border border-white/[0.04] bg-white/[0.01] p-4">
-                  <p className="text-xs font-sans text-white/80 leading-relaxed font-medium">"{note.body}"</p>
+                  <p className="text-xs font-sans text-white/80 leading-relaxed font-medium">&ldquo;{note.body}&rdquo;</p>
                   <p className="mt-2 text-[9px] font-mono font-bold text-white/20 uppercase tracking-widest">{formatDate(note.created_at)}</p>
                 </div>
               ))}
@@ -311,20 +306,20 @@ export default async function LeadDetailPage({ params, searchParams }: { params:
           </CardHeader>
           <CardContent className="pt-6 space-y-4">
             <form action={taskAction} className="grid gap-3">
-              <Input 
-                name="title" 
-                required 
-                placeholder="Required Action: Call lead back..." 
+              <Input
+                name="title"
+                required
+                placeholder="Required Action: Call lead back..."
                 className="rounded-xl border border-white/[0.08] bg-[#1A1A1A] text-white focus:border-[#00E599] text-xs h-10 w-full"
               />
               <div className="grid gap-3 sm:grid-cols-2">
-                <Input 
-                  name="due_at" 
-                  type="datetime-local" 
+                <Input
+                  name="due_at"
+                  type="datetime-local"
                   className="rounded-xl border border-white/[0.08] bg-[#1A1A1A] text-white focus:border-[#00E599] text-xs h-10 w-full"
                 />
-                <select 
-                  name="assigned_to_user_id" 
+                <select
+                  name="assigned_to_user_id"
                   className="h-10 rounded-xl border border-white/[0.08] bg-[#1A1A1A] px-3 text-xs text-white focus:outline-none focus:border-[#00E599] transition-colors"
                 >
                   <option value="">Unassigned</option>
@@ -339,7 +334,7 @@ export default async function LeadDetailPage({ params, searchParams }: { params:
                 Schedule Task
               </Button>
             </form>
-            
+
             <div className="space-y-2 max-h-[220px] overflow-y-auto pr-1">
               {tasks.map((task) => (
                 <div key={task.id} className="rounded-xl border border-white/[0.04] bg-white/[0.01] p-4 flex justify-between items-start">
@@ -373,7 +368,7 @@ export default async function LeadDetailPage({ params, searchParams }: { params:
         <CardContent className="pt-6 relative">
           {/* Vertical timeline connector track */}
           <div className="absolute left-8 top-10 bottom-10 w-0.5 bg-white/[0.05]" />
-          
+
           <div className="space-y-6">
             {events.map((event) => (
               <div key={event.id} className="relative pl-12 flex flex-col md:flex-row md:items-start md:justify-between gap-2 select-none group">
@@ -381,13 +376,13 @@ export default async function LeadDetailPage({ params, searchParams }: { params:
                 <div className="absolute left-[20px] top-1.5 size-3 rounded-full border border-white/[0.08] bg-[#070707] flex items-center justify-center transition-all duration-300 group-hover:border-[#00E599]">
                   <div className="size-1 rounded-full bg-white/40 transition-all duration-300 group-hover:bg-[#00E599]" />
                 </div>
-                
+
                 <div>
                   <h4 className="font-heading font-extrabold text-xs text-white uppercase tracking-wider flex items-center gap-2">
                     {event.event_type}
                     {event.field_name && (
                       <span className="font-mono text-[9px] font-bold text-white/30 uppercase tracking-widest">
-                        // {event.field_name}
+                        {"//"} {event.field_name}
                       </span>
                     )}
                   </h4>
@@ -402,7 +397,7 @@ export default async function LeadDetailPage({ params, searchParams }: { params:
                     </div>
                   )}
                 </div>
-                
+
                 <span className="font-mono text-[9px] font-bold text-white/20 uppercase tracking-widest shrink-0 mt-1 md:mt-0">
                   {formatDate(event.created_at)}
                 </span>

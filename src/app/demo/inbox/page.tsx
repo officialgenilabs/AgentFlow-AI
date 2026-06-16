@@ -64,12 +64,12 @@ export default async function DemoInboxPage({ searchParams }: { searchParams: Pr
               const isActive = selectedConversation?.id === conversation.id;
               const statusVariant = statusTone(conversation.status);
               return (
-                <Link 
-                  key={conversation.id} 
-                  href={`/demo/inbox?conversationId=${conversation.id}`} 
+                <Link
+                  key={conversation.id}
+                  href={`/demo/inbox?conversationId=${conversation.id}`}
                   className={`block rounded-2xl border p-4 transition-all duration-200 select-none ${
-                    isActive 
-                      ? "bg-[#00E599]/5 border-[#00E599]/30 shadow-[0_0_15px_rgba(0,229,153,0.03)]" 
+                    isActive
+                      ? "bg-[#00E599]/5 border-[#00E599]/30 shadow-[0_0_15px_rgba(0,229,153,0.03)]"
                       : "border-white/[0.04] bg-[#111111]/30 hover:bg-[#111111]/50 hover:border-white/[0.08]"
                   }`}
                 >
@@ -82,7 +82,7 @@ export default async function DemoInboxPage({ searchParams }: { searchParams: Pr
                     </Badge>
                   </div>
                   <p className="mt-2 truncate font-mono text-[9px] font-bold text-white/40 uppercase tracking-widest leading-none">
-                    {conversation.channel?.display_name ?? "Channel"} // {conversation.external_conversation_id ?? "internal"}
+                    {conversation.channel?.display_name ?? "Channel"}{" // "}{conversation.external_conversation_id ?? "internal"}
                   </p>
                   <p className="mt-3 text-[9px] font-mono text-white/30 uppercase tracking-wider">
                     Owner: <span className="text-white/50">{displayConversationOwner(members, conversation)}</span>
@@ -99,12 +99,12 @@ export default async function DemoInboxPage({ searchParams }: { searchParams: Pr
             <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
               <div>
                 <CardTitle className="text-sm">
-                  {selectedConversation 
-                    ? selectedLead?.full_name ?? selectedConversation.subject ?? "Active Ingress Thread" 
+                  {selectedConversation
+                    ? selectedLead?.full_name ?? selectedConversation.subject ?? "Active Ingress Thread"
                     : "Select a conversation"}
                 </CardTitle>
                 <CardDescription className="text-xs">
-                  {selectedConversation?.channel?.provider ?? "Ingress"} // {selectedConversation?.channel?.channel_type ?? "whatsapp"}
+                  {selectedConversation?.channel?.provider ?? "Ingress"}{" // "}{selectedConversation?.channel?.channel_type ?? "whatsapp"}
                 </CardDescription>
               </div>
               {selectedConversation && (
@@ -121,7 +121,7 @@ export default async function DemoInboxPage({ searchParams }: { searchParams: Pr
               </div>
             )}
           </CardHeader>
-          
+
           <CardContent className="flex-1 overflow-y-auto p-6 space-y-4 min-h-0 bg-[#070707]/30">
             {!selectedConversation ? (
               <div className="flex h-full items-center justify-center rounded-2xl border border-dashed border-white/[0.06] text-center p-8">
@@ -141,13 +141,13 @@ export default async function DemoInboxPage({ searchParams }: { searchParams: Pr
               messages.map((message) => {
                 const isOutbound = message.direction === "outbound";
                 const isSystem = message.direction === "system";
-                
+
                 return (
-                  <div 
-                    key={message.id} 
+                  <div
+                    key={message.id}
                     className={`max-w-[85%] rounded-2xl p-4 transition-all duration-200 border ${
-                      isSystem 
-                        ? "bg-[#6C63FF]/5 border-[#6C63FF]/15 text-[#A29EFF] font-mono mr-auto w-full max-w-full" 
+                      isSystem
+                        ? "bg-[#6C63FF]/5 border-[#6C63FF]/15 text-[#A29EFF] font-mono mr-auto w-full max-w-full"
                         : isOutbound
                           ? "bg-[#00E599]/5 border-[#00E599]/20 text-white ml-auto"
                           : "bg-[#161616] border-white/[0.04] text-white mr-auto"
@@ -204,7 +204,7 @@ export default async function DemoInboxPage({ searchParams }: { searchParams: Pr
                         {selectedLead.status}
                       </p>
                     </div>
-                    
+
                     <div className="rounded-xl border border-white/[0.04] bg-white/[0.01] p-3">
                       <p className="text-[9px] font-mono font-bold tracking-widest text-white/30 uppercase">
                         Identity Confidence

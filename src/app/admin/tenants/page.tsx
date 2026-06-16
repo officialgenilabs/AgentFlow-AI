@@ -6,11 +6,12 @@ import { createClient } from "@/lib/supabase/server";
 import { requirePlatformAdmin } from "@/lib/data/auth";
 import { isDemoMode } from "@/lib/demo/config";
 import { demoOrganization } from "@/lib/demo/data";
+import type { Organization } from "@/lib/types";
 
 export default async function AdminTenantsPage() {
   const profile = await requirePlatformAdmin();
-  
-  let organizations: any[] = [];
+
+  let organizations: (Organization & { created_at?: string })[] = [];
   if (isDemoMode()) {
     organizations = [
       demoOrganization,
@@ -58,8 +59,8 @@ export default async function AdminTenantsPage() {
                   <div className="flex items-center gap-2.5">
                     <CardTitle className="text-lg font-bold text-[#FAFAFA]">{org.name}</CardTitle>
                     <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold uppercase border ${
-                      org.status === "active" 
-                        ? "bg-[#00E599]/10 text-[#00E599] border-[#00E599]/20" 
+                      org.status === "active"
+                        ? "bg-[#00E599]/10 text-[#00E599] border-[#00E599]/20"
                         : "bg-amber-500/10 text-amber-400 border-amber-500/20"
                     }`}>
                       {org.status}
@@ -80,7 +81,7 @@ export default async function AdminTenantsPage() {
               </CardHeader>
             </Card>
           ))}
-          
+
           {organizations.length === 0 && (
             <Card className="bg-[#111111]/80 border-white/[0.06] backdrop-blur-xl">
               <CardContent className="p-12 text-center text-sm text-[#888888]">
