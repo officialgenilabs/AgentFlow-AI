@@ -33,31 +33,44 @@ However, staging has a more polished **visual / product-language layer** in the 
 4. A useful “Pending Approvals Queue” preview module.
 5. A more professional staging/compliance audit-trail narrative.
 
-The actual logo SVG/wordmark was checked and appears **identical** in both builds. The perceived logo/brand improvement in staging comes from the surrounding shell treatment and product copy, not a different logo asset.
+The inline logo component and favicon are identical across the compared builds, but there are two logo surfaces (`LogoMark` and `/logo.svg`). The perceived logo difference should be treated as a logo-treatment/unification issue, not a backend or deployment issue.
 
-## Logo / Brand Mark Finding
+## Logo / Brand Mark Finding — Corrected
+
+There are **two logo delivery surfaces** in the app, which explains why the logos can look different in practice:
+
+1. `src/components/brand/logo.tsx` — the inline React/SVG `LogoMark` used in login, shell, and major app chrome.
+2. `public/logo.svg` — a static SVG asset referenced by demo/branding data, including `src/lib/demo/data.ts` via `logo_url: "/logo.svg"`.
 
 ### Production
 
-- Uses `LogoMark` + `AGENTFLOW AI` wordmark.
-- Logo source: `src/components/brand/logo.tsx`.
-- Visual style: mint DNA/GI monogram with glow gradient.
+- Inline React `LogoMark`: present.
+- Static `/logo.svg`: present.
+- Favicon: present.
 
 ### Staging
 
-- Uses the same `LogoMark` + `AGENTFLOW AI` wordmark.
-- Same source component and SVG structure in the compared commits.
+- Inline React `LogoMark`: present.
+- Static `/logo.svg`: present.
+- Favicon: present.
+
+### Verification
+
+- `src/components/brand/logo.tsx` is identical between production commit `994f469` and staging commit `5a654d9`.
+- `src/app/favicon.ico` is identical between production and staging.
+- `public/logo.svg` differs at byte/hash level between production and staging, but the source diff observed between the compared commits is formatting/whitespace only.
+- The visible difference the user sees is therefore most likely caused by **which logo surface is being rendered** and by wrapper treatment — size, glow, background, spacing, and whether it is the inline `LogoMark` or `/logo.svg`.
 
 ### Conclusion
 
-**No separate staging logo asset should be migrated.**
+Do **not** assume staging has a wholly different logo system. It has a different rendered logo treatment/context.
 
-Safe brand migration should focus on:
+Safe migration should focus on:
 
-- Shell badge language.
-- Sidebar labels.
-- Preview/demo state indicators.
-- More premium “operational intelligence” framing around the existing logo.
+- Unifying logo usage between inline `LogoMark` and `/logo.svg`.
+- Ensuring the same logo surface is used in production shell, demo branding, and tenant branding placeholders.
+- Migrating staging’s better shell/badge visual treatment around the logo.
+- Keeping the current production backend untouched.
 
 ## Visual Features Staging Has Over Production
 
@@ -285,7 +298,7 @@ Risk: Low.
 | Pending Approvals Queue card | Yes, carefully | Demo first; tenant later | Medium | Production has real approval backend; must not replace it with mock logic. |
 | Compliance audit trail copy/layout | Yes | Demo/audit sections | Low-Medium | Copy/layout safe; live data requires mapping. |
 | Purple accent hierarchy | Yes | Global UI conventions/components | Low | Visual-only. |
-| Logo asset | No need | N/A | None | Logo appears identical. |
+| Logo treatment unification | Yes | `LogoMark` + `/logo.svg` usage | Low | Inline logo and static logo surfaces should be unified; staging/prod difference is likely treatment/context, not a new core logo. |
 
 ## Do NOT Migrate From Staging
 
