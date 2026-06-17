@@ -16,6 +16,8 @@ interface PendingApprovalsSummaryProps {
   emptyState?: string;
   href: string;
   className?: string;
+  ctaLabel?: string;
+  totalCount?: number;
 }
 
 const statusConfig = {
@@ -45,7 +47,16 @@ const statusConfig = {
   }
 };
 
-export function PendingApprovalsSummary({ items, emptyState = "No outbound approvals pending", href, className }: PendingApprovalsSummaryProps) {
+export function PendingApprovalsSummary({
+  items,
+  emptyState = "No outbound approvals pending",
+  href,
+  className,
+  ctaLabel = "Open Approvals",
+  totalCount,
+}: PendingApprovalsSummaryProps) {
+  const count = totalCount ?? items.length;
+
   return (
     <Card className={cn("border-white/[0.06] bg-[#111111]/75", className)}>
       <CardHeader className="border-b border-white/[0.04] pb-4">
@@ -54,7 +65,7 @@ export function PendingApprovalsSummary({ items, emptyState = "No outbound appro
             <CardTitle className="text-base font-heading font-extrabold text-white">Pending Approvals Queue</CardTitle>
             <CardDescription className="text-xs text-white/45">Human-reviewed drafts staged before any outbound action.</CardDescription>
           </div>
-          <Badge variant="hold">{items.length} Review</Badge>
+          <Badge variant="hold">{count} Review</Badge>
         </div>
       </CardHeader>
       <CardContent className="space-y-3 pt-4">
@@ -87,7 +98,7 @@ export function PendingApprovalsSummary({ items, emptyState = "No outbound appro
           })
         )}
         <Link href={href} className="flex items-center justify-center gap-2 rounded-xl border border-[#00E599]/20 bg-[#00E599]/10 px-4 py-3 text-xs font-bold uppercase tracking-wider text-[#00E599] transition-colors hover:bg-[#00E599]/15">
-          Open Approvals <ArrowRight className="size-4" />
+          {ctaLabel} <ArrowRight className="size-4" />
         </Link>
       </CardContent>
     </Card>

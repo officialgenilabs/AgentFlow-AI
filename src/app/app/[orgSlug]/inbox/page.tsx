@@ -3,7 +3,9 @@ import { ArrowRight, Circle, MessageSquare, UserRound, ShieldAlert, CheckCircle 
 import { AppShell } from "@/components/layout/shell";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { LeadQualificationSummaryCard } from "@/components/leads/lead-qualification-summary-card";
 import { getInbox, displayConversationOwner } from "@/lib/data/inbox";
+import { buildLeadQualificationSummary } from "@/lib/data/qualification";
 import { Badge } from "@/components/ui/badge";
 
 function statusTone(status: string) {
@@ -14,10 +16,19 @@ function statusTone(status: string) {
 
 export default async function InboxPage({ params, searchParams }: { params: Promise<{ orgSlug: string }>; searchParams: Promise<{ conversationId?: string; error?: string }> }) {
   const [{ orgSlug }, query] = await Promise.all([params, searchParams]);
-  const { tenant, conversations, selectedConversation, messages, drafts, members } = await getInbox(orgSlug, query.conversationId);
+  const { tenant, conversations, selectedConversation, selectedLeadStage, selectedLeadTasks, messages, drafts, members } = await getInbox(orgSlug, query.conversationId);
   const selectedLead = selectedConversation?.lead ?? null;
   const draftsByMessage = new Map(drafts.map((draft) => [draft.message_id, draft]));
   const pendingDraftCount = drafts.filter((draft) => draft.status === "draft").length;
+  const inboxIntelligence = selectedLead
+    ? buildLeadQualificationSummary(selectedLead, selectedLeadStage, selectedLeadTasks, {
+        lastInboundAt: selectedConversation?.last_message_at ?? null,
+        conversationStatus: selectedConversation?.status ?? null,
+        pendingApprovalCount: pendingDraftCount,
+        governanceState: pendingDraftCount > 0 ? "Draft pending approval" : "Read-only conversation review",
+        channelLabel: selectedConversation?.channel?.display_name ?? selectedConversation?.channel?.provider ?? null,
+      })
+    : null;
 
   return (
     <AppShell profile={tenant.profile} organization={tenant.organization} branding={tenant.branding}>
@@ -179,15 +190,15 @@ export default async function InboxPage({ params, searchParams }: { params: Prom
           </CardContent>
         </Card>
 
-        {/* Right Side: Lead context */}
-        <Card className="border-white/[0.06] bg-[#111111]/70 backdrop-blur-xl flex flex-col h-[75vh]">
+        {/* Right Side: Inbox Intelligence Sidebar */}
+        <Card className="border-white/[0.06] bg-[#111111]/70 backdrop-blur-xl flex flex-col h-[75vh] overflow-hidden">
           <CardHeader className="border-b border-white/[0.04] pb-4">
-            <CardTitle className="text-sm">Resolved Ingress Identity</CardTitle>
+            <CardTitle className="text-sm">Inbox Intelligence Sidebar</CardTitle>
             <CardDescription className="text-xs">
-              Contextual CRM profiles.
+              Qualification, viewing, missing-info, action, confidence, and source metadata for the selected thread.
             </CardDescription>
           </CardHeader>
-          <CardContent className="pt-4 flex-1 flex flex-col justify-between p-4 min-h-0">
+          <CardContent className="pt-4 flex-1 overflow-y-auto p-4 min-h-0">
             {selectedLead ? (
               <>
                 <div className="space-y-4">
@@ -200,6 +211,10 @@ export default async function InboxPage({ params, searchParams }: { params: Prom
                       {selectedLead.email || selectedLead.phone || "No details"}
                     </p>
                   </div>
+
+                  {inboxIntelligence ? (
+                    <LeadQualificationSummaryCard summary={inboxIntelligence} compact className="bg-[#0B0B0B]/80" />
+                  ) : null}
 
                   <div className="grid gap-2">
                     <div className="rounded-xl border border-white/[0.04] bg-white/[0.01] p-3">

@@ -3,8 +3,10 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { LeadQualificationSummaryCard } from "@/components/leads/lead-qualification-summary-card";
 import { addLeadNote, createLeadTask, updateLeadState } from "@/features/crm/actions";
 import { displayMember, getLeadDetail } from "@/lib/data/crm";
+import { buildLeadQualificationSummary } from "@/lib/data/qualification";
 import { Badge } from "@/components/ui/badge";
 import { StatusIndicator } from "@/components/ui/status-indicator";
 import {
@@ -23,6 +25,8 @@ export default async function LeadDetailPage({ params, searchParams }: { params:
   const updateAction = updateLeadState.bind(null, orgSlug, lead.id);
   const noteAction = addLeadNote.bind(null, orgSlug, lead.id);
   const taskAction = createLeadTask.bind(null, orgSlug, lead.id);
+  const leadStage = lead.pipeline_stage_id ? stages.find((stage) => stage.id === lead.pipeline_stage_id) : null;
+  const qualificationSummary = buildLeadQualificationSummary(lead, leadStage, tasks);
 
   return (
     <AppShell profile={tenant.profile} organization={tenant.organization} branding={tenant.branding}>
@@ -94,6 +98,8 @@ export default async function LeadDetailPage({ params, searchParams }: { params:
           </CardHeader>
         </Card>
       </section>
+
+      <LeadQualificationSummaryCard summary={qualificationSummary} />
 
       {/* State Form and Source Panel Grid */}
       <section className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr] mb-6">

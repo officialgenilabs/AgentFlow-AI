@@ -9,6 +9,11 @@ import { demoLeads, demoPipelineStages, demoTasks, demoMetrics } from "@/lib/dem
 import { MetricCard } from "@/components/ui/metric-card";
 import { StatusIndicator } from "@/components/ui/status-indicator";
 import { Badge } from "@/components/ui/badge";
+import { PendingApprovalsSummary } from "@/components/dashboard/pending-approvals-summary";
+import { HotLeadsNextActions } from "@/components/dashboard/hot-leads-next-actions";
+import { ViewingReadyQueue } from "@/components/dashboard/viewing-ready-queue";
+import { getApprovalQueue } from "@/lib/data/approvals";
+import { getDashboardDealDeskQueues, type HotLeadAction, type ViewingReadyLead } from "@/lib/data/dashboard-intelligence";
 import type { Lead, LeadPipelineStage } from "@/lib/types";
 import {
   Users,
@@ -30,6 +35,10 @@ export default async function TenantDashboardPage({ params }: { params: Promise<
   let activeConversations = 0;
   let avgResponseTime = "N/A";
   let qualificationRate = "N/A";
+  let pendingApprovalCount = 0;
+  let pendingApprovalItems: { leadName: string; property: string; status: "pending" | "hold" | "blocked"; confidence?: number }[] = [];
+  let hotLeadActions: HotLeadAction[] = [];
+  let viewingReadyLeads: ViewingReadyLead[] = [];
 
   if (isDemoMode()) {
     leadCount = demoLeads.length;
@@ -42,17 +51,32 @@ export default async function TenantDashboardPage({ params }: { params: Promise<
     qualificationRate = demoMetrics.qualificationRate;
   } else {
     const supabase = await createClient();
-    const [leadRes, taskRes, recentRes, pipelineRes] = await Promise.all([
+    const [leadRes, taskRes, recentRes, pipelineRes, conversationRes, qualifiedRes, approvalQueue, dealDeskQueues] = await Promise.all([
       supabase.from("leads").select("id", { count: "exact", head: true }).eq("organization_id", tenant.organization.id),
       supabase.from("lead_tasks").select("id", { count: "exact", head: true }).eq("organization_id", tenant.organization.id).in("status", ["open", "in_progress"]),
-      supabase.from("leads").select("id, full_name, status, qualification_status, exact_source, source_subtype, original_inbound_channel, created_at").eq("organization_id", tenant.organization.id).order("created_at", { ascending: false }).limit(5),
+      supabase.from("leads").select("id, full_name, status, priority, qualification_status, exact_source, source_subtype, original_inbound_channel, created_at").eq("organization_id", tenant.organization.id).order("created_at", { ascending: false }).limit(5),
       supabase.from("lead_pipeline_stages").select("id, name, slug, probability, position").eq("organization_id", tenant.organization.id).order("position", { ascending: true }),
+      supabase.from("conversations").select("id", { count: "exact", head: true }).eq("organization_id", tenant.organization.id).in("status", ["open", "handoff"]),
+      supabase.from("leads").select("id", { count: "exact", head: true }).eq("organization_id", tenant.organization.id).in("qualification_status", ["ai_qualified", "human_qualified"]),
+      getApprovalQueue(orgSlug),
+      getDashboardDealDeskQueues(tenant.organization.id),
     ]);
 
     leadCount = leadRes.count ?? 0;
     openTaskCount = taskRes.count ?? 0;
     recentLeads = recentRes.data ?? [];
     pipeline = pipelineRes.data ?? [];
+    activeConversations = conversationRes.count ?? 0;
+    qualificationRate = leadCount > 0 ? `${Math.round(((qualifiedRes.count ?? 0) / leadCount) * 100)}%` : "N/A";
+    pendingApprovalCount = approvalQueue.items.length;
+    pendingApprovalItems = approvalQueue.items.slice(0, 3).map((item) => ({
+      leadName: item.leadName,
+      property: item.propertyReference,
+      status: item.status,
+      confidence: item.confidenceScore,
+    }));
+    hotLeadActions = dealDeskQueues.hotLeadActions;
+    viewingReadyLeads = dealDeskQueues.viewingReadyLeads;
 
     // Estimate a real pipeline value or use a fallback
     const { data: valueData } = await supabase
@@ -64,10 +88,8 @@ export default async function TenantDashboardPage({ params }: { params: Promise<
       ? `R${(sum / 1000000).toFixed(1)}M`
       : "R0";
 
-    // Dynamic stats
-    activeConversations = 0;
-    avgResponseTime = "2m 45s";
-    qualificationRate = "60%";
+    // Response timing requires a confirmed inbound-to-draft metric. Keep honest until enough real events exist.
+    avgResponseTime = "N/A";
   }
 
   return (
@@ -102,6 +124,20 @@ export default async function TenantDashboardPage({ params }: { params: Promise<
             icon={<ListChecks className="size-4" />}
           />
         </div>
+
+        {/* Phase 10A: AI Deal Desk visibility widgets */}
+        <div className="grid gap-6 xl:grid-cols-[0.9fr_1.1fr]">
+          <PendingApprovalsSummary
+            items={pendingApprovalItems}
+            totalCount={pendingApprovalCount}
+            href={`/app/${orgSlug}/approvals`}
+            ctaLabel={pendingApprovalCount > 0 ? "Review Next Draft" : "Open Approvals"}
+            emptyState="No production drafts pending review. Real approval state is synchronized from the governed draft ledger."
+          />
+          <HotLeadsNextActions orgSlug={orgSlug} items={hotLeadActions} />
+        </div>
+
+        <ViewingReadyQueue orgSlug={orgSlug} items={viewingReadyLeads} />
 
         {/* Operational Efficiency Row */}
         <div className="grid gap-4 md:grid-cols-2">
@@ -150,7 +186,7 @@ export default async function TenantDashboardPage({ params }: { params: Promise<
               </div>
               <Badge variant="mint">
                 <StatusIndicator status="active" className="mr-1.5" pulse={isDemoMode()} />
-                Demo Mode Staging Active
+                {isDemoMode() ? "Demo Mode Staging Active" : "Live Tenant Intelligence"}
               </Badge>
             </div>
           </CardHeader>
@@ -219,9 +255,22 @@ export default async function TenantDashboardPage({ params }: { params: Promise<
                 </Link>
               ))}
               {recentLeads.length === 0 && (
-                <p className="rounded-xl border border-dashed border-white/[0.08] p-6 text-center text-xs text-white/40 uppercase tracking-wider font-mono">
-                  No leads captured yet.
-                </p>
+                <div className="rounded-2xl border border-dashed border-white/[0.08] p-6 text-center">
+                  <p className="text-xs font-heading font-extrabold uppercase tracking-wider text-white/60">
+                    No leads captured yet
+                  </p>
+                  <p className="mx-auto mt-2 max-w-md text-[10px] font-mono font-bold uppercase tracking-widest leading-relaxed text-white/35">
+                    Start the first value loop: lead received → qualification context → viewing next action.
+                  </p>
+                  <div className="mt-4 flex flex-wrap justify-center gap-2">
+                    <Button asChild size="sm" className="rounded-xl bg-[#00E599] text-[#050505] hover:bg-[#00c584]">
+                      <Link href={`/app/${orgSlug}/leads/new`}>Create lead</Link>
+                    </Button>
+                    <Button asChild size="sm" variant="secondary" className="rounded-xl bg-white/[0.03] text-white hover:bg-white/[0.06]">
+                      <Link href={`/app/${orgSlug}/inbox`}>Open inbox</Link>
+                    </Button>
+                  </div>
+                </div>
               )}
             </CardContent>
           </Card>

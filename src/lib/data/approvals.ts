@@ -1,6 +1,7 @@
 import { resolveTenantBySlug } from "@/lib/data/auth";
+import { buildLeadQualificationSummary } from "@/lib/data/qualification";
 import { createClient } from "@/lib/supabase/server";
-import type { AiMessageDraft, Channel, Conversation, Lead, Message } from "@/lib/types";
+import type { AiMessageDraft, Channel, Conversation, Lead, LeadPipelineStage, LeadTask, Message } from "@/lib/types";
 
 export type ApprovalQueueItem = {
   id: string;
@@ -10,6 +11,13 @@ export type ApprovalQueueItem = {
   inboundMessage: string;
   draftResponse: string;
   confidenceScore: number;
+  confidenceLabel: string;
+  readinessScore: number;
+  viewingReadiness: string;
+  missingInformation: string[];
+  recommendedAction: string;
+  sourceTrust: string;
+  sourceTrustScore: number;
   memoryContext: string[];
   routingRationale: string;
   channel: string;
@@ -29,6 +37,27 @@ export type ApprovalQueue = {
   items: ApprovalQueueItem[];
 };
 
+type ApprovalLead = Pick<
+  Lead,
+  | "id"
+  | "pipeline_stage_id"
+  | "full_name"
+  | "email"
+  | "phone"
+  | "identity_confidence"
+  | "priority"
+  | "estimated_value"
+  | "exact_source"
+  | "source_subtype"
+  | "original_inbound_channel"
+  | "source_reference"
+  | "captured_at"
+  | "first_contact_at"
+  | "qualification_status"
+  | "ai_qualification_decision_path"
+  | "lead_origin_metadata"
+>;
+
 type DraftRow = AiMessageDraft & {
   conversations?: (Conversation & {
     channels?: Pick<Channel, "display_name" | "provider" | "channel_type"> | Pick<Channel, "display_name" | "provider" | "channel_type">[] | null;
@@ -36,8 +65,11 @@ type DraftRow = AiMessageDraft & {
     channels?: Pick<Channel, "display_name" | "provider" | "channel_type"> | Pick<Channel, "display_name" | "provider" | "channel_type">[] | null;
   })[] | null;
   messages?: Pick<Message, "id" | "body" | "occurred_at" | "sender_display_name" | "raw_payload"> | Pick<Message, "id" | "body" | "occurred_at" | "sender_display_name" | "raw_payload">[] | null;
-  leads?: Pick<Lead, "id" | "full_name" | "email" | "phone" | "identity_confidence" | "exact_source" | "source_subtype" | "source_reference" | "lead_origin_metadata"> | Pick<Lead, "id" | "full_name" | "email" | "phone" | "identity_confidence" | "exact_source" | "source_subtype" | "source_reference" | "lead_origin_metadata">[] | null;
+  leads?: ApprovalLead | ApprovalLead[] | null;
 };
+
+type TaskRow = Pick<LeadTask, "id" | "lead_id" | "title" | "description" | "status" | "priority" | "due_at">;
+type StageRow = Pick<LeadPipelineStage, "id" | "name" | "slug" | "probability">;
 
 function one<T>(value: T | T[] | null | undefined): T | null {
   if (Array.isArray(value)) return value[0] ?? null;
@@ -92,24 +124,70 @@ function memoryContext(lead: DraftRow["leads"], conversation: DraftRow["conversa
   return items;
 }
 
+function label(value: string) {
+  return value.replace(/_/g, " ");
+}
+
 export async function getApprovalQueue(orgSlug: string): Promise<ApprovalQueue> {
   const tenant = await resolveTenantBySlug(orgSlug);
   const supabase = await createClient();
 
   const { data } = await supabase
     .from("ai_message_drafts")
-    .select("id, organization_id, conversation_id, message_id, lead_id, draft_content, status, generation_model, generation_context, edited_by_user_id, approved_by_user_id, approved_at, discarded_by_user_id, created_at, updated_at, conversations(id, organization_id, channel_id, lead_id, external_conversation_id, status, assigned_owner_user_id, subject, last_message_at, metadata, created_at, updated_at, channels(display_name, provider, channel_type)), messages(id, body, occurred_at, sender_display_name, raw_payload), leads(id, full_name, email, phone, identity_confidence, exact_source, source_subtype, source_reference, lead_origin_metadata)")
+    .select("id, organization_id, conversation_id, message_id, lead_id, draft_content, status, generation_model, generation_context, edited_by_user_id, approved_by_user_id, approved_at, discarded_by_user_id, created_at, updated_at, conversations(id, organization_id, channel_id, lead_id, external_conversation_id, status, assigned_owner_user_id, subject, last_message_at, metadata, created_at, updated_at, channels(display_name, provider, channel_type)), messages(id, body, occurred_at, sender_display_name, raw_payload), leads(id, pipeline_stage_id, full_name, email, phone, identity_confidence, priority, estimated_value, exact_source, source_subtype, original_inbound_channel, source_reference, captured_at, first_contact_at, qualification_status, ai_qualification_decision_path, lead_origin_metadata)")
     .eq("organization_id", tenant.organization.id)
     .eq("status", "draft")
     .order("created_at", { ascending: true });
 
-  const items = ((data ?? []) as DraftRow[]).map((draft) => {
+  const draftRows = (data ?? []) as DraftRow[];
+  const leadIds = Array.from(new Set(draftRows
+    .map((draft) => one(draft.leads)?.id ?? draft.lead_id)
+    .filter((value): value is string => Boolean(value))));
+
+  const [{ data: taskData }, { data: stageData }] = await Promise.all([
+    leadIds.length > 0
+      ? supabase
+          .from("lead_tasks")
+          .select("id, lead_id, title, description, status, priority, due_at")
+          .eq("organization_id", tenant.organization.id)
+          .in("lead_id", leadIds)
+          .in("status", ["open", "in_progress"])
+      : Promise.resolve({ data: [] }),
+    supabase
+      .from("lead_pipeline_stages")
+      .select("id, name, slug, probability")
+      .eq("organization_id", tenant.organization.id),
+  ]);
+
+  const tasksByLeadId = new Map<string, TaskRow[]>();
+  ((taskData ?? []) as TaskRow[]).forEach((task) => {
+    if (!task.lead_id) return;
+    tasksByLeadId.set(task.lead_id, [...(tasksByLeadId.get(task.lead_id) ?? []), task]);
+  });
+  const stageById = new Map(((stageData ?? []) as StageRow[]).map((stage) => [stage.id, stage]));
+
+  const items = draftRows.map((draft) => {
     const conversation = one(draft.conversations);
     const channel = one(conversation?.channels);
     const message = one(draft.messages);
     const lead = one(draft.leads);
     const context = record(draft.generation_context);
     const confidenceScore = confidenceFrom(lead?.identity_confidence ?? context.identity_confidence, context);
+    const stage = lead?.pipeline_stage_id ? stageById.get(lead.pipeline_stage_id) ?? null : null;
+    const leadTasks = lead?.id ? tasksByLeadId.get(lead.id) ?? [] : [];
+    const summary = lead
+      ? buildLeadQualificationSummary(lead, stage, leadTasks, {
+          lastInboundAt: conversation?.last_message_at ?? message?.occurred_at ?? null,
+          conversationStatus: conversation?.status ?? null,
+          pendingApprovalCount: 1,
+          governanceState: "Pending human approval",
+          channelLabel: channel?.display_name ?? channel?.provider ?? null,
+        })
+      : null;
+    const missingInformation = summary?.missingFields ?? ["Resolved lead intelligence unavailable"];
+    const sourceTrust = summary?.sourceTrust ?? "Source pending";
+    const sourceTrustScore = summary?.sourceTrustScore ?? confidenceScore;
+    const recommendedAction = summary?.nextBestAction ?? "Review, edit, approve, or discard the draft.";
 
     return {
       id: draft.id,
@@ -118,16 +196,27 @@ export async function getApprovalQueue(orgSlug: string): Promise<ApprovalQueue> 
       propertyReference: propertyReference(draft.leads, draft.messages, context),
       inboundMessage: message?.body ?? "Inbound source message unavailable",
       draftResponse: draft.draft_content,
-      confidenceScore,
+      confidenceScore: summary?.confidenceScore ?? confidenceScore,
+      confidenceLabel: summary ? label(summary.confidence) : "source confidence",
+      readinessScore: summary?.readinessScore ?? 0,
+      viewingReadiness: summary ? label(summary.viewingReadiness) : "not resolved",
+      missingInformation,
+      recommendedAction,
+      sourceTrust,
+      sourceTrustScore,
       memoryContext: memoryContext(draft.leads, draft.conversations, context),
       routingRationale: stringValue(context.routing_rationale)
         ?? "Draft generated from a governed inbound event. Outbound remains locked until certification gates pass.",
       channel: channel?.display_name ?? channel?.provider ?? "Inbound channel",
-      status: confidenceScore < 70 ? "hold" : "pending",
+      status: (summary?.confidenceScore ?? confidenceScore) < 70 ? "hold" : "pending",
       verificationStatus: `Identity ${lead?.identity_confidence ?? "pending"}`,
       governanceState: "Pending human approval",
-      limitations: ["Outbound transport is frozen in Phase 10 until approval and audit evidence is certified."],
-      nextAction: "Review, edit, approve, or discard the draft.",
+      limitations: [
+        "Outbound transport remains governed; this card does not send messages.",
+        missingInformation.length > 0 ? `Missing information: ${missingInformation.join(", ")}` : "No core information gaps detected by deterministic checks.",
+        `Source trust: ${sourceTrust} (${sourceTrustScore}%).`,
+      ],
+      nextAction: recommendedAction,
       conversationId: draft.conversation_id,
       sourceMessageId: draft.message_id,
       draftStatus: draft.status,
