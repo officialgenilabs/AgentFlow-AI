@@ -137,7 +137,7 @@ export async function getApprovalQueue(orgSlug: string): Promise<ApprovalQueue> 
     .select("id, organization_id, conversation_id, message_id, lead_id, draft_content, status, generation_model, generation_context, edited_by_user_id, approved_by_user_id, approved_at, discarded_by_user_id, created_at, updated_at, conversations(id, organization_id, channel_id, lead_id, external_conversation_id, status, assigned_owner_user_id, subject, last_message_at, metadata, created_at, updated_at, channels(display_name, provider, channel_type)), messages(id, body, occurred_at, sender_display_name, raw_payload), leads(id, pipeline_stage_id, full_name, email, phone, identity_confidence, priority, estimated_value, exact_source, source_subtype, original_inbound_channel, source_reference, captured_at, first_contact_at, qualification_status, ai_qualification_decision_path, lead_origin_metadata)")
     .eq("organization_id", tenant.organization.id)
     .eq("status", "draft")
-    .order("created_at", { ascending: true });
+    .order("created_at", { ascending: false });
 
   const draftRows = (data ?? []) as DraftRow[];
   const leadIds = Array.from(new Set(draftRows

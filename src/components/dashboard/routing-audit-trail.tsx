@@ -14,6 +14,7 @@ interface RoutingAuditTrailProps {
   entries: RoutingAuditEntry[];
   title?: string;
   description?: string;
+  emptyState?: string;
   className?: string;
 }
 
@@ -28,6 +29,7 @@ export function RoutingAuditTrail({
   entries,
   title = "Live Routing Audit Trail",
   description = "Demo-safe governance events for capture, routing, and approval state.",
+  emptyState = "No routing audit entries available for this surface yet.",
   className
 }: RoutingAuditTrailProps) {
   return (
@@ -40,19 +42,27 @@ export function RoutingAuditTrail({
             </CardTitle>
             <CardDescription className="text-xs text-white/45">{description}</CardDescription>
           </div>
-          <Badge variant="context"><ShieldCheck className="mr-1 size-3" /> Audited</Badge>
+          <Badge variant={entries.length > 0 ? "context" : "neutral"}>
+            <ShieldCheck className="mr-1 size-3" /> {entries.length > 0 ? "Audited" : "No Events"}
+          </Badge>
         </div>
       </CardHeader>
       <CardContent className="space-y-3 pt-4">
-        {entries.map((entry) => (
-          <div key={`${entry.timestamp}-${entry.event}`} className={cn("rounded-2xl border p-4", statusStyles[entry.status])}>
-            <div className="flex flex-wrap items-center justify-between gap-2 text-[10px] font-mono font-bold uppercase tracking-widest text-white/35">
-              <span>{new Date(entry.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
-              <span>{entry.actor}</span>
-            </div>
-            <p className="mt-2 text-xs font-semibold leading-relaxed text-white/70">{entry.event}</p>
+        {entries.length === 0 ? (
+          <div className="rounded-2xl border border-dashed border-white/[0.08] p-6 text-center text-xs font-semibold uppercase tracking-wider text-white/35">
+            {emptyState}
           </div>
-        ))}
+        ) : (
+          entries.map((entry) => (
+            <div key={`${entry.timestamp}-${entry.event}`} className={cn("rounded-2xl border p-4", statusStyles[entry.status])}>
+              <div className="flex flex-wrap items-center justify-between gap-2 text-[10px] font-mono font-bold uppercase tracking-widest text-white/35">
+                <span>{new Date(entry.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
+                <span>{entry.actor}</span>
+              </div>
+              <p className="mt-2 text-xs font-semibold leading-relaxed text-white/70">{entry.event}</p>
+            </div>
+          ))
+        )}
       </CardContent>
     </Card>
   );

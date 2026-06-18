@@ -12,16 +12,36 @@ import { Badge } from "@/components/ui/badge";
 import { PendingApprovalsSummary } from "@/components/dashboard/pending-approvals-summary";
 import { HotLeadsNextActions } from "@/components/dashboard/hot-leads-next-actions";
 import { ViewingReadyQueue } from "@/components/dashboard/viewing-ready-queue";
+import { SignalOrchestrationFlow } from "@/components/dashboard/signal-orchestration-flow";
+import { RoutingAuditTrail } from "@/components/dashboard/routing-audit-trail";
 import { getApprovalQueue } from "@/lib/data/approvals";
-import { getDashboardDealDeskQueues, type HotLeadAction, type ViewingReadyLead } from "@/lib/data/dashboard-intelligence";
+import {
+  getDashboardDealDeskQueues,
+  getRecentInboundActivity,
+  getTenantRoutingAuditTrail,
+  getTenantSignalOrchestrationSteps,
+  type HotLeadAction,
+  type RecentInboundActivity,
+  type TenantRoutingAuditEntry,
+  type TenantSignalOrchestrationStep,
+  type ViewingReadyLead,
+} from "@/lib/data/dashboard-intelligence";
 import type { Lead, LeadPipelineStage } from "@/lib/types";
 import {
   Users,
   ListChecks,
   TrendingUp,
   ArrowRight,
-  MessageSquare
+  MessageSquare,
+  RadioTower
 } from "lucide-react";
+
+function formatActivityTime(value: string | null) {
+  if (!value) return "No timestamp";
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return "Timestamp unavailable";
+  return parsed.toLocaleString("en-ZA", { dateStyle: "medium", timeStyle: "short" });
+}
 
 export default async function TenantDashboardPage({ params }: { params: Promise<{ orgSlug: string }> }) {
   const { orgSlug } = await params;
@@ -39,6 +59,9 @@ export default async function TenantDashboardPage({ params }: { params: Promise<
   let pendingApprovalItems: { leadName: string; property: string; status: "pending" | "hold" | "blocked"; confidence?: number }[] = [];
   let hotLeadActions: HotLeadAction[] = [];
   let viewingReadyLeads: ViewingReadyLead[] = [];
+  let recentInboundActivity: RecentInboundActivity[] = [];
+  let signalOrchestrationSteps: TenantSignalOrchestrationStep[] = [];
+  let routingAuditEntries: TenantRoutingAuditEntry[] = [];
 
   if (isDemoMode()) {
     leadCount = demoLeads.length;
@@ -51,7 +74,7 @@ export default async function TenantDashboardPage({ params }: { params: Promise<
     qualificationRate = demoMetrics.qualificationRate;
   } else {
     const supabase = await createClient();
-    const [leadRes, taskRes, recentRes, pipelineRes, conversationRes, qualifiedRes, approvalQueue, dealDeskQueues] = await Promise.all([
+    const [leadRes, taskRes, recentRes, pipelineRes, conversationRes, qualifiedRes, approvalQueue, dealDeskQueues, inboundActivity, routingEntries] = await Promise.all([
       supabase.from("leads").select("id", { count: "exact", head: true }).eq("organization_id", tenant.organization.id),
       supabase.from("lead_tasks").select("id", { count: "exact", head: true }).eq("organization_id", tenant.organization.id).in("status", ["open", "in_progress"]),
       supabase.from("leads").select("id, full_name, status, priority, qualification_status, exact_source, source_subtype, original_inbound_channel, created_at").eq("organization_id", tenant.organization.id).order("created_at", { ascending: false }).limit(5),
@@ -60,6 +83,8 @@ export default async function TenantDashboardPage({ params }: { params: Promise<
       supabase.from("leads").select("id", { count: "exact", head: true }).eq("organization_id", tenant.organization.id).in("qualification_status", ["ai_qualified", "human_qualified"]),
       getApprovalQueue(orgSlug),
       getDashboardDealDeskQueues(tenant.organization.id),
+      getRecentInboundActivity(tenant.organization.id),
+      getTenantRoutingAuditTrail(tenant.organization.id),
     ]);
 
     leadCount = leadRes.count ?? 0;
@@ -77,6 +102,9 @@ export default async function TenantDashboardPage({ params }: { params: Promise<
     }));
     hotLeadActions = dealDeskQueues.hotLeadActions;
     viewingReadyLeads = dealDeskQueues.viewingReadyLeads;
+    recentInboundActivity = inboundActivity;
+    routingAuditEntries = routingEntries;
+    signalOrchestrationSteps = await getTenantSignalOrchestrationSteps(tenant.organization.id, dealDeskQueues);
 
     // Estimate a real pipeline value or use a fallback
     const { data: valueData } = await supabase
@@ -125,6 +153,64 @@ export default async function TenantDashboardPage({ params }: { params: Promise<
           />
         </div>
 
+        {signalOrchestrationSteps.length > 0 && (
+          <SignalOrchestrationFlow
+            title="Production Signal Orchestration"
+            description="Tenant-backed capture, qualification, routing, governance, and viewing readiness signals. Counts come from live AgentFlow tables only."
+            steps={signalOrchestrationSteps}
+            mode="tenant"
+          />
+        )}
+
+        {!isDemoMode() && (
+          <Card className="border-white/[0.06] bg-[#111111]/75">
+            <CardHeader className="border-b border-white/[0.04] pb-4">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <CardTitle className="flex items-center gap-2 text-base font-heading font-extrabold text-white">
+                    <RadioTower className="size-4 text-[#00E599]" /> New Inbound Activity
+                  </CardTitle>
+                  <CardDescription className="text-xs text-white/45">
+                    Newest tenant conversations first, ordered by last inbound message timestamp.
+                  </CardDescription>
+                </div>
+                <Badge variant="orchestration">{recentInboundActivity.length} Recent</Badge>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-3 pt-4">
+              {recentInboundActivity.length === 0 ? (
+                <div className="rounded-2xl border border-dashed border-white/[0.08] p-6 text-center text-xs font-semibold uppercase tracking-wider text-white/35">
+                  No inbound tenant messages captured yet. This queue will populate from real message activity only.
+                </div>
+              ) : (
+                recentInboundActivity.map((activity) => (
+                  <Link
+                    key={activity.conversationId}
+                    href={`/app/${orgSlug}/inbox`}
+                    className="block rounded-2xl border border-[#00E599]/15 bg-[#00E599]/[0.035] p-4 transition-colors hover:border-[#00E599]/30 hover:bg-[#00E599]/[0.055]"
+                  >
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-heading font-extrabold text-white">{activity.leadName}</p>
+                        <p className="mt-1 text-[10px] font-mono font-bold uppercase tracking-widest text-white/35">
+                          {activity.channel} · {activity.status}
+                        </p>
+                      </div>
+                      <Badge variant={activity.priority === "urgent" ? "error" : activity.priority === "high" ? "warning" : "mint"}>
+                        {activity.priority ?? "Inbound"}
+                      </Badge>
+                    </div>
+                    <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-white/[0.04] pt-2 text-[10px] font-mono font-bold uppercase tracking-widest text-white/35">
+                      <span>{activity.qualificationStatus ?? "Qualification pending"}</span>
+                      <span className="text-[#00E599]">{formatActivityTime(activity.lastMessageAt)}</span>
+                    </div>
+                  </Link>
+                ))
+              )}
+            </CardContent>
+          </Card>
+        )}
+
         {/* Phase 10A: AI Deal Desk visibility widgets */}
         <div className="grid gap-6 xl:grid-cols-[0.9fr_1.1fr]">
           <PendingApprovalsSummary
@@ -139,6 +225,15 @@ export default async function TenantDashboardPage({ params }: { params: Promise<
 
         <ViewingReadyQueue orgSlug={orgSlug} items={viewingReadyLeads} />
 
+        {!isDemoMode() && (
+          <RoutingAuditTrail
+            entries={routingAuditEntries}
+            title="Production Routing Audit Trail"
+            description="Newest real automation, lead, and audit ledger events available for this tenant. No synthetic routing events are shown."
+            emptyState="No tenant routing evidence has been written yet. This surface is intentionally empty until real automation, lead, or audit ledger events exist."
+          />
+        )}
+
         {/* Operational Efficiency Row */}
         <div className="grid gap-4 md:grid-cols-2">
           <Card className="border-white/[0.06] bg-[#111111]/70 backdrop-blur-xl relative overflow-hidden">
@@ -151,7 +246,7 @@ export default async function TenantDashboardPage({ params }: { params: Promise<
                 Response Speed: {avgResponseTime}
               </CardTitle>
               <CardDescription className="text-xs text-white/50 leading-relaxed">
-                Avg time for AgentFlow to qualify and draft outbound responses across WhatsApp & Web channels.
+                Displayed only after real inbound-to-draft timing events exist; production does not estimate this metric.
               </CardDescription>
             </CardHeader>
           </Card>
