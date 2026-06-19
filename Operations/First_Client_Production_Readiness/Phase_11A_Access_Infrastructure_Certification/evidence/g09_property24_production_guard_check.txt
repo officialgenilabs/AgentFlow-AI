@@ -1,0 +1,12 @@
+PHASE11A_G09_PROPERTY24_PRODUCTION_GUARD_CHECK
+timestamp=2026-06-19T09:13:32Z
+status=401 content_type=application/json bytes=46 time=2.594239
+body_begin
+{"ok":false,"error":"signed_ingress_required"}\nbody_end
+relevant_headers_begin
+content-type: application/json
+server: Vercel
+x-vercel-id: cpt1::iad1::<redacted>
+relevant_headers_end
+mutation_attempted=no
+signed_payload_sent=no

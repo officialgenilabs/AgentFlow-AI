@@ -1,0 +1,234 @@
+PHASE11A_G09_EMAIL_INFRA_SOURCE_DOC_SEARCH
+timestamp=2026-06-19T09:13:15Z
+email_related_paths_begin
+Operations/First_Client_Production_Readiness/Phase6_Production_Deployment_Validation/evidence/property24_ingress_checks.txt
+Operations/First_Client_Production_Readiness/Phase_11A_Access_Infrastructure_Certification/evidence/g03_recovery_email_request.txt
+Operations/First_Client_Production_Readiness/Phase_11A_Access_Infrastructure_Certification/evidence/g09_email_infra_repo_grep.txt
+Operations/First_Client_Production_Readiness/Phase_11A_Access_Infrastructure_Certification/evidence/g09_email_infra_repo_search.txt
+Operations/First_Client_Production_Readiness/Phase_11A_Access_Infrastructure_Certification/evidence/g09_email_infra_source_doc_search.txt
+PROPERTY24_PROACTIVE_ENGAGEMENT_PLAN.md
+clients/libertalia-properties/LIBERTALIA_PROPERTY24_INTAKE_SETUP.md
+supabase/migrations/20260524_phase10_property24_ingress_and_draft_review.sql
+email_related_paths_end
+keyword_hits_begin
+src/lib/demo/data.ts:67:    exact_source: "Property24",
+src/lib/demo/data.ts:157:    exact_source: "Property24",
+src/lib/demo/data.ts:187:    exact_source: "Property24",
+src/lib/demo/data.ts:265:    body: "Hi there, I saw the Sandton Penthouse listing on Property24. Is it still available for viewings?",
+src/lib/demo/data.ts:281:    body: "Lead ingested from Property24. Source matched: Whatsapp. Context: Sandton Penthouse (R4.2M). Identity confidence: Phone verified (99%).",
+src/lib/demo/data.ts:402:      metadata: { source: "Property24 API Integration", original_channel: "WhatsApp Ingress Node" },
+src/lib/demo/data.ts:724:    event: "Channel Verification Active: secured inbound Property24 WhatsApp path checked.",
+src/app/demo/leads/[leadId]/page.tsx:73:                  desc = "Lead captured via Property24 Integration (WhatsApp Node Ingress). Primary search criteria logged.";
+src/app/demo/leads/new/page.tsx:53:                <Input id="exact_source" placeholder="e.g. Property24" required />
+src/app/demo/positioning/page.tsx:37:              <li><strong className="text-white">Memory Fragmentation</strong>: Leads communicating across different agents and fragmented channels (WhatsApp, Property24, email) lose context memory, causing duplicated outreach and friction.</li>
+src/app/demo/routing/page.tsx:16:      activeGates: ["WhatsApp Ingress", "Property24 API", "Website Webhook"],
+src/app/demo/routing/page.tsx:57:    { time: "00:54:33", lead: "Naledi Dlamini", event: "Ingress captured via Property24 parser hook. Lead duplicated matching ID keys", status: "captured" }
+src/app/demo/governance/page.tsx:43:      event: "Channel Verification Active: Secured inbound Property24 WhatsApp channel connection. Port integrity check completed.",
+src/app/api/ingress/property24/route.ts:34:  const secret=<redacted> = process.env.PROPERTY24_INGRESS_SECRET=<redacted>
+src/app/api/ingress/property24/route.ts:35:  if (!secret=<redacted> throw new Error("property24_ingress_secret=<redacted>
+src/app/api/ingress/property24/route.ts:38:  const skewSeconds = Number(process.env.PROPERTY24_INGRESS_SKEW_SECONDS ?? "300");
+src/app/api/ingress/property24/route.ts:75:    ?? text(process.env.PROPERTY24_DEFAULT_ORG_SLUG)
+src/app/api/ingress/property24/route.ts:97:    externalMessageId: text(payload.message_id) ?? text(payload.external_message_id) ?? `property24:${required(externalLeadId, "external_lead_id")}`,
+src/app/api/ingress/property24/route.ts:106:    replayKey: text(request.headers.get("x-agentflow-idempotency-key")) ?? `property24:${required(externalLeadId, "external_lead_id")}`,
+src/app/api/ingress/property24/route.ts:123:    const ingressSecret=<redacted> = process.env.PROPERTY24_INGRESS_SECRET=<redacted>
+src/app/api/ingress/property24/route.ts:124:    if (!ingressSecret=<redacted> throw new Error("property24_ingress_secret=<redacted>
+src/app/api/ingress/property24/route.ts:127:    const { data, error } = await supabase.rpc("ingest_property24_lead", {
+src/app/api/ingress/property24/route.ts:147:        { ok: false, error: duplicate ? "duplicate_ingress_replay_key" : "property24_ingestion_failed" },
+src/app/api/ingress/property24/route.ts:154:    const message = error instanceof Error ? error.message : "property24_ingestion_failed";
+src/app/app/[orgSlug]/leads/new/page.tsx:67:                    <Input id="exact_source" name="exact_source" required placeholder="Property24 / Meta Ads" className="bg-[#1A1A1A] border-white/[0.08] text-[#FAFAFA] focus:ring-2 focus:ring-[#00E599]/50" />
+src/app/app/[orgSlug]/positioning/page.tsx:14:      problem: "WhatsApp chat chains, Property24 notification emails, and website webhook triggers are highly fragmented. Agents physically miss high-intent inquiries.",
+src/app/app/[orgSlug]/routing/page.tsx:19:    description: "Draft responses remain governed approval records. This surface does not dispatch WhatsApp, Evolution, or Property24 actions.",
+supabase/migrations/20260524_phase10_property24_ingress_and_draft_review.sql:1:-- Phase 10: Property24 ingress + governed draft review audit layer
+supabase/migrations/20260524_phase10_property24_ingress_and_draft_review.sql:174:drop function if exists public.ingest_property24_lead(text, text, text, text, text, text, text, timestamptz, text, text, numeric, jsonb, text);
+supabase/migrations/20260524_phase10_property24_ingress_and_draft_review.sql:176:create or replace function public.ingest_property24_lead(
+supabase/migrations/20260524_phase10_property24_ingress_and_draft_review.sql:228:  where s.source = 'property24';
+supabase/migrations/20260524_phase10_property24_ingress_and_draft_review.sql:246:    raise exception 'property24_required_fields_missing';
+supabase/migrations/20260524_phase10_property24_ingress_and_draft_review.sql:260:  values (v_org.id, 'property24', v_replay_key, null, now() + interval '14 days')
+supabase/migrations/20260524_phase10_property24_ingress_and_draft_review.sql:278:    'property24',
+supabase/migrations/20260524_phase10_property24_ingress_and_draft_review.sql:280:    'Property24 Lead Ingress',
+supabase/migrations/20260524_phase10_property24_ingress_and_draft_review.sql:281:    'property24',
+supabase/migrations/20260524_phase10_property24_ingress_and_draft_review.sql:282:    'property24',
+supabase/migrations/20260524_phase10_property24_ingress_and_draft_review.sql:284:    jsonb_build_object('source', 'property24', 'phase', 'phase_10_backend_operationalization')
+supabase/migrations/20260524_phase10_property24_ingress_and_draft_review.sql:291:    'doctrine', 'phase_10_property24_ingestion',
+supabase/migrations/20260524_phase10_property24_ingress_and_draft_review.sql:292:    'exact_source', 'property24',
+supabase/migrations/20260524_phase10_property24_ingress_and_draft_review.sql:313:        'exact_source', 'property24',
+supabase/migrations/20260524_phase10_property24_ingress_and_draft_review.sql:321:      jsonb_build_object('doctrine', 'phase_10_property24_ingestion', 'metadata', v_lead_metadata)
+supabase/migrations/20260524_phase10_property24_ingress_and_draft_review.sql:358:        'property24',
+supabase/migrations/20260524_phase10_property24_ingress_and_draft_review.sql:363:        v_lead_metadata || jsonb_build_object('ingestion_shape', 'canonical_lead_intake_v1', 'ingested_by', 'ingest_property24_lead'),
+supabase/migrations/20260524_phase10_property24_ingress_and_draft_review.sql:422:      coalesce(nullif(btrim(coalesce(p_property_title, '')), ''), nullif(btrim(coalesce(p_listing_reference, '')), ''), 'Property24 inquiry'),
+supabase/migrations/20260524_phase10_property24_ingress_and_draft_review.sql:425:        'source', 'property24',
+supabase/migrations/20260524_phase10_property24_ingress_and_draft_review.sql:488:      'source', 'property24',
+supabase/migrations/20260524_phase10_property24_ingress_and_draft_review.sql:513:      jsonb_build_object('source', 'property24', 'external_lead_id', v_external_lead_id, 'intake_action', v_intake.intake_action)
+supabase/migrations/20260524_phase10_property24_ingress_and_draft_review.sql:527:      'source', 'property24',
+supabase/migrations/20260524_phase10_property24_ingress_and_draft_review.sql:549:comment on function public.ingest_property24_lead(text, text, text, text, text, text, text, timestamptz, text, text, numeric, jsonb, text, text) is
+supabase/migrations/20260524_phase10_property24_ingress_and_draft_review.sql:550:'Phase 10 canonical Property24 ingress. Requires a server-held ingress secret=<redacted> replay key, preserves exact source metadata, persists lead/conversation/message, and emits automation events. Draft generation is triggered by the existing message.received event pipeline.';
+supabase/migrations/20260524_phase10_property24_ingress_and_draft_review.sql:552:revoke all on function public.ingest_property24_lead(text, text, text, text, text, text, text, timestamptz, text, text, numeric, jsonb, text, text) from public;
+supabase/migrations/20260524_phase10_property24_ingress_and_draft_review.sql:553:grant execute on function public.ingest_property24_lead(text, text, text, text, text, text, text, timestamptz, text, text, numeric, jsonb, text, text) to anon;
+docs/reports/AGENTFLOW_STAGING_TO_PRODUCTION_VISUAL_MIGRATION_REPORT.md:14:- Property24 route: present; unsigned POST returns `401 signed_ingress_required`
+docs/reports/AGENTFLOW_STAGING_TO_PRODUCTION_VISUAL_MIGRATION_REPORT.md:22:- Property24 route: not present; `/api/ingress/property24` returns `404`
+docs/reports/AGENTFLOW_STAGING_TO_PRODUCTION_VISUAL_MIGRATION_REPORT.md:26:The staging deployment is **not ahead of production operationally**. Production is newer and contains the current backend-critical Phase 10/Property24 work.
+docs/reports/AGENTFLOW_STAGING_TO_PRODUCTION_VISUAL_MIGRATION_REPORT.md:307:1. Anything that removes or reverts `src/app/api/ingress/property24/route.ts`.
+Operations/First_Client_Production_Readiness/Phase9_Conversational_Intelligence_Activation/PHASE9_IMPLEMENTATION_REPORT.md:14:Phase 9 Sprint 1 has been implemented as a UX and data-surfacing pass only. The work surfaces conversational intelligence that already exists inside AgentFlow AI without changing outbound automation, Evolution, authentication, branding, Property24 ingress, database schema, or governance controls.
+Operations/First_Client_Production_Readiness/Phase9_Conversational_Intelligence_Activation/PHASE9_IMPLEMENTATION_REPORT.md:188:- No Property24 ingress changes.
+Operations/First_Client_Production_Readiness/Phase9_Conversational_Intelligence_Activation/PHASE9_IMPLEMENTATION_REPORT.md:197:- `src/app/api/ingress/property24/route.ts`
+Operations/First_Client_Production_Readiness/Phase5_Visual_Migration_Execution_Plan/MIGRATION_PACKET.md:31:- `src/app/api/ingress/property24/route.ts`
+Operations/First_Client_Production_Readiness/Phase5_Visual_Migration_Execution_Plan/MIGRATION_PACKET.md:38:- n8n/Evolution/Property24 runtime configuration
+Operations/First_Client_Production_Readiness/Phase5_Visual_Migration_Execution_Plan/IMPLEMENTATION_SEQUENCE.md:150:7. Property24 route remains protected.
+Operations/First_Client_Production_Readiness/Phase5_Visual_Migration_Execution_Plan/IMPLEMENTATION_REPORT.md:13:No Supabase schema changes, database migrations, RPC changes, backend route changes, Property24 logic changes, Evolution changes, n8n changes, authentication changes, tenant isolation changes, or environment variable changes were made.
+Operations/First_Client_Production_Readiness/Phase5_Visual_Migration_Execution_Plan/IMPLEMENTATION_REPORT.md:198:- `src/app/api/ingress/property24/route.ts`
+Operations/First_Client_Production_Readiness/Phase5_Visual_Migration_Execution_Plan/IMPLEMENTATION_REPORT.md:245:- `/api/ingress/property24` route remains present.
+Operations/First_Client_Production_Readiness/Phase5_Visual_Migration_Execution_Plan/IMPLEMENTATION_REPORT.md:252:Ephemeral env used only for route guard validation: `PROPERTY24_INGRESS_SECRET=<redacted> `PROPERTY24_DEFAULT_ORG_SLUG=boutique-properties`.
+Operations/First_Client_Production_Readiness/Phase5_Visual_Migration_Execution_Plan/IMPLEMENTATION_REPORT.md:266:- unsigned `/api/ingress/property24` POST → 401 `signed_ingress_required`, expected
+Operations/First_Client_Production_Readiness/Phase5_Visual_Migration_Execution_Plan/IMPLEMENTATION_REPORT.md:288:- Property24 route guard remains intact.
+Operations/First_Client_Production_Readiness/Phase5_Visual_Migration_Execution_Plan/RISK_CLASSIFICATION_MATRIX.md:52:- `src/app/api/ingress/property24/route.ts`
+Operations/First_Client_Production_Readiness/Phase7C_Approved_Logo_Deployment/LOGO_DEPLOYMENT_REPORT.md:118:- No Property24 changes.
+Operations/First_Client_Production_Readiness/Phase4_Visual_Consolidation/SAFE_VISUAL_MIGRATION_PLAN.md:12:- Property24 ingress route.
+Operations/First_Client_Production_Readiness/Phase4_Visual_Consolidation/SAFE_VISUAL_MIGRATION_PLAN.md:172:1. Deletes `src/app/api/ingress/property24/route.ts`.
+Operations/First_Client_Production_Readiness/Phase4_Visual_Consolidation/SAFE_VISUAL_MIGRATION_PLAN.md:186:- Property24 route still returns signed-ingress protection.
+Operations/First_Client_Production_Readiness/Phase4_Visual_Consolidation/CLIENT_READINESS_SCORECARD.md:37:- Property24 route exists and enforces signature protection.
+Operations/First_Client_Production_Readiness/Phase4_Visual_Consolidation/VISUAL_AUDIT_REPORT.md:14:- Operational status: production is ahead of staging because it includes current Property24/backend launch work.
+Operations/First_Client_Production_Readiness/Phase4_Visual_Consolidation/VISUAL_AUDIT_REPORT.md:52:2. Property24 route availability.
+Operations/First_Client_Production_Readiness/Phase4_Visual_Consolidation/VISUAL_AUDIT_REPORT.md:129:| Staging backend deletions | No | N/A | N/A | Staging lacks production Property24 route. |
+Operations/First_Client_Production_Readiness/Phase4_Visual_Consolidation/VISUAL_AUDIT_REPORT.md:276:2. Any staging version that removes Property24 ingress.
+Operations/First_Client_Production_Readiness/Phase7_Canonical_Logo_Unification/LOGO_SURFACE_AUDIT.md:8:This audit covers visual logo surfaces only. No backend, auth, Supabase, Property24, Evolution, n8n, routing, governance, tenant, approval, env, deployment, or infrastructure changes are in scope.
+Operations/First_Client_Production_Readiness/Phase7_Canonical_Logo_Unification/LOGO_VALIDATION_REPORT.md:30:No backend, auth, Supabase, Property24, Evolution, n8n, routing, governance, tenant, approval, env, schema, RPC, migration, or deployment infrastructure files were modified.
+Operations/First_Client_Production_Readiness/Phase10B_First_Inbound_Data_Readiness/FIRST_INBOUND_DATA_READINESS_REPORT_2026-06-17.md:17:1. a real Libertalia/Property24 inbound lead, or
+Operations/First_Client_Production_Readiness/Phase10B_First_Inbound_Data_Readiness/FIRST_INBOUND_DATA_READINESS_REPORT_2026-06-17.md:26:| Property24 unsigned ingress guard | PASS | Unsigned POST to `/api/ingress/property24` returned `401 signed_ingress_required`; no write path reached. |
+Operations/First_Client_Production_Readiness/Phase10B_First_Inbound_Data_Readiness/FIRST_INBOUND_DATA_READINESS_REPORT_2026-06-17.md:77:3. **Property24 parser/forwarding is not yet certified.** The app ingress route is live and guarded, but no signed parser bridge proof has been run in this continuation.
+Operations/First_Client_Production_Readiness/Phase10B_First_Inbound_Data_Readiness/FIRST_INBOUND_DATA_READINESS_REPORT_2026-06-17.md:87:- Wait for or collect a real Libertalia Property24 lead/sample email.
+Operations/First_Client_Production_Readiness/Phase10B_First_Inbound_Data_Readiness/FIRST_INBOUND_DATA_READINESS_REPORT_2026-06-17.md:89:- POST to `/api/ingress/property24` with valid HMAC.
+Operations/First_Client_Production_Readiness/Phase10B_First_Inbound_Data_Readiness/FINAL_PHASE10B_DEPLOYMENT_RECOMMENDATION.md:27:| Forbidden-scope compliance | **Pass** | No migrations/auth/Evolution/Property24/infrastructure/deploy files touched. |
+Operations/First_Client_Production_Readiness/Phase10B_First_Inbound_Data_Readiness/FINAL_PHASE10B_DEPLOYMENT_RECOMMENDATION.md:120:- Property24 integration
+Operations/First_Client_Production_Readiness/Phase10B_First_Inbound_Data_Readiness/SIGNAL_ORCHESTRATION_PARITY_REPORT.md:48:- No Property24 changes.
+Operations/First_Client_Production_Readiness/Phase10B_First_Inbound_Data_Readiness/ROUTING_AUDIT_TRAIL_REPORT.md:13:- hardcoded gateway labels such as Property24 API, brokerage matching, and instant tour booking
+Operations/First_Client_Production_Readiness/Phase10B_First_Inbound_Data_Readiness/DASHBOARD_LAYOUT_RECOMMENDATION.md:76:- Evolution or Property24 changes
+Operations/First_Client_Production_Readiness/Phase10B_First_Inbound_Data_Readiness/DASHBOARD_LAYOUT_RECOMMENDATION.md:114:5. Avoid any outbound, Evolution, Property24, auth, schema, migration, infrastructure, or deployment changes.
+Operations/First_Client_Production_Readiness/Phase10B_First_Inbound_Data_Readiness/PRODUCTION_TRUTHFULNESS_AUDIT.md:59:- Property24 integration
+Operations/First_Client_Production_Readiness/Phase10B_First_Inbound_Data_Readiness/PHASE10B_IMPLEMENTATION_PLAN.md:5:**Mode:** Local implementation only — no commit, push, deploy, schema, auth, infrastructure, Evolution, Property24, or outbound changes.
+Operations/First_Client_Production_Readiness/Phase10B_First_Inbound_Data_Readiness/PHASE10B_IMPLEMENTATION_PLAN.md:66:  - no Property24 changes
+Operations/First_Client_Production_Readiness/Phase7A_Visual_Logo_Confirmation/LOGO_COMPARISON_REPORT.md:299:- No backend/auth/Supabase/Property24/Evolution/n8n/routing/governance/env/schema/RPC/migration changes performed as part of Phase 7A.
+Operations/First_Client_Production_Readiness/Phase_11A_Access_Infrastructure_Certification/PHASE11A_MASTER_EXECUTION_PLAN.md:43:10. Email-forwarding readiness.
+Operations/First_Client_Production_Readiness/Phase_11A_Access_Infrastructure_Certification/PHASE11A_MASTER_EXECUTION_PLAN.md:329:### G09 — Email-Forwarding Readiness
+Operations/First_Client_Production_Readiness/Phase_11A_Access_Infrastructure_Certification/PHASE11A_MASTER_EXECUTION_PLAN.md:334:- Libertalia source mailbox/forwarding source identified.
+Operations/First_Client_Production_Readiness/Phase_11A_Access_Infrastructure_Certification/PHASE11A_MASTER_EXECUTION_PLAN.md:335:- Approved forwarding destination identified.
+Operations/First_Client_Production_Readiness/Phase_11A_Access_Infrastructure_Certification/PHASE11A_MASTER_EXECUTION_PLAN.md:345:- Disable forwarding/endpoint mapping if incorrect.
+Operations/First_Client_Production_Readiness/Phase_11A_Access_Infrastructure_Certification/PHASE11A_MASTER_EXECUTION_PLAN.md:414:| Email forwarding setup if external mailbox access required | G09 | Founder / Kopano / mailbox admin | Configure approved forwarding source/destination | Confirm forwarding configured; Nova validates readiness |
+Operations/First_Client_Production_Readiness/Phase_11A_Access_Infrastructure_Certification/PHASE11A_MASTER_EXECUTION_PLAN.md:431:| Email forwarding may require mailbox admin access | Medium | G09 pending discovery | Document exact setup step and track checkpoint |
+Operations/First_Client_Production_Readiness/Phase_11A_Access_Infrastructure_Certification/PHASE11A_MASTER_EXECUTION_PLAN.md:486:- Email-forwarding infrastructure readiness.
+Operations/First_Client_Production_Readiness/Phase_11A_Access_Infrastructure_Certification/evidence/g01_vercel_project_summary.json:153:      "key": "PROPERTY24_DEFAULT_ORG_SLUG",
+Operations/First_Client_Production_Readiness/Phase_11A_Access_Infrastructure_Certification/evidence/g01_vercel_project_summary.json:164:      "key": "PROPERTY24_INGRESS_SECRET=<redacted>
+Operations/First_Client_Production_Readiness/Phase_11A_Access_Infrastructure_Certification/PHASE11A_STATE_LEDGER.md:17:| G09 | Email-forwarding readiness | IN PROGRESS | Nova + Founder/Kopano if mailbox action needed | G01/G02 | 2026-06-19T09:05Z safe precheck mode entered | Pending: `PHASE11A_EMAIL_READINESS_REPORT.md` | External mailbox configuration may require founder/Kopano/mailbox admin action | Inspect infrastructure readiness and document exact mailbox setup checkpoint if required |
+Operations/First_Client_Production_Readiness/Phase10A_AI_Deal_Desk_Activation/PHASE10A_IMPLEMENTATION_REPORT.md:236:- No Property24 ingress changes.
+Operations/First_Client_Production_Readiness/Phase10A_AI_Deal_Desk_Activation/PHASE10A_CLIENT_VALUE_REPORT.md:24:Property24/WhatsApp lead → qualification → viewing discussion → viewing requested/booked
+Operations/First_Client_Production_Readiness/Phase10A_AI_Deal_Desk_Activation/PHASE10A_CLIENT_VALUE_REPORT.md:184:- alter Property24 ingress
+Operations/First_Client_Production_Readiness/Phase10A_AI_Deal_Desk_Activation/PHASE10A_PRODUCTION_DEPLOYMENT_REPORT_2026-06-17.md:22:- No Property24 route or logic changes.
+Operations/First_Client_Production_Readiness/Phase10A_AI_Deal_Desk_Activation/PHASE10A_PRODUCTION_DEPLOYMENT_REPORT_2026-06-17.md:59:- Property24 ingress route
+Operations/First_Client_Production_Readiness/Phase10A_AI_Deal_Desk_Activation/PHASE10A_PRODUCTION_VALIDATION_REPORT_2026-06-17.md:50:| Property24 ingress | Unsigned POST returned `401` with `signed_ingress_required`; confirms ingress route exists and rejects unsigned writes before DB mutation. | ✅ PASS |
+Operations/First_Client_Production_Readiness/Phase10A_AI_Deal_Desk_Activation/PHASE10A_PRODUCTION_VALIDATION_REPORT_2026-06-17.md:92:- The only POST request was an intentionally unsigned Property24 ingress request that failed at signature validation (`401`) before ingestion, preserving database state.
+Operations/First_Client_Production_Readiness/Phase10A_AI_Deal_Desk_Activation/PHASE10A_RISK_REPORT.md:33:- No Property24 route changes.
+Operations/First_Client_Production_Readiness/Phase10A_AI_Deal_Desk_Activation/PHASE10A_PRODUCTION_READINESS_SCORECARD_2026-06-17.md:13:| Scope safety | 100 | ✅ PASS | Forbidden-scope check clean: no migrations/auth/Property24/Evolution/infra/package/config changes. |
+Operations/First_Client_Production_Readiness/Phase10A_AI_Deal_Desk_Activation/PHASE10A_PRODUCTION_READINESS_SCORECARD_2026-06-17.md:18:| Property24 ingress guard | 100 | ✅ PASS | Unsigned request rejected with `signed_ingress_required`; no ingestion mutation. |
+Operations/First_Client_Production_Readiness/Phase10A_AI_Deal_Desk_Activation/PHASE10A_PRODUCTION_READINESS_SCORECARD_2026-06-17.md:35:- **Not changed:** schema, migrations, auth, Property24 ingestion logic, Evolution, outbound transport, infrastructure.
+Operations/First_Client_Production_Readiness/Phase7B_Canonical_Logo_Correction/LOGO_AUTHORITY_CORRECTION_REPORT.md:4:Mode: UI/logo-only. No commit, push, deployment, backend, auth, Supabase, Property24, Evolution, n8n, routing, governance, env, schema, RPC, or migration changes authorized.
+Operations/First_Client_Production_Readiness/Phase7B_Canonical_Logo_Correction/FINAL_LOGO_UNIFICATION_REPORT.md:172:Forbidden/sensitive path check: **PASS** — no backend/auth/Supabase/Property24/Evolution/n8n/routing/governance/env/schema/RPC/migration files touched.
+Operations/First_Client_Production_Readiness/Phase6_Production_Deployment_Validation/SMOKE_VALIDATION_REPORT.md:59:## Property24 Validation
+Operations/First_Client_Production_Readiness/Phase6_Production_Deployment_Validation/SMOKE_VALIDATION_REPORT.md:63:| Endpoint reachable | PASS | `/api/ingress/property24` responds through Vercel production. |
+Operations/First_Client_Production_Readiness/Phase6_Production_Deployment_Validation/SMOKE_VALIDATION_REPORT.md:68:Evidence: `evidence/property24_ingress_checks.txt`
+Operations/First_Client_Production_Readiness/Phase6_Production_Deployment_Validation/SMOKE_VALIDATION_REPORT.md:94:| Production env entries exist for required runtime integrations | PASS | Vercel API shows production entries for Supabase URL/anon, outbound transport flag, Property24 secret=<redacted> org. Values are sensitive and were not printed. |
+Operations/First_Client_Production_Readiness/Phase6_Production_Deployment_Validation/SMOKE_VALIDATION_REPORT.md:115:2. Full happy-path signed Property24 ingestion was not executed to avoid writing production data during smoke validation.
+Operations/First_Client_Production_Readiness/Phase6_Production_Deployment_Validation/SMOKE_VALIDATION_REPORT.md:120:**PASS.** Production is live, protected tenant routes work for Kopano/Libertalia, Property24 ingress security gates are live, visual migration modules render, and canonical Supabase authority is confirmed.
+Operations/First_Client_Production_Readiness/Phase6_Production_Deployment_Validation/FINAL_PRODUCTION_READINESS_SCORECARD.md:15:| Property24 ingress posture | 14 / 15 | Reachable; unsigned/bad signatures rejected; valid HMAC accepted through auth gate with non-mutating malformed body. Full valid ingestion write intentionally skipped. |
+Operations/First_Client_Production_Readiness/Phase6_Production_Deployment_Validation/FINAL_PRODUCTION_READINESS_SCORECARD.md:29:2. Keep Property24 ingress signed-only.
+Operations/First_Client_Production_Readiness/Phase6_Production_Deployment_Validation/evidence/vercel_env_api_summary.json:30:  "PROPERTY24_INGRESS_SECRET=<redacted> {
+Operations/First_Client_Production_Readiness/Phase6_Production_Deployment_Validation/evidence/vercel_env_api_summary.json:37:  "PROPERTY24_DEFAULT_ORG_SLUG": {
+Operations/First_Client_Production_Readiness/Phase6_Production_Deployment_Validation/evidence/vercel_env_api_summary.json:44:  "PROPERTY24_INGRESS_SKEW_SECONDS": {
+Operations/First_Client_Production_Readiness/Phase6_Production_Deployment_Validation/KOPANO_ONBOARDING_RECOMMENDATION.md:15:- Property24 ingress posture explanation: signed ingress only, unsigned requests rejected.
+clients/libertalia-properties/LIBERTALIA_GO_LIVE_CHECKLIST.md:7:**Pilot success metric:** a Property24 lead enters AgentFlow and reaches **Viewing Requested** within the pilot workflow.
+clients/libertalia-properties/LIBERTALIA_GO_LIVE_CHECKLIST.md:17:- Property24 lead intake configuration
+clients/libertalia-properties/LIBERTALIA_GO_LIVE_CHECKLIST.md:39:| Property24 ingress | Existing app route: `src/app/api/ingress/property24/route.ts`. It expects signed JSON, not raw email. | Use a pilot email/parser bridge that converts Property24 email into the existing signed JSON ingress format. |
+clients/libertalia-properties/LIBERTALIA_GO_LIVE_CHECKLIST.md:40:| Property24 database path | Existing RPC: `public.ingest_property24_lead(...)`. It creates/attaches lead, channel, conversation, inbound message, and automation events. | Do not change schema. Configure client inputs and run signed test payload. |
+clients/libertalia-properties/LIBERTALIA_GO_LIVE_CHECKLIST.md:42:| Kopano ownership | Existing Property24 RPC creates the lead but does not hard-code Kopano as owner. | During go-live, set Kopano as default owner by client config/manual assignment or a pilot-only data operation. No canonical rewrite. |
+clients/libertalia-properties/LIBERTALIA_GO_LIVE_CHECKLIST.md:83:### Property24 intake
+clients/libertalia-properties/LIBERTALIA_GO_LIVE_CHECKLIST.md:87:| [ ] | Property24 profile URL | TODO |
+clients/libertalia-properties/LIBERTALIA_GO_LIVE_CHECKLIST.md:88:| [ ] | Property24 account/admin contact | TODO |
+clients/libertalia-properties/LIBERTALIA_GO_LIVE_CHECKLIST.md:89:| [ ] | Current Property24 enquiry destination email | TODO |
+clients/libertalia-properties/LIBERTALIA_GO_LIVE_CHECKLIST.md:91:| [ ] | Forwarding destination/parser | TODO — must preserve raw email body |
+clients/libertalia-properties/LIBERTALIA_GO_LIVE_CHECKLIST.md:93:| [ ] | Signed ingress endpoint | `/api/ingress/property24` |
+clients/libertalia-properties/LIBERTALIA_GO_LIVE_CHECKLIST.md:95:| [ ] | Test Property24 lead/sample email | TODO |
+clients/libertalia-properties/LIBERTALIA_GO_LIVE_CHECKLIST.md:114:| [ ] | Default lead source | `property24` |
+clients/libertalia-properties/LIBERTALIA_GO_LIVE_CHECKLIST.md:129:| 10 | Lead Received | `lead-received` | New Property24/WhatsApp lead captured | `new` | `unqualified` |
+clients/libertalia-properties/LIBERTALIA_GO_LIVE_CHECKLIST.md:145:| New Property24 Leads | Org = Libertalia; source = Property24; stage = Lead Received |
+clients/libertalia-properties/LIBERTALIA_GO_LIVE_CHECKLIST.md:163:### B. Property24 intake setup
+clients/libertalia-properties/LIBERTALIA_GO_LIVE_CHECKLIST.md:167:| [ ] | Property24 lead destination confirmed | Client confirms where Property24 currently sends leads |
+clients/libertalia-properties/LIBERTALIA_GO_LIVE_CHECKLIST.md:168:| [ ] | Dedicated intake inbox/forwarding configured | Test email is received by parser bridge |
+clients/libertalia-properties/LIBERTALIA_GO_LIVE_CHECKLIST.md:169:| [ ] | Parser maps email to canonical JSON | Required fields are extracted: external lead id, name, message body |
+clients/libertalia-properties/LIBERTALIA_GO_LIVE_CHECKLIST.md:173:| [ ] | Property24 test lead ingested | Lead + conversation + inbound message exist under Libertalia |
+clients/libertalia-properties/LIBERTALIA_GO_LIVE_CHECKLIST.md:205:- [ ] Prepare exact client input request: login email, WhatsApp number, Property24 profile URL, Property24 lead email, logo/colors, viewing windows.
+clients/libertalia-properties/LIBERTALIA_GO_LIVE_CHECKLIST.md:207:- [ ] Prepare one controlled Property24 sample payload/email.
+clients/libertalia-properties/LIBERTALIA_GO_LIVE_CHECKLIST.md:213:- [ ] Confirm Property24 lead delivery settings.
+clients/libertalia-properties/LIBERTALIA_GO_LIVE_CHECKLIST.md:225:- [ ] Configure Property24 parser bridge to signed JSON ingress.
+clients/libertalia-properties/LIBERTALIA_GO_LIVE_CHECKLIST.md:226:- [ ] Configure `PROPERTY24_DEFAULT_ORG_SLUG=libertalia-properties` only in pilot environment if needed.
+clients/libertalia-properties/LIBERTALIA_GO_LIVE_CHECKLIST.md:227:- [ ] Configure/verify Property24 ingress secret=<redacted> in app env and matching DB digest.
+clients/libertalia-properties/LIBERTALIA_GO_LIVE_CHECKLIST.md:234:- [ ] Send controlled Property24 lead.
+clients/libertalia-properties/LIBERTALIA_GO_LIVE_CHECKLIST.md:249:- Property24 signed ingestion test passes for `libertalia-properties`.
+clients/libertalia-properties/LIBERTALIA_GO_LIVE_CHECKLIST.md:257:- Property24 input path cannot be tested.
+clients/libertalia-properties/LIBERTALIA_GO_LIVE_CHECKLIST.md:268:Property24 test/real lead
+clients/libertalia-properties/LIBERTALIA_LOGIN_ACTIVATION_2026-06-15.md:48:- Property24 profile URL and lead destination email.
+clients/libertalia-properties/LIBERTALIA_LOGIN_ACTIVATION_2026-06-15.md:49:- Property24 parser bridge to signed JSON ingress.
+clients/libertalia-properties/LIBERTALIA_TRIAL_SUCCESS_METRICS.md:19:| First inbound lead captured | 1+ | Property24 or WhatsApp lead appears under Libertalia Properties. |
+clients/libertalia-properties/LIBERTALIA_TRIAL_SUCCESS_METRICS.md:32:| Lead capture reliability | Most inbound leads captured without manual reconstruction | Focus on Property24 + WhatsApp only. |
+clients/libertalia-properties/LIBERTALIA_TRIAL_SUCCESS_METRICS.md:78:- Property24 or WhatsApp inputs are missing.
+clients/libertalia-properties/LIBERTALIA_OPERATOR_GUIDE.md:6:**Goal:** turn Property24 leads into qualified viewing opportunities.
+clients/libertalia-properties/LIBERTALIA_OPERATOR_GUIDE.md:18:> A Property24 lead enters AgentFlow and reaches **Viewing Requested**.
+clients/libertalia-properties/LIBERTALIA_OPERATOR_GUIDE.md:26:| Lead Received | A new Property24/WhatsApp lead arrived | Open it and review context |
+clients/libertalia-properties/LIBERTALIA_OPERATOR_GUIDE.md:35:3. Check **New Property24 Leads**.
+clients/libertalia-properties/LIBERTALIA_OPERATOR_GUIDE.md:42:   - Source = Property24
+clients/libertalia-properties/LIBERTALIA_OPERATOR_GUIDE.md:48:## 4. Handling a New Property24 Lead
+clients/libertalia-properties/LIBERTALIA_OPERATOR_GUIDE.md:134:Lead requested viewing via Property24/WhatsApp.
+clients/libertalia-properties/LIBERTALIA_OPERATOR_GUIDE.md:159:1. Open new Property24 lead.
+clients/libertalia-properties/LIBERTALIA_OPERATOR_GUIDE.md:172:- Lead captured from Property24
+clients/libertalia-properties/LIBERTALIA_OPERATOR_GUIDE.md:182:- A Property24 lead does not appear.
+clients/libertalia-properties/LIBERTALIA_ONBOARDING_CHECKLIST.md:12:| [ ] | Property24 Profile URL | Kopano / Libertalia | Needed to confirm the source profile and listing context. |
+clients/libertalia-properties/LIBERTALIA_ONBOARDING_CHECKLIST.md:13:| [ ] | Property24 Lead Forwarding Email | Kopano / Libertalia | Needed to route Property24 lead emails into AgentFlow ingestion. |
+clients/libertalia-properties/LIBERTALIA_ONBOARDING_CHECKLIST.md:47:| [ ] | Property24 email path ready | Forwarding email supplied and test lead can be ingested. |
+clients/libertalia-properties/LIBERTALIA_ONBOARDING_CHECKLIST.md:57:1. Lead arrives from Property24 email or WhatsApp.
+clients/libertalia-properties/LIBERTALIA_PROPERTY24_INTAKE_SETUP.md:1:# Libertalia Properties — Property24 Intake Setup
+clients/libertalia-properties/LIBERTALIA_PROPERTY24_INTAKE_SETUP.md:6:**Purpose:** convert Property24 enquiry emails into AgentFlow leads without changing canonical architecture.
+clients/libertalia-properties/LIBERTALIA_PROPERTY24_INTAKE_SETUP.md:10:The current AgentFlow branch already contains a Property24 ingress endpoint:
+clients/libertalia-properties/LIBERTALIA_PROPERTY24_INTAKE_SETUP.md:13:POST /api/ingress/property24
+clients/libertalia-properties/LIBERTALIA_PROPERTY24_INTAKE_SETUP.md:21:Property24 enquiry email
+clients/libertalia-properties/LIBERTALIA_PROPERTY24_INTAKE_SETUP.md:23:  → pilot email parser / forwarding bridge
+clients/libertalia-properties/LIBERTALIA_PROPERTY24_INTAKE_SETUP.md:24:  → signed JSON POST to /api/ingress/property24
+clients/libertalia-properties/LIBERTALIA_PROPERTY24_INTAKE_SETUP.md:25:  → public.ingest_property24_lead(...)
+clients/libertalia-properties/LIBERTALIA_PROPERTY24_INTAKE_SETUP.md:35:| [ ] | Property24 profile URL | Required to identify source/account context |
+clients/libertalia-properties/LIBERTALIA_PROPERTY24_INTAKE_SETUP.md:36:| [ ] | Property24 account/admin access holder | Person who can change enquiry email settings |
+clients/libertalia-properties/LIBERTALIA_PROPERTY24_INTAKE_SETUP.md:37:| [ ] | Current enquiry destination email | Where Property24 sends leads today |
+clients/libertalia-properties/LIBERTALIA_PROPERTY24_INTAKE_SETUP.md:39:| [ ] | Sample Property24 lead email | Needed to verify parser fields |
+clients/libertalia-properties/LIBERTALIA_PROPERTY24_INTAKE_SETUP.md:45:## 3. Property24 Email Delivery Configuration
+clients/libertalia-properties/LIBERTALIA_PROPERTY24_INTAKE_SETUP.md:47:Inside Property24 / agency lead delivery settings:
+clients/libertalia-properties/LIBERTALIA_PROPERTY24_INTAKE_SETUP.md:51:3. Ensure emails include, where Property24 provides them:
+clients/libertalia-properties/LIBERTALIA_PROPERTY24_INTAKE_SETUP.md:60:4. Preserve the original email body when forwarding.
+clients/libertalia-properties/LIBERTALIA_PROPERTY24_INTAKE_SETUP.md:61:5. Do not route non-Property24 business mail through this intake.
+clients/libertalia-properties/LIBERTALIA_PROPERTY24_INTAKE_SETUP.md:65:The parser/bridge must produce one canonical JSON payload per Property24 enquiry.
+clients/libertalia-properties/LIBERTALIA_PROPERTY24_INTAKE_SETUP.md:71:| `lead_id` or `enquiry_id` | Property24 enquiry id, message id, or stable generated id | Yes |
+clients/libertalia-properties/LIBERTALIA_PROPERTY24_INTAKE_SETUP.md:74:| `email` | Lead email | Strongly recommended |
+clients/libertalia-properties/LIBERTALIA_PROPERTY24_INTAKE_SETUP.md:105:POST <AGENTFLOW_BASE_URL>/api/ingress/property24
+clients/libertalia-properties/LIBERTALIA_PROPERTY24_INTAKE_SETUP.md:114:| `x-agentflow-idempotency-key` | Stable key, e.g. `property24:<enquiry_id>` |
+clients/libertalia-properties/LIBERTALIA_PROPERTY24_INTAKE_SETUP.md:121:HMAC_SHA256(PROPERTY24_INGRESS_SECRET=<redacted> "<timestamp>.<raw_json_body>")
+clients/libertalia-properties/LIBERTALIA_PROPERTY24_INTAKE_SETUP.md:128:- Never send the secret=<redacted> to Libertalia, Property24, or any public repo.
+clients/libertalia-properties/LIBERTALIA_PROPERTY24_INTAKE_SETUP.md:129:- The endpoint enforces timestamp skew using `PROPERTY24_INGRESS_SKEW_SECONDS` when configured.
+clients/libertalia-properties/LIBERTALIA_PROPERTY24_INTAKE_SETUP.md:138:| `PROPERTY24_INGRESS_SECRET=<redacted> | Yes | Must match DB digest in `app_private.ingress_endpoint_secret=<redacted> |
+clients/libertalia-properties/LIBERTALIA_PROPERTY24_INTAKE_SETUP.md:139:| `PROPERTY24_INGRESS_SKEW_SECONDS` | Recommended | Default route fallback is `300` seconds |
+clients/libertalia-properties/LIBERTALIA_PROPERTY24_INTAKE_SETUP.md:140:| `PROPERTY24_DEFAULT_ORG_SLUG` | Optional | For pilot env only; use `libertalia-properties` if bridge cannot send org slug |
+clients/libertalia-properties/LIBERTALIA_PROPERTY24_INTAKE_SETUP.md:144:The existing `public.ingest_property24_lead(...)` path should:
+clients/libertalia-properties/LIBERTALIA_PROPERTY24_INTAKE_SETUP.md:148:3. Create or activate a Property24 channel for the organization.
+clients/libertalia-properties/LIBERTALIA_PROPERTY24_INTAKE_SETUP.md:154:9. Preserve Property24 metadata in lead/message payloads.
+clients/libertalia-properties/LIBERTALIA_PROPERTY24_INTAKE_SETUP.md:165:| `exact_source` | `property24` |
+clients/libertalia-properties/LIBERTALIA_PROPERTY24_INTAKE_SETUP.md:167:| `original_inbound_channel` | Property24 channel id created by RPC |
+clients/libertalia-properties/LIBERTALIA_PROPERTY24_INTAKE_SETUP.md:169:| `full_name` | Property24 lead name |
+clients/libertalia-properties/LIBERTALIA_PROPERTY24_INTAKE_SETUP.md:170:| `email` | Lead email if supplied |
+clients/libertalia-properties/LIBERTALIA_PROPERTY24_INTAKE_SETUP.md:175:| `lead_origin_metadata` | Include raw Property24 context and pilot marker |
+clients/libertalia-properties/LIBERTALIA_PROPERTY24_INTAKE_SETUP.md:198:### Test B — signed Property24 test lead
+clients/libertalia-properties/LIBERTALIA_PROPERTY24_INTAKE_SETUP.md:219:Property24 intake is ready when:
+clients/libertalia-properties/LIBERTALIA_PROPERTY24_INTAKE_SETUP.md:222:Property24 email sample
+keyword_hits_end

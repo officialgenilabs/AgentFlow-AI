@@ -1,0 +1,22 @@
+PHASE11A_G06_EVOLUTION_LOCAL_HEALTH
+timestamp=2026-06-19T09:09:21Z
+docker_ps_evolution_begin
+genilabs-twenty-crm-db-1 postgres:16-alpine Up 3 weeks (healthy) 5432/tcp
+genilabs-twenty-crm-redis-1 redis:7-alpine Up 3 weeks (healthy) 6379/tcp
+n8n n8nio/n8n:latest Up 5 weeks 127.0.0.1:5678->5678/tcp
+evolution_api atendai/evolution-api:v1.8.7 Up 10 days 127.0.0.1:8080->8080/tcp
+n8n-postgres-1 4e6e670bb069 Up 5 weeks (healthy) 5432/tcp
+docker_ps_evolution_end
+listen_ports_begin
+LISTEN 0      4096       127.0.0.1:5678       0.0.0.0:*
+LISTEN 0      4096       127.0.0.1:8080       0.0.0.0:*
+LISTEN 0      511          0.0.0.0:80         0.0.0.0:*
+LISTEN 0      511          0.0.0.0:443        0.0.0.0:*
+LISTEN 0      511             [::]:80            [::]:*
+LISTEN 0      511             [::]:443           [::]:*
+listen_ports_end
+local_evolution_curl_begin
+local_8080_status=200 err= bytes=218
+{"status":200,"message":"Welcome to the Evolution API, it is working!","version":"1.8.6","swagger":"http://127.0.0.1:8080/docs","manager":"http://127.0.0.1:8080/manager","documentation":"https://doc.e
+Content-Type: application/json; charset=utf-8
+local_evolution_curl_end

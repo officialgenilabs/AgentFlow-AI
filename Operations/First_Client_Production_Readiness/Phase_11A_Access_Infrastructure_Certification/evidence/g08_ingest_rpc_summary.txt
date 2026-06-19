@@ -1,0 +1,93 @@
+PHASE11A_G08_INGEST_RPC_SUMMARY
+timestamp=2026-06-19T09:11:00.136Z
+derives_org_from_channel=no
+creates_lead_when_missing=no
+matches_lead_by_phone_or_email=yes
+creates_conversation_when_missing=yes
+links_message_to_conversation=yes
+dedupe_external_message=no
+writes_message_received_event=no
+sets_ingestion_context=yes
+raises_when_channel_missing=yes
+definition_excerpt_begin
+CREATE OR REPLACE FUNCTION public.ingest_inbound_message(p_channel_id uuid, p_external_conversation_id text, p_external_message_id text, p_message_body text, p_occurred_at timestamp with time zone, p_sender_display_name text DEFAULT NULL::text, p_sender_phone text DEFAULT NULL::text, p_sender_email text DEFAULT NULL::text, p_sender_external_id text DEFAULT NULL::text, p_raw_payload jsonb DEFAULT '{}'::jsonb)
+RETURNS TABLE(organization_id uuid, channel_id uuid, conversation_id uuid, message_id uuid, lead_id uuid, intake_action text, lead_match_rule text, lead_identity_confidence text, conversation_action text, emitted_events text[])
+v_channel record;
+v_conversation_id uuid;
+v_message_id uuid;
+v_existing_message_id uuid;
+v_existing_conversation_lead_id uuid;
+v_conversation_created boolean := false;
+select * into v_channel
+from public.channels c
+where c.id = p_channel_id
+if v_channel.id is null then
+raise exception 'active_channel_required';
+raise exception 'raw_payload_must_be_object';
+if nullif(btrim(coalesce(p_message_body, '')), '') is null or p_occurred_at is null then
+raise exception 'inbound_message_required_fields_missing';
+'Unknown inbound lead'
+when nullif(btrim(coalesce(p_external_conversation_id, '')), '') like '%@lid'
+then app_private.normalize_phone_e164(split_part(btrim(p_external_conversation_id), '@', 1))
+if nullif(btrim(coalesce(p_external_conversation_id, '')), '') is not null then
+select c.id, c.lead_id into v_conversation_id, v_existing_conversation_lead_id
+from public.conversations c
+where c.organization_id = v_channel.organization_id
+and c.channel_id = v_channel.id
+and c.external_conversation_id = btrim(p_external_conversation_id)
+if v_existing_conversation_lead_id is not null then
+-- Exact conversation identity wins over newly resolved phone identity. If the old lead
+update public.leads l
+where l.id = v_existing_conversation_lead_id
+and l.organization_id = v_channel.organization_id
+from public.leads conflict_lead
+where conflict_lead.organization_id = v_channel.organization_id
+and conflict_lead.id <> l.id
+and conflict_lead.normalized_phone_e164 = v_sender_phone_e164
+v_existing_conversation_lead_id::uuid as lead_id,
+'matched_existing_conversation'::text as intake_action,
+'external_conversation_id'::text as match_rule,
+case when v_sender_phone_e164 is not null then 'conversation_phone' else 'conversation' end::text as identity_confidence
+from public.ingest_lead_from_intake(
+v_channel.organization_id,
+v_channel.id::text,
+coalesce(nullif(btrim(coalesce(p_external_conversation_id, '')), ''), nullif(btrim(coalesce(p_sender_external_id, '')), '')),
+'doctrine', 'conversation_ingestion_v1',
+'original_inbound_channel', v_channel.id,
+'channel_id', v_channel.id,
+'external_conversation_id', nullif(btrim(coalesce(p_external_conversation_id, '')), ''),
+'external_message_id', nullif(btrim(coalesce(p_external_message_id, '')), '')
+if v_conversation_id is null and v_intake.lead_id is not null then
+select c.id into v_conversation_id
+from public.conversations c
+where c.organization_id = v_channel.organization_id
+and c.channel_id = v_channel.id
+and c.lead_id = v_intake.lead_id
+order by c.last_message_at desc nulls last, c.created_at desc
+if v_conversation_id is null then
+insert into public.conversations (
+organization_id,
+channel_id,
+lead_id,
+external_conversation_id,
+last_message_at,
+v_channel.organization_id,
+v_channel.id,
+v_intake.lead_id,
+nullif(btrim(coalesce(p_external_conversation_id, '')), ''),
+jsonb_build_object('created_by', 'ingest_inbound_message', 'intake_action', v_intake.intake_action)
+) returning id into v_conversation_id;
+v_conversation_created := true;
+update public.conversations c
+set lead_id = coalesce(c.lead_id, v_intake.lead_id),
+last_message_at = greatest(coalesce(c.last_message_at, p_occurred_at), p_occurred_at),
+where c.id = v_conversation_id;
+perform set_config('app.ingestion_context', 'message_ingestion_v1', true);
+if nullif(btrim(coalesce(p_external_message_id, '')), '') is not null then
+select m.id into v_existing_message_id
+from public.messages m
+where m.organization_id = v_channel.organization_id
+and m.channel_id = v_channel.id
+and m.external_message_id = btrim(p_external_message_id)
+if v_existing_message_id is not null then
+definition_excerpt_end

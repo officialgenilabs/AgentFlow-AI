@@ -1,0 +1,156 @@
+PHASE11A_OBSERVABILITY_RETRY_ERROR_PRECHECK
+timestamp=2026-06-19T09:13:58Z
+n8n_active_workflow_observability_begin
+workflow_id=8QAshjrkLrNF5kDI
+workflow_name=AgentFlow_AI_STAGE_C_Evolution_Inbound_Ingestion
+settings.executionOrder=v1
+settings.saveDataSuccessExecution=none
+settings.saveDataErrorExecution=all
+settings.saveManualExecutions=true
+validation.valid=true
+validation.errorCount=0
+validation.warningCount=5
+warning.webhook_response_error_handling=Webhooks should always send a response, even on error; webhook node lacks explicit error handling.
+warning.code_node_error_handling=Code node can throw errors; no explicit catch/error route in workflow.
+warning.postgres_retry=Postgres node lacks retryOnFail / explicit error route.
+n8n_active_workflow_observability_end
+db_observability_objects_begin
+table_present=audit_logs
+table_present=automation_events
+table_present=conversations
+table_present=ingress_replay_keys
+table_present=lead_events
+table_present=messages
+column=automation_events.id:uuid
+column=automation_events.organization_id:uuid
+column=automation_events.event_type:text
+column=automation_events.aggregate_type:text
+column=automation_events.aggregate_id:uuid
+column=automation_events.lead_id:uuid
+column=automation_events.conversation_id:uuid
+column=automation_events.message_id:uuid
+column=automation_events.payload:jsonb
+column=automation_events.status:text
+column=automation_events.created_at:timestamp with time zone
+column=automation_events.processed_at:timestamp with time zone
+column=ingress_replay_keys.id:uuid
+column=ingress_replay_keys.organization_id:uuid
+column=ingress_replay_keys.source:text
+column=ingress_replay_keys.replay_key:text
+column=ingress_replay_keys.request_signature:text
+column=ingress_replay_keys.expires_at:timestamp with time zone
+column=ingress_replay_keys.created_at:timestamp with time zone
+db_observability_objects_end
+source_observability_hits_begin
+src/features/crm/actions.ts:126:  if (error?.code === "23505") redirect(`/app/${orgSlug}/leads/new?error=duplicate-identity`);
+src/features/crm/actions.ts:129:  await supabase.from("audit_logs").insert({
+src/features/crm/actions.ts:169:  await supabase.from("audit_logs").insert({
+src/features/branding/actions.ts:56:  await supabase.from("audit_logs").insert({
+src/lib/data/dashboard-intelligence.ts:320:      .from("automation_events")
+src/lib/data/dashboard-intelligence.ts:326:      .from("lead_events")
+src/lib/data/dashboard-intelligence.ts:332:      .from("audit_logs")
+src/lib/data/crm.ts:125:      .from("lead_events")
+src/app/demo/positioning/page.tsx:37:              <li><strong className="text-white">Memory Fragmentation</strong>: Leads communicating across different agents and fragmented channels (WhatsApp, Property24, email) lose context memory, causing duplicated outreach and friction.</li>
+src/app/demo/routing/page.tsx:57:    { time: "00:54:33", lead: "Naledi Dlamini", event: "Ingress captured via Property24 parser hook. Lead duplicated matching ID keys", status: "captured" }
+src/app/api/ingress/property24/route.ts:36:  if (!timestamp || !signature) throw new Error("signed_ingress_required");
+src/app/api/ingress/property24/route.ts:140:      p_replay_key: normalized.replayKey,
+src/app/api/ingress/property24/route.ts:145:      const duplicate = error.message.includes("duplicate_ingress_replay_key") || error.code === "23505";
+src/app/api/ingress/property24/route.ts:147:        { ok: false, error: duplicate ? "duplicate_ingress_replay_key" : "property24_ingestion_failed" },
+src/app/api/ingress/property24/route.ts:148:        { status: duplicate ? 409 : 500 },
+src/app/admin/tenants/create/route.ts:55:  await supabase.from("audit_logs").insert({
+src/app/app/[orgSlug]/leads/new/page.tsx:30:              Lead Source Integrity is mandatory. Phone and email are normalized into cryptographic identity keys so duplicate intake paths cannot silently fork the same lead.
+src/app/app/[orgSlug]/routing/page.tsx:20:    evidence: "ai_message_drafts, audit_logs, automation_events",
+src/app/app/[orgSlug]/routing/page.tsx:26:    evidence: "lead source fields + lead_events",
+supabase/migrations/20260524_phase10_property24_ingress_and_draft_review.sql:15:create table if not exists public.ingress_replay_keys (
+supabase/migrations/20260524_phase10_property24_ingress_and_draft_review.sql:19:  replay_key text not null,
+supabase/migrations/20260524_phase10_property24_ingress_and_draft_review.sql:23:  constraint ingress_replay_keys_source_not_blank check (length(btrim(source)) > 0),
+supabase/migrations/20260524_phase10_property24_ingress_and_draft_review.sql:24:  constraint ingress_replay_keys_key_not_blank check (length(btrim(replay_key)) > 0),
+supabase/migrations/20260524_phase10_property24_ingress_and_draft_review.sql:25:  unique (source, replay_key)
+supabase/migrations/20260524_phase10_property24_ingress_and_draft_review.sql:28:create index if not exists ingress_replay_keys_org_created_idx on public.ingress_replay_keys(organization_id, created_at desc);
+supabase/migrations/20260524_phase10_property24_ingress_and_draft_review.sql:29:create index if not exists ingress_replay_keys_expires_idx on public.ingress_replay_keys(expires_at);
+supabase/migrations/20260524_phase10_property24_ingress_and_draft_review.sql:31:alter table public.ingress_replay_keys enable row level security;
+supabase/migrations/20260524_phase10_property24_ingress_and_draft_review.sql:32:revoke all on public.ingress_replay_keys from anon, authenticated;
+supabase/migrations/20260524_phase10_property24_ingress_and_draft_review.sql:110:  insert into public.audit_logs (
+supabase/migrations/20260524_phase10_property24_ingress_and_draft_review.sql:134:  insert into public.automation_events (
+supabase/migrations/20260524_phase10_property24_ingress_and_draft_review.sql:169:'Phase 10 governed draft review RPC. Persists edits/approval/discard in one transaction and writes audit_logs + automation_events. Does not send outbound messages.';
+supabase/migrations/20260524_phase10_property24_ingress_and_draft_review.sql:189:  p_replay_key text default null,
+supabase/migrations/20260524_phase10_property24_ingress_and_draft_review.sql:223:  v_replay_key text := nullif(btrim(coalesce(p_replay_key, '')), '');
+supabase/migrations/20260524_phase10_property24_ingress_and_draft_review.sql:245:    or v_replay_key is null then
+supabase/migrations/20260524_phase10_property24_ingress_and_draft_review.sql:259:  insert into public.ingress_replay_keys (organization_id, source, replay_key, request_signature, expires_at)
+supabase/migrations/20260524_phase10_property24_ingress_and_draft_review.sql:260:  values (v_org.id, 'property24', v_replay_key, null, now() + interval '14 days')
+supabase/migrations/20260524_phase10_property24_ingress_and_draft_review.sql:261:  on conflict (source, replay_key) do nothing;
+supabase/migrations/20260524_phase10_property24_ingress_and_draft_review.sql:264:    raise exception 'duplicate_ingress_replay_key';
+supabase/migrations/20260524_phase10_property24_ingress_and_draft_review.sql:505:    insert into public.automation_events (organization_id, event_type, aggregate_type, aggregate_id, lead_id, conversation_id, payload)
+supabase/migrations/20260524_phase10_property24_ingress_and_draft_review.sql:517:  insert into public.automation_events (organization_id, event_type, aggregate_type, aggregate_id, lead_id, conversation_id, message_id, payload)
+supabase/migrations/20260429_stage_a_multi_tenant_core.sql:81:create table if not exists public.audit_logs (
+supabase/migrations/20260429_stage_a_multi_tenant_core.sql:94:create index if not exists audit_logs_org_created_idx on public.audit_logs(organization_id, created_at desc);
+supabase/migrations/20260429_stage_a_multi_tenant_core.sql:187:alter table public.audit_logs enable row level security;
+supabase/migrations/20260429_stage_a_multi_tenant_core.sql:231:DROP POLICY IF EXISTS "audit_logs_select_members_or_platform_admin" ON public.audit_logs;
+supabase/migrations/20260429_stage_a_multi_tenant_core.sql:232:CREATE POLICY "audit_logs_select_members_or_platform_admin" ON public.audit_logs
+supabase/migrations/20260429_stage_a_multi_tenant_core.sql:235:DROP POLICY IF EXISTS "audit_logs_insert_members_or_platform_admin" ON public.audit_logs;
+supabase/migrations/20260429_stage_a_multi_tenant_core.sql:236:CREATE POLICY "audit_logs_insert_members_or_platform_admin" ON public.audit_logs
+supabase/migrations/20260429_stage_a_multi_tenant_core.sql:278:grant select, insert on public.audit_logs to authenticated;
+supabase/migrations/20260430_stage_c_activation_ingestion_contract.sql:197:    insert into public.automation_events (organization_id, event_type, aggregate_type, aggregate_id, lead_id, conversation_id, payload)
+supabase/migrations/20260430_stage_c_activation_ingestion_contract.sql:209:  insert into public.automation_events (organization_id, event_type, aggregate_type, aggregate_id, lead_id, conversation_id, message_id, payload)
+supabase/migrations/20260430_stage_c_conversations_inbox.sql:94:create table if not exists public.automation_events (
+supabase/migrations/20260430_stage_c_conversations_inbox.sql:107:  constraint automation_events_type_not_blank check (length(btrim(event_type)) > 0),
+supabase/migrations/20260430_stage_c_conversations_inbox.sql:108:  constraint automation_events_aggregate_type_not_blank check (length(btrim(aggregate_type)) > 0),
+supabase/migrations/20260430_stage_c_conversations_inbox.sql:109:  constraint automation_events_payload_is_object check (jsonb_typeof(payload) = 'object'),
+supabase/migrations/20260430_stage_c_conversations_inbox.sql:110:  constraint automation_events_status_check check (status in ('pending', 'processing', 'processed', 'failed', 'ignored'))
+supabase/migrations/20260430_stage_c_conversations_inbox.sql:113:create index if not exists automation_events_org_created_idx on public.automation_events (organization_id, created_at desc);
+supabase/migrations/20260430_stage_c_conversations_inbox.sql:114:create index if not exists automation_events_type_status_idx on public.automation_events (event_type, status, created_at asc);
+supabase/migrations/20260430_stage_c_conversations_inbox.sql:115:create index if not exists automation_events_conversation_idx on public.automation_events (conversation_id, created_at desc) where conversation_id is not null;
+supabase/migrations/20260430_stage_c_conversations_inbox.sql:288:drop trigger if exists assert_automation_event_integrity on public.automation_events;
+supabase/migrations/20260430_stage_c_conversations_inbox.sql:289:create trigger assert_automation_event_integrity before insert or update on public.automation_events for each row execute function app_private.assert_automation_event_integrity();
+supabase/migrations/20260430_stage_c_conversations_inbox.sql:479:    insert into public.automation_events (organization_id, event_type, aggregate_type, aggregate_id, lead_id, conversation_id, payload)
+supabase/migrations/20260430_stage_c_conversations_inbox.sql:491:  insert into public.automation_events (organization_id, event_type, aggregate_type, aggregate_id, lead_id, conversation_id, message_id, payload)
+supabase/migrations/20260430_stage_c_conversations_inbox.sql:523:alter table public.automation_events enable row level security;
+supabase/migrations/20260430_stage_c_conversations_inbox.sql:546:DROP POLICY IF EXISTS "automation_events_select_members_or_platform_admin" ON public.automation_events;
+supabase/migrations/20260430_stage_c_conversations_inbox.sql:547:CREATE POLICY "automation_events_select_members_or_platform_admin" ON public.automation_events
+supabase/migrations/20260430_stage_c_conversations_inbox.sql:550:DROP POLICY IF EXISTS "automation_events_platform_admin_update" ON public.automation_events;
+supabase/migrations/20260430_stage_c_conversations_inbox.sql:551:CREATE POLICY "automation_events_platform_admin_update" ON public.automation_events
+supabase/migrations/20260430_stage_c_conversations_inbox.sql:557:revoke all on public.automation_events from anon, authenticated;
+supabase/migrations/20260430_stage_c_conversations_inbox.sql:559:grant select on public.channels, public.conversations, public.messages, public.automation_events to authenticated;
+supabase/migrations/20260429_stage_b_crm_core.sql:78:create table if not exists public.lead_events (
+supabase/migrations/20260429_stage_b_crm_core.sql:89:  constraint lead_events_metadata_is_object check (jsonb_typeof(metadata) = 'object')
+supabase/migrations/20260429_stage_b_crm_core.sql:115:create index if not exists lead_events_lead_created_idx on public.lead_events(lead_id, created_at desc);
+supabase/migrations/20260429_stage_b_crm_core.sql:116:create index if not exists lead_events_org_created_idx on public.lead_events(organization_id, created_at desc);
+supabase/migrations/20260429_stage_b_crm_core.sql:225:  insert into public.lead_events (organization_id, lead_id, actor_user_id, event_type, field_name, old_value, new_value, metadata)
+supabase/migrations/20260429_stage_b_crm_core.sql:405:alter table public.lead_events enable row level security;
+supabase/migrations/20260429_stage_b_crm_core.sql:446:DROP POLICY IF EXISTS "lead_events_select_members_or_platform_admin" ON public.lead_events;
+supabase/migrations/20260429_stage_b_crm_core.sql:447:CREATE POLICY "lead_events_select_members_or_platform_admin" ON public.lead_events
+supabase/migrations/20260429_stage_b_crm_core.sql:450:DROP POLICY IF EXISTS "lead_events_insert_members_or_platform_admin" ON public.lead_events;
+supabase/migrations/20260429_stage_b_crm_core.sql:469:grant select on public.lead_events to authenticated;
+supabase/migrations/20260525_phase10b_governed_outbound_certification.sql:90:  insert into public.audit_logs (
+supabase/migrations/20260525_phase10b_governed_outbound_certification.sql:115:  insert into public.automation_events (
+supabase/migrations/20260525_phase10b_governed_outbound_certification.sql:151:'Phase 10B governed draft review RPC. Persists edits/approval/discard in one transaction and writes audit_logs + automation_events. Sending remains separate and server-controlled.';
+supabase/migrations/20260525_phase10b_governed_outbound_certification.sql:396:      raise exception 'duplicate_send_prevented';
+supabase/migrations/20260525_phase10b_governed_outbound_certification.sql:474:    insert into public.audit_logs (
+supabase/migrations/20260525_phase10b_governed_outbound_certification.sql:517:    raise exception 'duplicate_send_prevented';
+supabase/migrations/20260525_phase10b_governed_outbound_certification.sql:549:  insert into public.automation_events (
+supabase/migrations/20260525_phase10b_governed_outbound_certification.sql:584:  insert into public.audit_logs (
+supabase/rollback/20260429_stage_b_crm_core_rollback.sql:17:drop table if exists public.lead_events;
+supabase/rollback/20260430_stage_c_conversations_inbox_rollback.sql:6:drop trigger if exists assert_automation_event_integrity on public.automation_events;
+supabase/rollback/20260430_stage_c_conversations_inbox_rollback.sql:16:drop table if exists public.automation_events;
+clients/libertalia-properties/LIBERTALIA_GO_LIVE_CHECKLIST.md:172:| [ ] | Replay key/idempotency configured | Duplicate test email does not create duplicate lead/message |
+clients/libertalia-properties/LIBERTALIA_PROPERTY24_INTAKE_SETUP.md:130:- Duplicate replay keys should return duplicate/idempotency protection instead of creating duplicate leads.
+clients/libertalia-properties/LIBERTALIA_PROPERTY24_INTAKE_SETUP.md:204:### Test C — duplicate replay key
+clients/libertalia-properties/LIBERTALIA_PROPERTY24_INTAKE_SETUP.md:207:- Expected: duplicate protection.
+clients/libertalia-properties/LIBERTALIA_PROPERTY24_INTAKE_SETUP.md:208:- Pass condition: no duplicate lead/message.
+clients/libertalia-properties/LIBERTALIA_GO_LIVE_READINESS.md:194:| Duplicate forwarded emails create duplicates | Medium | Use stable `x-agentflow-idempotency-key`. |
+clients/libertalia-properties/LIBERTALIA_CONVERSATIONAL_QUALIFICATION_FRAMEWORK.md:841:- monitor duplicate prevention and handoff quality
+Operations/First_Client_Production_Readiness/Phase10B_First_Inbound_Data_Readiness/FIRST_INBOUND_DATA_READINESS_REPORT_2026-06-17.md:26:| Property24 unsigned ingress guard | PASS | Unsigned POST to `/api/ingress/property24` returned `401 signed_ingress_required`; no write path reached. |
+Operations/First_Client_Production_Readiness/Phase10B_First_Inbound_Data_Readiness/FIRST_INBOUND_DATA_READINESS_REPORT_2026-06-17.md:40:| `lead_events` | 0 | EMPTY |
+Operations/First_Client_Production_Readiness/Phase10B_First_Inbound_Data_Readiness/FIRST_INBOUND_DATA_READINESS_REPORT_2026-06-17.md:42:| `automation_events` | 0 | EMPTY |
+Operations/First_Client_Production_Readiness/Phase10B_First_Inbound_Data_Readiness/FINAL_PHASE10B_DEPLOYMENT_RECOMMENDATION.md:25:| Routing audit data sources | **Pass** | Uses `automation_events`, `lead_events`, and `audit_logs`. |
+Operations/First_Client_Production_Readiness/Phase10B_First_Inbound_Data_Readiness/FINAL_PHASE10B_DEPLOYMENT_RECOMMENDATION.md:61:- `automation_events`
+Operations/First_Client_Production_Readiness/Phase10B_First_Inbound_Data_Readiness/FINAL_PHASE10B_DEPLOYMENT_RECOMMENDATION.md:62:- `lead_events`
+Operations/First_Client_Production_Readiness/Phase10B_First_Inbound_Data_Readiness/FINAL_PHASE10B_DEPLOYMENT_RECOMMENDATION.md:63:- `audit_logs`
+Operations/First_Client_Production_Readiness/Phase10B_First_Inbound_Data_Readiness/ROUTING_AUDIT_TRAIL_REPORT.md:30:1. `automation_events`
+Operations/First_Client_Production_Readiness/Phase10B_First_Inbound_Data_Readiness/ROUTING_AUDIT_TRAIL_REPORT.md:31:2. `lead_events`
+Operations/First_Client_Production_Readiness/Phase10B_First_Inbound_Data_Readiness/ROUTING_AUDIT_TRAIL_REPORT.md:32:3. `audit_logs`
+Operations/First_Client_Production_Readiness/Phase10B_First_Inbound_Data_Readiness/PRODUCTION_TRUTHFULNESS_AUDIT.md:43:| Routing Audit | Tenant `automation_events`, `lead_events`, and `audit_logs` |
+Operations/First_Client_Production_Readiness/Phase10B_First_Inbound_Data_Readiness/PHASE10B_IMPLEMENTATION_PLAN.md:27:   - Routing evidence now reads from existing `automation_events`, `lead_events`, and `audit_logs` tables.
+Operations/First_Client_Production_Readiness/Phase10B_First_Inbound_Data_Readiness/PHASE10B_IMPLEMENTATION_PLAN.md:55:  - Merges newest tenant `automation_events`, `lead_events`, and `audit_logs`.
+Operations/First_Client_Production_Readiness/Phase6_Production_Deployment_Validation/SMOKE_VALIDATION_REPORT.md:64:| Unsigned ingress rejection | PASS — `401 signed_ingress_required` | Runtime check. |
+source_observability_hits_end

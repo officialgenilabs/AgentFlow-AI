@@ -1,0 +1,63 @@
+{
+  "capturedAt": "2026-06-19T09:08:45.522Z",
+  "baseUrlClass": "public_nginx_evolution_route",
+  "configuredInstance": "AgentFlow_Primary",
+  "checks": [
+    {
+      "path": "/",
+      "status": null,
+      "ok": false,
+      "ms": 621,
+      "error": "fetch failed"
+    },
+    {
+      "path": "/instance/fetchInstances",
+      "status": null,
+      "ok": false,
+      "ms": 580,
+      "error": "fetch failed"
+    },
+    {
+      "path": "/instance/connectionState/AgentFlow_Primary",
+      "status": null,
+      "ok": false,
+      "ms": 585,
+      "error": "fetch failed"
+    },
+    {
+      "path": "/webhook/find/AgentFlow_Primary",
+      "status": null,
+      "ok": false,
+      "ms": 353,
+      "error": "fetch failed"
+    },
+    {
+      "path": "/settings/find/AgentFlow_Primary",
+      "status": null,
+      "ok": false,
+      "ms": 580,
+      "error": "fetch failed"
+    },
+    {
+      "path": "/instance/connect/AgentFlow_Primary",
+      "status": null,
+      "ok": false,
+      "ms": 359,
+      "error": "fetch failed",
+      "note": "QR endpoint readiness probe only; QR/code fields redacted; no pairing attempted."
+    }
+  ],
+  "discoveredInstanceNames": [],
+  "precheckInstance": "AgentFlow_Primary",
+  "libertaliaInstanceCandidate": null,
+  "summary": {
+    "serviceReachable": false,
+    "fetchInstancesOk": false,
+    "hasLibertaliaNamedInstance": false,
+    "configuredInstanceFound": false,
+    "qrProbeStatus": null,
+    "noOutboundAttempted": true,
+    "noPairingAttempted": true,
+    "secretsRedacted": true
+  }
+}

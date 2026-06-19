@@ -1,0 +1,262 @@
+PHASE11A_OUTBOUND_SURFACE_SOURCE_CHECK
+timestamp=2026-06-19T09:14:15Z
+src/features/approvals/actions.ts:6:import { sendEvolutionTextMessage } from "@/lib/evolution";
+src/features/approvals/actions.ts:9:type SendOutboundResult = {
+src/features/approvals/actions.ts:15:  draft_id: string;
+src/features/approvals/actions.ts:29:function safeDraftStatus(value: FormDataEntryValue | null) {
+src/features/approvals/actions.ts:31:  return ["draft", "approved", "discarded"].includes(status) ? status : "draft";
+src/features/approvals/actions.ts:34:function outboundTransportEnabled() {
+src/features/approvals/actions.ts:35:  return process.env.OUTBOUND_TRANSPORT_ENABLED === "true";
+src/features/approvals/actions.ts:38:function outboundExecutionSecret=<redacted> {
+src/features/approvals/actions.ts:39:  return process.env.GOVERNED_OUTBOUND_EXECUTION_SECRET=<redacted> || process.env.OUTBOUND_EXECUTION_SECRET=<redacted> || "";
+src/features/approvals/actions.ts:42:function firstRpcRow(value: unknown): SendOutboundResult | null {
+src/features/approvals/actions.ts:43:  if (Array.isArray(value)) return (value[0] as SendOutboundResult | undefined) ?? null;
+src/features/approvals/actions.ts:44:  return (value as SendOutboundResult | null) ?? null;
+src/features/approvals/actions.ts:49:  return "evolution_send_failed";
+src/features/approvals/actions.ts:61:export async function reviewAiMessageDraft(orgSlug: string, draftId: string, formData: FormData) {
+src/features/approvals/actions.ts:65:  const status = safeDraftStatus(formData.get("status"));
+src/features/approvals/actions.ts:66:  const draftContent = text(formData.get("draft_content"));
+src/features/approvals/actions.ts:67:  const shouldSend = status === "approved" && outboundTransportEnabled();
+src/features/approvals/actions.ts:68:  const executionSecret=<redacted> = outboundExecutionSecret=<redacted>
+src/features/approvals/actions.ts:70:  if (!draftContent && status !== "discarded") {
+src/features/approvals/actions.ts:71:    redirect(`/app/${orgSlug}/approvals?error=draft-content-required`);
+src/features/approvals/actions.ts:75:    redirect(`/app/${orgSlug}/approvals?error=outbound-execution-secret=<redacted>
+src/features/approvals/actions.ts:78:  const { error: reviewError } = await supabase.rpc("review_ai_message_draft", {
+src/features/approvals/actions.ts:79:    p_draft_id: draftId,
+src/features/approvals/actions.ts:81:    p_draft_content: status === "discarded" ? "Discarded draft" : draftContent,
+src/features/approvals/actions.ts:82:    p_outbound_frozen: !shouldSend,
+src/features/approvals/actions.ts:86:    redirect(`/app/${orgSlug}/approvals?error=draft-review-failed`);
+src/features/approvals/actions.ts:92:    redirect(`/app/${orgSlug}/approvals?draft=${status}`);
+src/features/approvals/actions.ts:95:  const { data: preparedData, error: prepareError } = await supabase.rpc("send_outbound_message", {
+src/features/approvals/actions.ts:96:    p_draft_id: draftId,
+src/features/approvals/actions.ts:106:  let delivery: Awaited<ReturnType<typeof sendEvolutionTextMessage>>;
+src/features/approvals/actions.ts:108:    delivery = await sendEvolutionTextMessage({
+src/features/approvals/actions.ts:114:    await supabase.rpc("send_outbound_message", {
+src/features/approvals/actions.ts:115:      p_draft_id: draftId,
+src/features/approvals/actions.ts:128:  const { error: finalizeError } = await supabase.rpc("send_outbound_message", {
+src/features/approvals/actions.ts:129:    p_draft_id: draftId,
+src/features/approvals/approval-queue-client.tsx:10:import { reviewAiMessageDraft } from "@/features/approvals/actions";
+src/features/approvals/approval-queue-client.tsx:12:export type ApprovalActionMode = "draft" | "manual" | "whatsapp";
+src/features/approvals/approval-queue-client.tsx:21:  draft: {
+src/features/approvals/approval-queue-client.tsx:22:    label: "Approve Draft",
+src/features/approvals/approval-queue-client.tsx:23:    description: "Outbound frozen: approval persists to the governed draft ledger only.",
+src/features/approvals/approval-queue-client.tsx:27:    description: "Manual send posture: approval records operator intent without autonomous dispatch.",
+src/features/approvals/approval-queue-client.tsx:30:    label: "Approve & Send WhatsApp",
+src/features/approvals/approval-queue-client.tsx:35:export function ApprovalQueueClient({ orgSlug, items, actionMode = "draft" }: ApprovalQueueClientProps) {
+src/features/approvals/approval-queue-client.tsx:45:  const reviewAction = reviewAiMessageDraft.bind(null, orgSlug, selectedItem.id);
+src/features/approvals/approval-queue-client.tsx:157:                    <Sparkles className="size-3 text-[#00E599]" /> Operator Outbound Draft
+src/features/approvals/approval-queue-client.tsx:160:                    {editing ? "Draft Modified" : "Canonical Draft"}
+src/features/approvals/approval-queue-client.tsx:164:                  name="draft_content"
+src/features/approvals/approval-queue-client.tsx:166:                  defaultValue={selectedItem.draftResponse}
+src/features/approvals/approval-queue-client.tsx:198:                  <X className="size-4 mr-2" /> Discard Draft
+src/features/approvals/approval-queue-client.tsx:203:                  value="draft"
+src/features/approvals/approval-queue-client.tsx:212:                  value="approved"
+src/features/approvals/approval-queue-client.tsx:225:            subtype="AI Draft Review"
+src/features/approvals/approval-queue-client.tsx:244:                Read-only draft review signals from existing lead, source, task, and governance records.
+src/features/auth/forgot-password=<redacted>      setMessage("If this operator identity exists, a recovery email has been sent to the approved mailbox.");
+src/components/dashboard/pending-approvals-summary.tsx:52:  emptyState = "No outbound approvals pending",
+src/components/dashboard/pending-approvals-summary.tsx:66:            <CardDescription className="text-xs text-white/45">Human-reviewed drafts staged before any outbound action.</CardDescription>
+src/components/layout/shell.tsx:142:                ? "Interactive guided preview. Outbound actions are disabled and all demo data is isolated."
+src/components/layout/shell.tsx:143:                : "Human-supervised operational intelligence active. Outbound remains governed by approval controls."}
+src/lib/demo/provider.tsx:15:  approveItem: (id: string, updatedDraft?: string) => void;
+src/lib/demo/provider.tsx:19:  sendDemoMessage: (conversationId: string, body: string, senderType?: "operator" | "system") => void;
+src/lib/demo/provider.tsx:33:  sendDemoMessage: () => {},
+src/lib/demo/provider.tsx:47:  const approveItem = (id: string, updatedDraft?: string) => {
+src/lib/demo/provider.tsx:57:      direction: "outbound",
+src/lib/demo/provider.tsx:62:      body: updatedDraft || item.draftResponse,
+src/lib/demo/provider.tsx:112:  const sendDemoMessage = (conversationId: string, body: string, senderType: "operator" | "system" = "operator") => {
+src/lib/demo/provider.tsx:122:      direction: "outbound",
+src/lib/demo/provider.tsx:149:        sendDemoMessage,
+src/lib/demo/data.ts:262:    sender_external_id: "whatsapp-+27825550192",
+src/lib/demo/data.ts:294:    sender_external_id: "whatsapp-+27825550192",
+src/lib/demo/data.ts:312:    sender_external_id: "whatsapp-+27714458891",
+src/lib/demo/data.ts:326:    direction: "outbound",
+src/lib/demo/data.ts:344:    sender_external_id: "whatsapp-+27714458891",
+src/lib/demo/data.ts:435:      field_name: "outbound_hold",
+src/lib/demo/data.ts:458:      event_type: "ai_draft_generated",
+src/lib/demo/data.ts:459:      field_name: "draft_response",
+src/lib/demo/data.ts:474:      metadata: { reasoning: "Sandton high-value premium listing requires operator confirmation before outbound dispatch." },
+src/lib/demo/data.ts:513:  draftResponse: string;
+src/lib/demo/data.ts:532:    draftResponse: "Hi Sibusiso! Yes, the Sandton Penthouse is available this Saturday. We have slot openings at 10:00 AM and 2:00 PM. Regarding power, the building is fully equipped with an integrated tier-1 hybrid inverter and solar array backed by dual Tesla Powerwall batteries, guaranteeing complete off-grid operational calm during grid outages. Which time slot works best for you?",
+src/lib/demo/data.ts:555:    draftResponse: "Hello Sarah! Absolutely, the Clifton Cliffside residence is highly suitable for corporate lease agreements, offering a private fiber uplink, absolute security gates, and a layout optimized for professional residents. Viewing hours are strictly by appointment between 10 AM and 4 PM, Monday to Saturday. Would you like us to arrange a private viewing this week?",
+src/lib/demo/data.ts:578:    draftResponse: "Hello David! I would be pleased to forward the comprehensive Stellenbosch Estate brochure and site details to your requested secondary email address. To ensure PII security and respect data-integrity rules, we must first verify your secondary address via security PIN. Shall I trigger the verification now?",
+src/lib/demo/data.ts:592:    nextAction: "Initiate manual phone verification to confirm secondary address validity before dispatching records."
+src/lib/demo/data.ts:603:  status: "pending" | "approved" | "confirmed";
+src/lib/demo/data.ts:613:    status: "approved"
+src/lib/demo/data.ts:628:  outboundLockState: "locked" | "governed" | "unlocked";
+src/lib/demo/data.ts:636:  outboundLockState: "governed",
+src/lib/demo/data.ts:639:    { timestamp: new Date(Date.now() - 30 * 60 * 1000).toISOString(), event: "Outbound draft rejected: AI draft for David Pieterse fell below 80% confidence gate", actor: "Governance Guard" },
+src/lib/demo/data.ts:640:    { timestamp: new Date(Date.now() - 2 * 3600 * 1000).toISOString(), event: "Approved outbound WhatsApp draft to Jessica Vandermerwe", actor: "Lead Architect" },
+src/lib/demo/data.ts:645:    { id: "sg-2", label: "Outbound throttling thresholds active (< 60 messages/hr/node)", checked: true },
+src/lib/demo/data.ts:646:    { id: "sg-3", label: "PII redaction engine active for outbound channels", checked: true },
+src/lib/demo/data.ts:712:    event: "Security Block: outbound identity mismatch detected on secondary email.",
+src/lib/data/approvals.ts:4:import type { AiMessageDraft, Channel, Conversation, Lead, LeadPipelineStage, LeadTask, Message } from "@/lib/types";
+src/lib/data/approvals.ts:12:  draftResponse: string;
+src/lib/data/approvals.ts:31:  draftStatus: AiMessageDraft["status"];
+src/lib/data/approvals.ts:61:type DraftRow = AiMessageDraft & {
+src/lib/data/approvals.ts:67:  messages?: Pick<Message, "id" | "body" | "occurred_at" | "sender_display_name" | "raw_payload"> | Pick<Message, "id" | "body" | "occurred_at" | "sender_display_name" | "raw_payload">[] | null;
+src/lib/data/approvals.ts:102:function propertyReference(lead: DraftRow["leads"], message: DraftRow["messages"], context: Record<string, unknown>) {
+src/lib/data/approvals.ts:115:function memoryContext(lead: DraftRow["leads"], conversation: DraftRow["conversations"], context: Record<string, unknown>) {
+src/lib/data/approvals.ts:136:    .from("ai_message_drafts")
+src/lib/data/approvals.ts:137:    .select("id, organization_id, conversation_id, message_id, lead_id, draft_content, status, generation_model, generation_context, edited_by_user_id, approved_by_user_id, approved_at, discarded_by_user_id, created_at, updated_at, conversations(id, organization_id, channel_id, lead_id, external_conversation_id, status, assigned_owner_user_id, subject, last_message_at, metadata, created_at, updated_at, channels(display_name, provider, channel_type)), messages(id, body, occurred_at, sender_display_name, raw_payload), leads(id, pipeline_stage_id, full_name, email, phone, identity_confidence, priority, estimated_value, exact_source, source_subtype, original_inbound_channel, source_reference, captured_at, first_contact_at, qualification_status, ai_qualification_decision_path, lead_origin_metadata)")
+src/lib/data/approvals.ts:139:    .eq("status", "draft")
+src/lib/data/approvals.ts:142:  const draftRows = (data ?? []) as DraftRow[];
+src/lib/data/approvals.ts:143:  const leadIds = Array.from(new Set(draftRows
+src/lib/data/approvals.ts:144:    .map((draft) => one(draft.leads)?.id ?? draft.lead_id)
+src/lib/data/approvals.ts:169:  const items = draftRows.map((draft) => {
+src/lib/data/approvals.ts:170:    const conversation = one(draft.conversations);
+src/lib/data/approvals.ts:172:    const message = one(draft.messages);
+src/lib/data/approvals.ts:173:    const lead = one(draft.leads);
+src/lib/data/approvals.ts:174:    const context = record(draft.generation_context);
+src/lib/data/approvals.ts:190:    const recommendedAction = summary?.nextBestAction ?? "Review, edit, approve, or discard the draft.";
+src/lib/data/approvals.ts:193:      id: draft.id,
+src/lib/data/approvals.ts:194:      leadId: draft.lead_id,
+src/lib/data/approvals.ts:196:      propertyReference: propertyReference(draft.leads, draft.messages, context),
+src/lib/data/approvals.ts:198:      draftResponse: draft.draft_content,
+src/lib/data/approvals.ts:207:      memoryContext: memoryContext(draft.leads, draft.conversations, context),
+src/lib/data/approvals.ts:209:        ?? "Draft generated from a governed inbound event. Outbound remains locked until certification gates pass.",
+src/lib/data/approvals.ts:215:        "Outbound transport remains governed; this card does not send messages.",
+src/lib/data/approvals.ts:220:      conversationId: draft.conversation_id,
+src/lib/data/approvals.ts:221:      sourceMessageId: draft.message_id,
+src/lib/data/approvals.ts:222:      draftStatus: draft.status,
+src/lib/data/approvals.ts:223:      createdAt: draft.created_at,
+src/lib/data/qualification.ts:219:  if (pendingApprovals > 0) knownFields.push("Draft pending approval");
+src/lib/data/qualification.ts:281:    nextBestAction = "Review the pending governed draft before any follow-up is sent.";
+src/lib/data/qualification.ts:282:    suggestedNextQuestion = "Does this draft answer the lead's latest question accurately?";
+src/lib/data/dashboard-intelligence.ts:207:  if (eventType.includes("approval") || eventType.includes("review") || eventType.includes("draft")) return "hold";
+src/lib/data/dashboard-intelligence.ts:223:  if (action.includes("approval") || action.includes("draft") || action.includes("govern")) return "hold";
+src/lib/data/dashboard-intelligence.ts:271:    supabase.from("ai_message_drafts").select("id", { count: "exact", head: true }).eq("organization_id", organizationId).eq("status", "draft"),
+src/lib/data/dashboard-intelligence.ts:304:      detail: "Draft approvals in the governed ledger",
+src/lib/data/inbox.ts:5:import type { AiMessageDraft, Channel, Conversation, Lead, LeadPipelineStage, LeadTask, Message } from "@/lib/types";
+src/lib/data/inbox.ts:44:  drafts: AiMessageDraft[];
+src/lib/data/inbox.ts:87:      drafts: [],
+src/lib/data/inbox.ts:124:    { data: drafts },
+src/lib/data/inbox.ts:131:          .select("id, organization_id, channel_id, conversation_id, lead_id, direction, sender_type, sender_external_id, sender_display_name, external_message_id, body, occurred_at, status, sent_at, raw_payload, created_at")
+src/lib/data/inbox.ts:138:          .from("ai_message_drafts")
+src/lib/data/inbox.ts:139:          .select("id, organization_id, conversation_id, message_id, lead_id, draft_content, status, generation_model, generation_context, edited_by_user_id, approved_by_user_id, approved_at, discarded_by_user_id, created_at, updated_at")
+src/lib/data/inbox.ts:169:    drafts: (drafts ?? []) as AiMessageDraft[],
+src/lib/evolution.ts:3:export type EvolutionSendInput = {
+src/lib/evolution.ts:9:export type EvolutionSendResult = {
+src/lib/evolution.ts:90:export async function sendEvolutionTextMessage(input: EvolutionSendInput): Promise<EvolutionSendResult> {
+src/lib/evolution.ts:126:    const message = typeof normalized.message === "string" ? normalized.message : `evolution_send_failed_${response.status}`;
+src/lib/types.ts:165:  direction: "inbound" | "outbound" | "internal" | "system" | string;
+src/lib/types.ts:193:export type AiMessageDraft = {
+src/lib/types.ts:199:  draft_content: string;
+src/lib/types.ts:200:  status: "draft" | "approved" | "discarded" | string;
+src/lib/types.ts:204:  approved_by_user_id: string | null;
+src/lib/types.ts:205:  approved_at: string | null;
+src/app/demo/calendar/page.tsx:12:    { id: "v-2", property: "Camps Bay Beachfront Villa // 5 Bed", client: "Jessica Vandermerwe", agent: "Amanda Venter", time: "Sunday, 3:00 PM", status: "Approved & Scheduled" },
+src/app/demo/dashboard/page.tsx:84:            emptyState="No demo-safe outbound approvals pending"
+src/app/demo/leads/[leadId]/page.tsx:91:                } else if (ev.event_type === "ai_draft_generated") {
+src/app/demo/leads/[leadId]/page.tsx:92:                  title = "Staged Response Draft";
+src/app/demo/leads/[leadId]/page.tsx:93:                  desc = `Staged outbound response draft generated with ${confidence} accuracy intent matching property record details.`;
+src/app/demo/leads/[leadId]/page.tsx:97:                  desc = `Demo-safe response locked by rule [SG-8: Outbound Governance]. Awaiting explicit human-in-the-loop operator verification before dispatch.`;
+src/app/demo/page.tsx:51:                <p className="text-white/50 mt-0.5">No active Supabase database mutations or outbound network actions are executed. All demo workflows remain isolated and write-safe.</p>
+src/app/demo/inbox/page.tsx:30:            Demo-safe inbound threads. Every message is attached through identity + intake layers before outbound approval.
+src/app/demo/inbox/page.tsx:115:            {/* Outbound Dispatch Governance Guard notice */}
+src/app/demo/inbox/page.tsx:119:                <span>OUTBOUND DISPATCH REMAINS GATED: USE APPROVALS TO REVIEW DRAFTS; DEMO MODE SENDS NOTHING.</span>
+src/app/demo/inbox/page.tsx:141:                const isOutbound = message.direction === "outbound";
+src/app/demo/inbox/page.tsx:150:                        : isOutbound
+src/app/demo/inbox/page.tsx:157:                        <Circle className={`size-1.5 ${isSystem ? "fill-[#6C63FF] text-[#6C63FF]" : isOutbound ? "fill-[#00E599] text-[#00E599]" : "fill-white/40 text-white/40"}`} />
+src/app/demo/positioning/page.tsx:38:              <li><strong className="text-white">Outbound Chaos</strong>: Automated systems without strict governance locks send unverified templates that alienate luxury buyers.</li>
+src/app/demo/routing/page.tsx:32:      activeGates: ["Sandton Broker Matcher", "Priority Dispatcher"],
+src/app/demo/routing/page.tsx:40:      activeGates: ["Outbound lock (95%)", "PII Redaction"],
+src/app/demo/routing/page.tsx:124:                  <p className="text-[10px] text-[#888888] mt-0.5 leading-relaxed">Outbound messages below 95% threshold are auto-routed to AI Approval queue.</p>
+src/app/demo/approvals/page.tsx:27:  const [draftText, setDraftText] = useState<string>(approvals[0]?.draftResponse || "");
+src/app/demo/approvals/page.tsx:34:    setDraftText(item.draftResponse);
+src/app/demo/approvals/page.tsx:40:    approveItem(selectedItem.id, draftText);
+src/app/demo/approvals/page.tsx:105:            title="Outbound Gate Status"
+src/app/demo/approvals/page.tsx:119:              Demo outbound queue is empty. All synthetic ingress pipelines resolved under demo-safe compliance parameters.
+src/app/demo/approvals/page.tsx:268:                    {/* AI Response Draft Textarea */}
+src/app/demo/approvals/page.tsx:272:                          <Sparkles className="size-3 text-[#00E599]" /> Staged Outbound Response Draft
+src/app/demo/approvals/page.tsx:275:                          {editing ? "Draft Modified" : "Canonical Staged Draft"}
+src/app/demo/approvals/page.tsx:279:                        value={draftText}
+src/app/demo/approvals/page.tsx:281:                          setDraftText(e.target.value);
+src/app/demo/approvals/page.tsx:298:                        <X className="size-4 mr-2" /> Reject Draft
+src/app/demo/approvals/page.tsx:305:                        <Send className="size-4 mr-2" /> Approve Draft
+src/app/demo/governance/page.tsx:16:    { id: "sg-2", label: "Outbound throttling thresholds active (< 60 messages/hr/node)", checked: true },
+src/app/demo/governance/page.tsx:17:    { id: "sg-3", label: "PII redaction engine active for outbound channels", checked: true },
+src/app/demo/governance/page.tsx:25:      event: "Compliance Hold: Flagged by rule [SG-8: Outbound Governance] for Sarah Jenkins. Solar backup battery details require manual validation.",
+src/app/demo/governance/page.tsx:31:      event: "Security Block: Flagged by rule [SG-3: Identity Match] for David Pieterse. Outbound secondary email differs from primary CRM record.",
+src/app/demo/governance/page.tsx:37:      event: "Staged Response Verified: Outbound simulation message approved for Sibusiso Ndlovu. Saturday viewing slots locked.",
+src/app/demo/governance/page.tsx:63:          {/* Outbound locks status */}
+src/app/demo/governance/page.tsx:69:                Instantly disconnect and freeze all demo WhatsApp and email outbound dispatches across this tenant.
+src/app/login/page.tsx:44:            Authorized runtime operators are resolved into isolated tenant structures. Outbound governance defaults to strict human-verification.
+src/app/admin/dashboard/page.tsx:73:            description="Avg outbound response generation"
+src/app/admin/dashboard/page.tsx:145:                  <span className="text-white/50 font-medium">WhatsApp Dispatch Gateway</span>
+src/app/forgot-password=<redacted>              Send a governed password=<redacted> recovery email to an approved operator mailbox.
+src/app/app/[orgSlug]/dashboard/page.tsx:119:    // Response timing requires a confirmed inbound-to-draft metric. Keep honest until enough real events exist.
+src/app/app/[orgSlug]/dashboard/page.tsx:220:            ctaLabel={pendingApprovalCount > 0 ? "Review Next Draft" : "Open Approvals"}
+src/app/app/[orgSlug]/dashboard/page.tsx:221:            emptyState="No production drafts pending review. Real approval state is synchronized from the governed draft ledger."
+src/app/app/[orgSlug]/dashboard/page.tsx:249:                Displayed only after real inbound-to-draft timing events exist; production does not estimate this metric.
+src/app/app/[orgSlug]/inbox/page.tsx:19:  const { tenant, conversations, selectedConversation, selectedLeadStage, selectedLeadTasks, messages, drafts, members } = await getInbox(orgSlug, query.conversationId);
+src/app/app/[orgSlug]/inbox/page.tsx:21:  const draftsByMessage = new Map(drafts.map((draft) => [draft.message_id, draft]));
+src/app/app/[orgSlug]/inbox/page.tsx:22:  const pendingDraftCount = drafts.filter((draft) => draft.status === "draft").length;
+src/app/app/[orgSlug]/inbox/page.tsx:27:        pendingApprovalCount: pendingDraftCount,
+src/app/app/[orgSlug]/inbox/page.tsx:28:        governanceState: pendingDraftCount > 0 ? "Draft pending approval" : "Read-only conversation review",
+src/app/app/[orgSlug]/inbox/page.tsx:42:            CRM-backed inbound threads. Every message is attached through identity + intake layers before outbound approval.
+src/app/app/[orgSlug]/inbox/page.tsx:127:            {/* Outbound Dispatch Governance Guard notice */}
+src/app/app/[orgSlug]/inbox/page.tsx:131:                <span>OUTBOUND GOVERNANCE GATED: {pendingDraftCount} DRAFT{pendingDraftCount === 1 ? "" : "S"} READY IN APPROVALS. SENDING REMAINS LOCKED.</span>
+src/app/app/[orgSlug]/inbox/page.tsx:153:                const isOutbound = message.direction === "outbound";
+src/app/app/[orgSlug]/inbox/page.tsx:155:                const draft = draftsByMessage.get(message.id);
+src/app/app/[orgSlug]/inbox/page.tsx:163:                        : isOutbound
+src/app/app/[orgSlug]/inbox/page.tsx:170:                        <Circle className={`size-1.5 ${isSystem ? "fill-[#6C63FF] text-[#6C63FF]" : isOutbound ? "fill-[#00E599] text-[#00E599]" : "fill-white/40 text-white/40"}`} />
+src/app/app/[orgSlug]/inbox/page.tsx:181:                    {draft ? (
+src/app/app/[orgSlug]/inbox/page.tsx:183:                        Draft {draft.status} · Review in approvals
+src/app/app/[orgSlug]/positioning/page.tsx:27:      solution: "Instant automated tour scheduling syncd with Google Workspace and direct WhatsApp dispatch locks booking confirmations."
+src/app/app/[orgSlug]/vision/page.tsx:25:      features: ["Agent-to-Agent negotiation hooks", "Dynamic calendar consensus matching", "Automated contract draft prep"]
+src/app/app/[orgSlug]/routing/page.tsx:18:    title: "Human approval before outbound",
+src/app/app/[orgSlug]/routing/page.tsx:19:    description: "Draft responses remain governed approval records. This surface does not dispatch WhatsApp, Evolution, or Property24 actions.",
+src/app/app/[orgSlug]/routing/page.tsx:20:    evidence: "ai_message_drafts, audit_logs, automation_events",
+src/app/app/[orgSlug]/approvals/page.tsx:10:  const transportEnabled = process.env.OUTBOUND_TRANSPORT_ENABLED === "true";
+src/app/app/[orgSlug]/approvals/page.tsx:11:  const executionSecret=<redacted> = process.env.GOVERNED_OUTBOUND_EXECUTION_SECRET=<redacted> || process.env.OUTBOUND_EXECUTION_SECRET=<redacted>
+src/app/app/[orgSlug]/approvals/page.tsx:14:  if (process.env.OUTBOUND_MANUAL_SEND_ENABLED === "true") return "manual" as const;
+src/app/app/[orgSlug]/approvals/page.tsx:15:  return "draft" as const;
+src/app/app/[orgSlug]/approvals/page.tsx:18:function draftStatusMessage(status: string, actionMode: ReturnType<typeof resolveApprovalActionMode>) {
+src/app/app/[orgSlug]/approvals/page.tsx:19:  if (status === "approved") {
+src/app/app/[orgSlug]/approvals/page.tsx:20:    if (actionMode === "manual") return "Draft approved for manual operator-controlled send. No autonomous outbound dispatch was triggered.";
+src/app/app/[orgSlug]/approvals/page.tsx:21:    if (actionMode === "whatsapp") return "Draft approved through the governed send path. Transport still requires server-side controls and audit evidence.";
+src/app/app/[orgSlug]/approvals/page.tsx:22:    return "Draft approved. Outbound transport remains frozen and no autonomous send was triggered.";
+src/app/app/[orgSlug]/approvals/page.tsx:25:  if (status === "discarded") return "Draft discarded and governance evidence persisted.";
+src/app/app/[orgSlug]/approvals/page.tsx:26:  return `Draft ${status} persisted. Outbound transport remains governed.`;
+src/app/app/[orgSlug]/approvals/page.tsx:34:  searchParams: Promise<{ error?: string; draft?: string; sent?: string }>;
+src/app/app/[orgSlug]/approvals/page.tsx:75:        {query.draft ? (
+src/app/app/[orgSlug]/approvals/page.tsx:77:            {draftStatusMessage(query.draft, actionMode)}
+src/app/app/[orgSlug]/approvals/page.tsx:83:            Approved outbound message delivered and audit evidence persisted.
+src/app/app/[orgSlug]/approvals/page.tsx:94:              Outbound queue is empty. Real draft state is synchronized from the governed message draft ledger.
+src/app/app/[orgSlug]/governance/page.tsx:13:    name: "Outbound Gate Lock",
+src/app/app/[orgSlug]/governance/page.tsx:15:    desc: "Production outbound remains blocked unless a governed server-side approval and transport certification path explicitly enables it.",
+src/app/app/[orgSlug]/governance/page.tsx:22:    desc: "Draft review state is persisted through existing approval, audit, and automation ledger records where available.",
+src/app/app/[orgSlug]/governance/page.tsx:78:              <CardTitle className="text-base font-bold text-[#FAFAFA]">Outbound Control State</CardTitle>
+src/app/app/[orgSlug]/governance/page.tsx:84:                  <span>Autonomous Outbound Dispatch</span>
+src/app/app/[orgSlug]/governance/page.tsx:98:                  <span className="text-[#888888]">Outbound Rate-Limiter</span>
+supabase/migrations/20260524_phase10_property24_ingress_and_draft_review.sql:1:-- Phase 10: Property24 ingress + governed draft review audit layer
+supabase/migrations/20260524_phase10_property24_ingress_and_draft_review.sql:2:-- Backend-only operationalization. No outbound send is triggered by this migration.
+supabase/migrations/20260524_phase10_property24_ingress_and_draft_review.sql:10:alter table public.ai_message_drafts add column if not exists approved_at timestamptz;
+supabase/migrations/20260524_phase10_property24_ingress_and_draft_review.sql:11:alter table public.ai_message_drafts add column if not exists approved_by_user_id uuid references public.profiles(id) on delete set null;
+supabase/migrations/20260524_phase10_property24_ingress_and_draft_review.sql:12:alter table public.ai_message_drafts add column if not exists discarded_by_user_id uuid references public.profiles(id) on delete set null;
+supabase/migrations/20260524_phase10_property24_ingress_and_draft_review.sql:13:alter table public.ai_message_drafts add column if not exists edited_by_user_id uuid references public.profiles(id) on delete set null;
+supabase/migrations/20260524_phase10_property24_ingress_and_draft_review.sql:45:create or replace function public.review_ai_message_draft(
+supabase/migrations/20260524_phase10_property24_ingress_and_draft_review.sql:46:  p_draft_id uuid,
+supabase/migrations/20260524_phase10_property24_ingress_and_draft_review.sql:48:  p_draft_content text
+supabase/migrations/20260524_phase10_property24_ingress_and_draft_review.sql:51:  draft_id uuid,
+supabase/migrations/20260524_phase10_property24_ingress_and_draft_review.sql:52:  draft_status text,
+supabase/migrations/20260524_phase10_property24_ingress_and_draft_review.sql:62:  v_status text := lower(btrim(coalesce(p_status, 'draft')));
+supabase/migrations/20260524_phase10_property24_ingress_and_draft_review.sql:63:  v_content text := nullif(btrim(coalesce(p_draft_content, '')), '');
+supabase/migrations/20260524_phase10_property24_ingress_and_draft_review.sql:64:  v_draft record;
+supabase/migrations/20260524_phase10_property24_ingress_and_draft_review.sql:72:  if v_status not in ('draft', 'approved', 'discarded') then
+supabase/migrations/20260524_phase10_property24_ingress_and_draft_review.sql:73:    raise exception 'invalid_draft_review_status';
+supabase/migrations/20260524_phase10_property24_ingress_and_draft_review.sql:77:    raise exception 'draft_content_required';
+supabase/migrations/20260524_phase10_property24_ingress_and_draft_review.sql:80:  select d.* into v_draft
+supabase/migrations/20260524_phase10_property24_ingress_and_draft_review.sql:81:  from public.ai_message_drafts d
+supabase/migrations/20260524_phase10_property24_ingress_and_draft_review.sql:82:  where d.id = p_draft_id
+supabase/migrations/20260524_phase10_property24_ingress_and_draft_review.sql:85:  if v_draft.id is null then
+supabase/migrations/20260524_phase10_property24_ingress_and_draft_review.sql:86:    raise exception 'draft_not_found';
+supabase/migrations/20260524_phase10_property24_ingress_and_draft_review.sql:89:  if not (app_private.is_platform_admin() or app_private.is_org_member(v_draft.organization_id)) then
+supabase/migrations/20260524_phase10_property24_ingress_and_draft_review.sql:93:  update public.ai_message_drafts d
+supabase/migrations/20260524_phase10_property24_ingress_and_draft_review.sql:95:      draft_content = coalesce(v_content, 'Discarded draft'),
+supabase/migrations/20260524_phase10_property24_ingress_and_draft_review.sql:97:      approved_by_user_id = case when v_status = 'approved' then v_actor else null end,
+supabase/migrations/20260524_phase10_property24_ingress_and_draft_review.sql:98:      approved_at = case when v_status = 'approved' then now() else null end,
+supabase/migrations/20260524_phase10_property24_ingress_and_draft_review.sql:101:  where d.id = v_draft.id
+supabase/migrations/20260524_phase10_property24_ingress_and_draft_review.sql:105:    when 'approved' then 'draft.approved'
+supabase/migrations/20260524_phase10_property24_ingress_and_draft_review.sql:106:    when 'discarded' then 'draft.discarded'

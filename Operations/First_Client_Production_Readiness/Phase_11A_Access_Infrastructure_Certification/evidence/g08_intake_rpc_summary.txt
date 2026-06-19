@@ -1,0 +1,11 @@
+PHASE11A_G08_INTAKE_RPC_SUMMARY
+timestamp=2026-06-19T09:11:23.474Z
+function_count=1
+signature=ingest_lead_from_intake(uuid,text,text,text,text,timestamp with time zone,text,text,text,text,jsonb,text,text,numeric)
+organization_scoped=yes
+email_match=no
+phone_match=no
+duplicate_update_or_match=yes
+creates_lead=yes
+emits_events=yes
+source_trace=yes

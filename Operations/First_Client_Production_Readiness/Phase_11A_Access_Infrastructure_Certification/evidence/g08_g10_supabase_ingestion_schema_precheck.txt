@@ -1,0 +1,63 @@
+PHASE11A_G08_G10_SUPABASE_INGESTION_SCHEMA_PRECHECK
+timestamp=2026-06-19T09:10:35.740Z
+channels_count=4
+channel provider=evolution external_channel_id=AgentFlow_Primary status=active org_slug=gen-i-demo-realty org_status=active
+channel provider=evolution external_channel_id=stage-e-demo-channel status=active org_slug=gen-i-demo-realty org_status=active
+channel provider=property24 external_channel_id=property24 status=active org_slug=gen-i-demo-realty org_status=active
+channel provider=evolution external_channel_id=stage-e-rival-channel status=active org_slug=rival-demo-realty org_status=active
+ingest_function_count=1
+ingest_signature=ingest_inbound_message(uuid,text,text,text,timestamp with time zone,text,text,text,text,jsonb)
+ingest_flag_selects_channel_org=no
+ingest_flag_upserts_conversation=no
+ingest_flag_inserts_message=yes
+ingest_flag_handles_duplicate_message=no
+ingest_flag_creates_or_matches_lead=yes
+ingest_flag_sets_ingestion_context=yes
+ingest_flag_writes_automation_events=yes
+relevant_indexes_begin
+automation_events.automation_events_conversation_idx: CREATE INDEX automation_events_conversation_idx ON public.automation_events USING btree (conversation_id, created_at DESC) WHERE (conversation_id IS NOT NULL)
+automation_events.automation_events_org_created_idx: CREATE INDEX automation_events_org_created_idx ON public.automation_events USING btree (organization_id, created_at DESC)
+automation_events.automation_events_pkey: CREATE UNIQUE INDEX automation_events_pkey ON public.automation_events USING btree (id)
+automation_events.automation_events_type_status_idx: CREATE INDEX automation_events_type_status_idx ON public.automation_events USING btree (event_type, status, created_at)
+channels.channels_org_provider_external_unique_idx: CREATE UNIQUE INDEX channels_org_provider_external_unique_idx ON public.channels USING btree (organization_id, provider, external_channel_id) WHERE (external_channel_id IS NOT NULL)
+channels.channels_org_status_idx: CREATE INDEX channels_org_status_idx ON public.channels USING btree (organization_id, status)
+channels.channels_pkey: CREATE UNIQUE INDEX channels_pkey ON public.channels USING btree (id)
+channels.channels_provider_external_global_unique_idx: CREATE UNIQUE INDEX channels_provider_external_global_unique_idx ON public.channels USING btree (provider, external_channel_id) WHERE (external_channel_id IS NOT NULL)
+conversations.conversations_channel_idx: CREATE INDEX conversations_channel_idx ON public.conversations USING btree (channel_id, updated_at DESC)
+conversations.conversations_org_channel_external_unique_idx: CREATE UNIQUE INDEX conversations_org_channel_external_unique_idx ON public.conversations USING btree (organization_id, channel_id, external_conversation_id) WHERE (external_conversation_id IS NOT NULL)
+conversations.conversations_org_lead_idx: CREATE INDEX conversations_org_lead_idx ON public.conversations USING btree (organization_id, lead_id, updated_at DESC)
+conversations.conversations_org_status_last_idx: CREATE INDEX conversations_org_status_last_idx ON public.conversations USING btree (organization_id, status, last_message_at DESC NULLS LAST)
+conversations.conversations_pkey: CREATE UNIQUE INDEX conversations_pkey ON public.conversations USING btree (id)
+leads.leads_org_created_idx: CREATE INDEX leads_org_created_idx ON public.leads USING btree (organization_id, created_at DESC)
+leads.leads_org_identity_confidence_idx: CREATE INDEX leads_org_identity_confidence_idx ON public.leads USING btree (organization_id, identity_confidence, created_at DESC)
+leads.leads_org_normalized_email_unique_idx: CREATE UNIQUE INDEX leads_org_normalized_email_unique_idx ON public.leads USING btree (organization_id, normalized_email) WHERE (normalized_email IS NOT NULL)
+leads.leads_org_normalized_phone_unique_idx: CREATE UNIQUE INDEX leads_org_normalized_phone_unique_idx ON public.leads USING btree (organization_id, normalized_phone_e164) WHERE (normalized_phone_e164 IS NOT NULL)
+leads.leads_org_owner_idx: CREATE INDEX leads_org_owner_idx ON public.leads USING btree (organization_id, assigned_owner_user_id)
+leads.leads_org_pipeline_idx: CREATE INDEX leads_org_pipeline_idx ON public.leads USING btree (organization_id, pipeline_stage_id)
+leads.leads_org_status_idx: CREATE INDEX leads_org_status_idx ON public.leads USING btree (organization_id, status)
+leads.leads_pkey: CREATE UNIQUE INDEX leads_pkey ON public.leads USING btree (id)
+leads.leads_source_trace_idx: CREATE INDEX leads_source_trace_idx ON public.leads USING btree (organization_id, exact_source, source_subtype, original_inbound_channel)
+messages.messages_conversation_occurred_idx: CREATE INDEX messages_conversation_occurred_idx ON public.messages USING btree (conversation_id, occurred_at)
+messages.messages_lead_idx: CREATE INDEX messages_lead_idx ON public.messages USING btree (lead_id, occurred_at DESC) WHERE (lead_id IS NOT NULL)
+messages.messages_org_channel_external_unique_idx: CREATE UNIQUE INDEX messages_org_channel_external_unique_idx ON public.messages USING btree (organization_id, channel_id, external_message_id) WHERE (external_message_id IS NOT NULL)
+messages.messages_org_occurred_idx: CREATE INDEX messages_org_occurred_idx ON public.messages USING btree (organization_id, occurred_at DESC)
+messages.messages_org_status_idx: CREATE INDEX messages_org_status_idx ON public.messages USING btree (organization_id, status, occurred_at DESC)
+messages.messages_outbound_draft_idx: CREATE INDEX messages_outbound_draft_idx ON public.messages USING btree (((raw_payload ->> 'draft_id'::text))) WHERE ((direction = 'outbound'::text) AND (raw_payload ? 'draft_id'::text))
+messages.messages_outbound_draft_one_active_idx: CREATE UNIQUE INDEX messages_outbound_draft_one_active_idx ON public.messages USING btree (organization_id, ((raw_payload ->> 'draft_id'::text))) WHERE ((direction = 'outbound'::text) AND (raw_payload ? 'draft_id'::text))
+messages.messages_pkey: CREATE UNIQUE INDEX messages_pkey ON public.messages USING btree (id)
+relevant_indexes_end
+relevant_triggers_begin
+automation_events.assert_automation_event_integrity: BEFORE INSERT
+automation_events.assert_automation_event_integrity: BEFORE UPDATE
+automation_events.create_ai_draft_on_message_received_event: AFTER INSERT
+channels.assert_channel_integrity: BEFORE INSERT
+channels.assert_channel_integrity: BEFORE UPDATE
+conversations.assert_conversation_integrity: BEFORE INSERT
+conversations.assert_conversation_integrity: BEFORE UPDATE
+leads.leads_integrity_before_write: BEFORE INSERT
+leads.leads_integrity_before_write: BEFORE UPDATE
+leads.leads_record_state_events_after_write: AFTER INSERT
+leads.leads_record_state_events_after_write: AFTER UPDATE
+messages.assert_message_integrity: BEFORE INSERT
+messages.assert_message_integrity: BEFORE UPDATE
+relevant_triggers_end

@@ -1,0 +1,10 @@
+PHASE11A_G06_EVOLUTION_NGINX_READONLY
+timestamp=2026-06-19T09:09:36Z
+nginx_sites_refs_begin
+nginx_sites_refs_end
+nginx_status_begin
+active
+/bin/bash: line 11: nginx: command not found
+nginx_status_end
+recent_nginx_errors_begin
+recent_nginx_errors_end
