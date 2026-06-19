@@ -1,0 +1,27 @@
+PHASE11A_G01_GIT_BASELINE
+timestamp=2026-06-19T08:31:28Z
+branch=release/agentflow-v2-production
+head=c137baaeb3cecebd007c3926e973754b1eadc38d
+remote_origin=git@github.com:officialgenilabs/agentflow-ai.git
+remote_release_head=c137baaeb3cecebd007c3926e973754b1eadc38d
+contains_phase10b=yes
+contains_rollback_ref=yes
+contains_phase11a_auth=yes
+app_affecting_diff_from_prod_commit_to_head=
+working_tree_status_begin
+?? Operations/First_Client_Production_Readiness/Phase10A_AI_Deal_Desk_Activation/PHASE10A_PRODUCTION_DEPLOYMENT_REPORT_2026-06-17.md
+?? Operations/First_Client_Production_Readiness/Phase10A_AI_Deal_Desk_Activation/PHASE10A_PRODUCTION_READINESS_SCORECARD_2026-06-17.md
+?? Operations/First_Client_Production_Readiness/Phase10A_AI_Deal_Desk_Activation/PHASE10A_PRODUCTION_VALIDATION_REPORT_2026-06-17.md
+?? Operations/First_Client_Production_Readiness/Phase10B_First_Inbound_Data_Readiness/
+?? Operations/First_Client_Production_Readiness/Phase4_Visual_Consolidation/
+?? Operations/First_Client_Production_Readiness/Phase6_Production_Deployment_Validation/
+?? Operations/First_Client_Production_Readiness/Phase7A_Visual_Logo_Confirmation/
+?? Operations/First_Client_Production_Readiness/Phase7B_Canonical_Logo_Correction/
+?? Operations/First_Client_Production_Readiness/Phase7C_Approved_Logo_Deployment/
+?? Operations/First_Client_Production_Readiness/Phase7_Canonical_Logo_Unification/
+?? Operations/First_Client_Production_Readiness/Phase9A_Visual_QA_Client_Experience_Review/
+?? Operations/First_Client_Production_Readiness/Phase9_Conversational_Intelligence_Activation/
+?? Operations/First_Client_Production_Readiness/Phase_11A_Access_Infrastructure_Certification/evidence/
+?? clients/libertalia-properties/LIBERTALIA_CONVERSATIONAL_QUALIFICATION_FRAMEWORK.md
+?? supabase/.temp/
+working_tree_status_end

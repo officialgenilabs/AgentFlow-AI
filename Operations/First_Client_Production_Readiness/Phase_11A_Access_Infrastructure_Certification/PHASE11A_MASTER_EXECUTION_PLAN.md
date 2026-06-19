@@ -1,9 +1,9 @@
 # Phase 11A — Access & Infrastructure Certification Master Execution Plan
 
-**Phase:** 11A — Access & Infrastructure Certification  
-**Authoritative record:** GitHub repository `officialgenilabs/AgentFlow-AI` / local repo `/opt/agentflow_memory/nova/agentflow-ai`  
-**Created:** 2026-06-19 UTC  
-**Current active gate:** G01 — Production Baseline Certification  
+**Phase:** 11A — Access & Infrastructure Certification
+**Authoritative record:** GitHub repository `officialgenilabs/AgentFlow-AI` / local repo `/opt/agentflow_memory/nova/agentflow-ai`
+**Created:** 2026-06-19 UTC
+**Current active gate:** G02 — Domain, DNS, SSL and Auth Callback Certification
 **Current final outcome:** Not certified. Phase 11A remains active until every required gate is `PASSED` in `PHASE11A_STATE_LEDGER.md`.
 
 ## 1. Phase Objective
@@ -18,12 +18,12 @@ This baseline must be verified during G01 before it becomes accepted production 
 
 | Item | Current known / expected value | Certification status |
 | --- | --- | --- |
-| Product repository | `officialgenilabs/AgentFlow-AI` / local `agentflow-ai` | REVALIDATION REQUIRED |
-| Production branch | `release/agentflow-v2-production` | REVALIDATION REQUIRED |
-| Local HEAD at baseline creation | `5731018` (`Validate Phase 11A auth recovery`) | REVALIDATION REQUIRED against Vercel production |
-| Historical Phase 10B deployment commit | `847f2b2` | Must verify still part of deployed lineage |
-| Historical Phase 10B rollback reference | `50cdaf4` | Must verify valid rollback reference |
-| Intended canonical domain | `https://app.genilabs.co.za` | REVALIDATION REQUIRED |
+| Product repository | `officialgenilabs/AgentFlow-AI` / local `agentflow-ai` | VERIFIED G01 |
+| Production branch | `release/agentflow-v2-production` actual production deployment ref; Vercel Git-link productionBranch reports `develop` | VERIFIED G01 WITH RISK |
+| Local/GitHub HEAD after baseline commit | `c137baa` (`Add Phase 11A execution baseline`); production app source commit `7616563` | VERIFIED G01 — docs-only branch drift |
+| Historical Phase 10B deployment commit | `847f2b2` | VERIFIED G01 — ancestor of production source commit |
+| Historical Phase 10B rollback reference | `50cdaf4` | VERIFIED G01 — valid commit and recent deployment |
+| Intended canonical domain | `https://app.genilabs.co.za` | VERIFIED G01 as assigned production alias; G02 deeper domain/auth checks in progress |
 | Prior temporary auth validation report | `Operations/First_Client_Production_Readiness/Phase11A_Auth_Recovery_Validation/PHASE11A_AUTH_RECOVERY_VALIDATION_REPORT_2026-06-19.md` | Evidence exists, not final certification |
 | Phase 11A durable plan location | `Operations/First_Client_Production_Readiness/Phase_11A_Access_Infrastructure_Certification/` | This file |
 
@@ -110,7 +110,7 @@ Reports must not contain:
 
 ### G01 — Production Baseline Certification
 
-**Depends on:** Durable plan baseline committed.  
+**Depends on:** Durable plan baseline committed.
 **Acceptance criteria:**
 
 - Production repository, branch, current commit, Vercel deployment, canonical domain, and rollback reference verified.
@@ -141,7 +141,7 @@ Reports must not contain:
 
 ### G02 — Domain, DNS, SSL and Auth Callback Certification
 
-**Depends on:** G01.  
+**Depends on:** G01.
 **Acceptance criteria:**
 
 - Every active production and preview domain discovered and classified.
@@ -171,7 +171,7 @@ Reports must not contain:
 
 ### G03 — Kopano Final Reset and Production Login
 
-**Depends on:** G02.  
+**Depends on:** G02.
 **Acceptance criteria:**
 
 - Approved Kopano identity confirmed: `kopano@libertaliaproperties.co.za`.
@@ -207,7 +207,7 @@ Reports must not contain:
 
 ### G04 — Libertalia Tenant and Permission Certification
 
-**Depends on:** G03.  
+**Depends on:** G03.
 **Acceptance criteria:**
 
 - Kopano has membership in correct Libertalia tenant.
@@ -235,7 +235,7 @@ Reports must not contain:
 
 ### G05 — Desktop and Mobile Operator Access
 
-**Depends on:** G04.  
+**Depends on:** G04.
 **Acceptance criteria:**
 
 - Desktop login certified.
@@ -262,7 +262,7 @@ Reports must not contain:
 
 ### G06 — Evolution API and WhatsApp Instance Certification
 
-**Depends on:** G01/G02 for environment context.  
+**Depends on:** G01/G02 for environment context.
 **Acceptance criteria:**
 
 - Evolution API service health verified.
@@ -284,7 +284,7 @@ Reports must not contain:
 
 ### G07 — WhatsApp QR Pairing
 
-**Depends on:** G06.  
+**Depends on:** G06.
 **Acceptance criteria:**
 
 - QR generated for confirmed Libertalia instance only.
@@ -307,7 +307,7 @@ Reports must not contain:
 
 ### G08 — n8n and Webhook Certification
 
-**Depends on:** G06; G07 for live WhatsApp connected-state checks where required.  
+**Depends on:** G06; G07 for live WhatsApp connected-state checks where required.
 **Acceptance criteria:**
 
 - Correct production workflows and active/inactive states verified.
@@ -328,7 +328,7 @@ Reports must not contain:
 
 ### G09 — Email-Forwarding Readiness
 
-**Depends on:** G01/G02; external mailbox details may require human checkpoint.  
+**Depends on:** G01/G02; external mailbox details may require human checkpoint.
 **Acceptance criteria:**
 
 - Libertalia source mailbox/forwarding source identified.
@@ -346,7 +346,7 @@ Reports must not contain:
 
 ### G10 — Inbound Pipeline Readiness
 
-**Depends on:** G06, G08, G09 readiness where applicable.  
+**Depends on:** G06, G08, G09 readiness where applicable.
 **Acceptance criteria:**
 
 - Component readiness verified for WhatsApp → Evolution API → webhook → n8n → AgentFlow Inbox → conversation → lead → qualification → approval → Signal Orchestration → Routing Audit Trail → operator action.
@@ -364,7 +364,7 @@ Reports must not contain:
 
 ### G11 — Phase 11B Preparation
 
-**Depends on:** G10.  
+**Depends on:** G10.
 **Acceptance criteria:**
 
 - Exact controlled test protocol prepared for:
@@ -384,7 +384,7 @@ Reports must not contain:
 
 ### G12 — Final Phase 11A Certification
 
-**Depends on:** G01-G11 all `PASSED`.  
+**Depends on:** G01-G11 all `PASSED`.
 **Acceptance criteria:**
 
 - All reports reconciled with actual production state.

@@ -1,0 +1,197 @@
+{
+  "capturedAt": "2026-06-19T08:31:34.680Z",
+  "project": {
+    "id": "prj_UuiAZPJfZ1gxlhBRItClxz3qnjJt",
+    "name": "agentflow-ai",
+    "accountId": "team_USLTH0xFqFKXI54hW1W4XVWc",
+    "link": {
+      "type": "github",
+      "org": "officialgenilabs",
+      "repo": "AgentFlow-AI",
+      "productionBranch": "develop"
+    }
+  },
+  "currentProduction": {
+    "id": "dpl_FHBucmcPXHwnuXzW5SBuQFDusq65",
+    "url": "agentflow-q97jmw05t-officialgenilabs-projects.vercel.app",
+    "deploymentHostname": "agentflow-q97jmw05t-officialgenilabs-projects",
+    "readyState": "READY",
+    "readySubstate": "PROMOTED",
+    "target": "production",
+    "alias": [
+      "app.genilabs.co.za",
+      "agentflow-ai-eta.vercel.app",
+      "agentflow-ai-officialgenilabs-projects.vercel.app",
+      "agentflow-ai-officialgenilabs-officialgenilabs-projects.vercel.app"
+    ],
+    "createdAt": "2026-06-19T07:30:23.561Z",
+    "readyAt": "2026-06-19T07:31:02.256Z",
+    "sourceCommit": {
+      "sha": "761656328cce9e7e4a39d66108777d78b8ee5853",
+      "ref": "release/agentflow-v2-production",
+      "repo": "agentflow-ai",
+      "message": "Add Phase 11A production auth recovery flow",
+      "gitDirty": "1"
+    }
+  },
+  "recentProductionDeployments": [
+    {
+      "uid": "dpl_FHBucmcPXHwnuXzW5SBuQFDusq65",
+      "url": "agentflow-q97jmw05t-officialgenilabs-projects.vercel.app",
+      "state": "READY",
+      "readyState": "READY",
+      "target": "production",
+      "createdAt": "2026-06-19T07:30:23.561Z",
+      "source": "cli",
+      "meta": {
+        "sha": "761656328cce9e7e4a39d66108777d78b8ee5853",
+        "ref": "release/agentflow-v2-production",
+        "message": "Add Phase 11A production auth recovery flow"
+      }
+    },
+    {
+      "uid": "dpl_GDeJ7kYRy5QoFsHdaBXrcz27pXUD",
+      "url": "agentflow-b13pxko3f-officialgenilabs-projects.vercel.app",
+      "state": "READY",
+      "readyState": "READY",
+      "target": "production",
+      "createdAt": "2026-06-19T00:54:05.933Z",
+      "source": "cli",
+      "meta": {
+        "sha": "761656328cce9e7e4a39d66108777d78b8ee5853",
+        "ref": "release/agentflow-v2-production",
+        "message": "Add Phase 11A production auth recovery flow"
+      }
+    },
+    {
+      "uid": "dpl_2hMSWhqhzSiBjwWG3j56HXxG1U2K",
+      "url": "agentflow-9n56grtez-officialgenilabs-projects.vercel.app",
+      "state": "READY",
+      "readyState": "READY",
+      "target": "production",
+      "createdAt": "2026-06-18T15:13:43.974Z",
+      "source": "cli",
+      "meta": {
+        "sha": "847f2b2fba03bf7a53bbe4f29b149afdb22c4e2d",
+        "ref": "release/agentflow-v2-production",
+        "message": "Deploy Phase 10B production readiness"
+      }
+    },
+    {
+      "uid": "dpl_7Kb5dbKoGiY7oX16H9uHum4ttJd4",
+      "url": "agentflow-7z8czzytk-officialgenilabs-projects.vercel.app",
+      "state": "READY",
+      "readyState": "READY",
+      "target": "production",
+      "createdAt": "2026-06-17T12:06:45.036Z",
+      "source": "cli",
+      "meta": {
+        "sha": "50cdaf46d686897b2732dead04ab8cb705c1d30b",
+        "ref": "release/agentflow-v2-production",
+        "message": "Activate Phase 10A AI Deal Desk"
+      }
+    },
+    {
+      "uid": "dpl_Gor7fiJNPRXPJPEHs6qQgn76FXbU",
+      "url": "agentflow-nqrstcm1c-officialgenilabs-projects.vercel.app",
+      "state": "BLOCKED",
+      "readyState": "BLOCKED",
+      "target": "production",
+      "createdAt": "2026-06-17T11:56:54.254Z",
+      "source": "cli",
+      "meta": {
+        "sha": null,
+        "ref": null,
+        "message": null
+      }
+    }
+  ],
+  "projectDomains": [
+    {
+      "name": "app.genilabs.co.za",
+      "apexName": "genilabs.co.za",
+      "verified": true,
+      "redirect": null,
+      "gitBranch": null,
+      "createdAt": "2026-06-16T08:39:38.501Z",
+      "updatedAt": "2026-06-16T08:39:38.501Z"
+    },
+    {
+      "name": "agentflow-ai-eta.vercel.app",
+      "apexName": "vercel.app",
+      "verified": true,
+      "redirect": null,
+      "gitBranch": null,
+      "createdAt": "2026-04-29T20:46:07.999Z",
+      "updatedAt": "2026-04-29T20:46:07.999Z"
+    }
+  ],
+  "productionEnvPresence": [
+    {
+      "key": "NEXT_PUBLIC_APP_URL",
+      "target": [
+        "production"
+      ],
+      "type": "sensitive",
+      "gitBranch": null,
+      "createdAt": "2026-06-19T00:53:42.606Z",
+      "updatedAt": "2026-06-19T00:53:42.606Z",
+      "value": "<redacted-or-not-returned>"
+    },
+    {
+      "key": "OUTBOUND_TRANSPORT_ENABLED",
+      "target": [
+        "production"
+      ],
+      "type": "sensitive",
+      "gitBranch": null,
+      "createdAt": "2026-06-16T08:39:20.811Z",
+      "updatedAt": "2026-06-16T08:39:20.811Z",
+      "value": "<redacted-or-not-returned>"
+    },
+    {
+      "key": "PROPERTY24_DEFAULT_ORG_SLUG",
+      "target": [
+        "production"
+      ],
+      "type": "sensitive",
+      "gitBranch": null,
+      "createdAt": "2026-06-16T08:39:20.410Z",
+      "updatedAt": "2026-06-16T08:39:20.410Z",
+      "value": "<redacted-or-not-returned>"
+    },
+    {
+      "key": "PROPERTY24_INGRESS_SECRET",
+      "target": [
+        "production"
+      ],
+      "type": "sensitive",
+      "gitBranch": null,
+      "createdAt": "2026-06-16T08:39:19.552Z",
+      "updatedAt": "2026-06-16T08:39:19.552Z",
+      "value": "<redacted-or-not-returned>"
+    },
+    {
+      "key": "NEXT_PUBLIC_SUPABASE_ANON_KEY",
+      "target": [
+        "production"
+      ],
+      "type": "sensitive",
+      "gitBranch": null,
+      "createdAt": "2026-05-16T07:10:04.711Z",
+      "updatedAt": "2026-05-16T07:10:04.711Z",
+      "value": "<redacted-or-not-returned>"
+    },
+    {
+      "key": "NEXT_PUBLIC_SUPABASE_URL",
+      "target": [
+        "production"
+      ],
+      "type": "sensitive",
+      "gitBranch": null,
+      "createdAt": "2026-05-16T07:10:00.923Z",
+      "updatedAt": "2026-05-16T07:10:00.923Z",
+      "value": "<redacted-or-not-returned>"
+    }
+  ]
+}

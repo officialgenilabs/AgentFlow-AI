@@ -1,0 +1,8 @@
+PHASE11A_G01_RUNTIME_GOVERNANCE_CHECKS
+timestamp=2026-06-19T08:31:34.744Z
+/app/libertalia-properties/dashboard anonymous_status=307 location=/login
+/app/libertalia-properties/dashboard status=200 bytes=99339 evidence=Production Signal Orchestration|Production Routing Audit Trail|Governed Queue|Approvals|Operations Cockpit
+/app/libertalia-properties/governance status=200 bytes=44590 evidence=Outbound Control State|Autonomous Outbound Dispatch|Governed Queue|Approvals|Operations Cockpit
+/app/libertalia-properties/approvals status=200 bytes=33704 evidence=Governance Safeguard|Governed Queue|Approvals|Operations Cockpit
+/app/libertalia-properties/inbox status=200 bytes=33843 evidence=Governed Queue|Approvals|Operations Cockpit
+/app/libertalia-properties/routing status=200 bytes=64387 evidence=Production Signal Orchestration|Production Routing Audit Trail|Human approval before outbound|Governed Queue|Approvals|Operations Cockpit
