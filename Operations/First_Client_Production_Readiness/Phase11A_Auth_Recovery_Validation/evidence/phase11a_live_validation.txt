@@ -1,0 +1,13 @@
+PHASE_11A_LIVE_VALIDATION_PASS
+timestamp=2026-06-19T07:34:39.827Z
+supabase_temp_credential_sign_in=PASS user=196bd175-95ef-42f6-ad4a-ea49a86209a4
+canonical_cookie=PASS names=sb-vgpguhrmvetutvtctsid-auth-token
+/login client_chunk_recovery_link=PASS chunk=/_next/static/chunks/0z6tztc56~jh0.js
+/forgot-password status=200 bytes=15200 evidence=Recover Operator Access
+/reset-password unauth_status=307 location=/login?error=reset-session-required
+/reset-password authed_status=200 bytes=15070 evidence=Set New Operator Key
+/app/libertalia-properties/dashboard status=200 bytes=99339 evidence=Libertalia|Operations Cockpit
+/app/libertalia-properties/leads status=200 bytes=29008 evidence=Libertalia|Sovereign Pipeline
+
+credential_file_metadata
+path=/home/genilabs/.openclaw/credentials/libertalia-kopano-login.env mode=600 owner=genilabs group=genilabs bytes=543 mtime=2026-06-19 07:24:53.754906525 +0000

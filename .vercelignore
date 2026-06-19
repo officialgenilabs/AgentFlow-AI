@@ -1,0 +1,14 @@
+# Local build/runtime artifacts
+.next
+node_modules
+.vercel
+
+# Operational reports and local evidence should not ship in production bundles
+Operations
+clients
+supabase/.temp
+
+# Environment/secret hygiene
+.env
+.env.*
+*.env
