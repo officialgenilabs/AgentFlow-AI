@@ -9,11 +9,11 @@
 | Area | Precheck Status | Certification Status | Notes |
 |---|---:|---:|---|
 | Evolution local container | PRECHECK PASS | REVALIDATION REQUIRED | Container is running and responds locally on `127.0.0.1:8080`. |
-| Public Evolution route | BLOCKED | NOT PASSED | `https://agentflow.duckdns.org/evolution/...` returned `503 no available server`. |
+| Public Evolution route | REMEDIATED ON CANONICAL ROUTE | REVALIDATION REQUIRED | `https://flows.genilabs.co.za/evolution/...` now returns `401` without API key and `200` with API key; legacy `agentflow.duckdns.org/evolution` remains stale/503. |
 | Libertalia-named Evolution instance | NOT FOUND | NOT PASSED | Current credential points to `AgentFlow_Primary`; fetch via public route failed, and no `libertalia` instance was discovered. |
-| QR generation readiness | BLOCKED | NOT PASSED | QR readiness cannot be confirmed because public Evolution API route is 503. No QR contents were exposed and no pairing was attempted. |
+| QR generation readiness | TECHNICALLY REACHABLE | REVALIDATION REQUIRED | `/instance/connect/AgentFlow_Primary` returns `state=open`; no QR contents were exposed and no pairing was attempted. Correct Libertalia instance/account decision remains required. |
 | n8n active inbound workflow | PRECHECK PASS WITH WARNINGS | REVALIDATION REQUIRED | `AgentFlow_AI_STAGE_C_Evolution_Inbound_Ingestion` is active and validates, but live-event proof depends on Evolution route + pairing. |
-| Webhook/auth posture | NEEDS HARDENING | REVALIDATION REQUIRED | Active n8n webhook path is unauthenticated at the n8n layer; protection currently depends on Evolution-side webhook configuration, which could not be read due 503. |
+| Webhook/auth posture | PRECHECK REFRESHED WITH WARNINGS | REVALIDATION REQUIRED | Evolution webhook config is now readable through the recovered route and points to internal n8n `MESSAGES_UPSERT`; active n8n webhook still needs live-event proof and error/retry hardening. |
 | Inbound DB mapping path | PRECHECK PASS WITH BLOCKER | REVALIDATION REQUIRED | Canonical RPC path exists, but no active Libertalia Evolution channel row exists yet. |
 | Observability/retries | PARTIAL | REVALIDATION REQUIRED | n8n saves errors, suppresses success payloads, but lacks explicit node retry/error routes. |
 
@@ -45,11 +45,11 @@ Evidence files:
 
 ### G06 Gate Result
 
-**G06 remains `REVALIDATION REQUIRED / BLOCKED`, not passed.**
+**G06 remains `REVALIDATION REQUIRED`, not passed. The canonical route blocker is remediated, but the Libertalia-specific instance/channel mapping is not certified.**
 
 Required before G06 can pass:
 
-1. Fix or verify the public Evolution `/evolution/` proxy path so it reaches local `127.0.0.1:8080`.
+1. Keep the recovered canonical `https://flows.genilabs.co.za/evolution/` proxy path healthy and guarded.
 2. Confirm the target client instance naming strategy:
    - either create/verify a dedicated Libertalia instance, or
    - explicitly document use of `AgentFlow_Primary` for Libertalia pilot.
@@ -164,9 +164,51 @@ No outbound automation was enabled during this precheck.
 
 Primary blockers:
 
-1. Public Evolution `/evolution/` route returns 503.
+1. Libertalia-specific Evolution instance/channel mapping is unresolved; no Libertalia-named Evolution instance is visible.
 2. No confirmed Libertalia Evolution instance/channel mapping.
 3. n8n inbound workflow lacks explicit retry/error branches.
 4. Live webhook behavior cannot be proven until Evolution route and pairing are restored.
 
-Recommended next technical action after founder approval: repair/verify Evolution public proxy path, then configure/verify a Libertalia-specific instance/channel mapping before QR pairing.
+Recommended next technical action after founder approval: confirm whether `AgentFlow_Primary` is approved for the Libertalia pilot or prepare a dedicated Libertalia instance, then configure/verify a Libertalia-specific channel mapping before QR pairing.
+## 7. 2026-06-19T23:23Z G06 503 Remediation Update
+
+Evidence file: `evidence/g06_evolution_503_remediation_20260619.txt`
+
+### Root Cause
+
+Evolution API was not down. The local container was running, bound to `127.0.0.1:8080`, and returned healthy local responses. The public failure was reverse-proxy drift:
+
+1. Legacy `https://agentflow.duckdns.org/evolution/...` still points to the old public route and returns `503 no available server`.
+2. The active canonical host for the stack is `https://flows.genilabs.co.za`. Before remediation, this host had no `/evolution/` nginx location, so `/evolution/...` fell through to the n8n proxy and returned n8n HTML instead of Evolution JSON.
+
+### Remediation Applied
+
+- Backed up `/etc/nginx/sites-available/flows`.
+- Added guarded `location ^~ /evolution/` on `flows.genilabs.co.za` proxying to `http://127.0.0.1:8080/`.
+- Added API-key header enforcement through a root-only nginx include; key value was not printed or committed.
+- Ran `/usr/sbin/nginx -t` successfully.
+- Reloaded nginx.
+- Did not change application code, Supabase, Vercel, n8n workflow config, Evolution instance config, or outbound automation.
+
+### Post-Fix Validation
+
+| Check | Result | Notes |
+|---|---:|---|
+| Canonical public unauthenticated `/evolution/` | `401` | API-key guard active. |
+| Canonical public authenticated `/evolution/` | `200` | Evolution welcome JSON returned. |
+| Canonical public `fetchInstances` | `200` | `AgentFlow_Primary` visible. |
+| Canonical public connection state | `200` | `AgentFlow_Primary` state `open`. |
+| Local Evolution root | `200` | Local service remains healthy. |
+| n8n public root | `200` | n8n not regressed. |
+| Stage-C webhook GET via nginx | `403` | Expected GET denial remains. |
+| Internal n8n from Evolution container | `200` | Docker-internal n8n service reachable. |
+| Recent nginx send/logout/delete hits | `0` | No outbound send/logout/delete endpoints invoked by remediation. |
+
+### Remaining G06 Limitation
+
+Only `AgentFlow_Primary` is visible and open. No Libertalia-named Evolution instance is visible. Before QR pairing, founder must confirm whether:
+
+1. `AgentFlow_Primary` is explicitly approved for the Libertalia pilot and will be mapped to `libertalia-properties`, or
+2. a dedicated Libertalia Evolution instance should be created and paired.
+
+Until that decision and tenant-channel mapping are certified, G06 remains `REVALIDATION REQUIRED` rather than `PASSED`.

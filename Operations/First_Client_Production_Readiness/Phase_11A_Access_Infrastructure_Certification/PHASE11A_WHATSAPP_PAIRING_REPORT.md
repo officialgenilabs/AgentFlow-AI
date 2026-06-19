@@ -2,7 +2,7 @@
 
 **Timestamp:** 2026-06-19 UTC
 **Mode:** QR-generation readiness only.
-**Status:** `NOT STARTED / REVALIDATION REQUIRED`
+**Status:** `REVALIDATION REQUIRED` — canonical route and QR/connect endpoint reachable; no pairing attempted
 **Scope guard:** No QR contents exposed, no WhatsApp pairing attempted, no test messages sent.
 
 ## 1. Pairing State
@@ -12,7 +12,7 @@ WhatsApp pairing was intentionally **not performed**.
 Reason:
 
 - G03 remains `WAITING ON KOPANO`.
-- G06 Evolution public-route precheck is blocked by `503 no available server` on the public `/evolution/` route.
+- G06 canonical Evolution route is now technically reachable, but correct Libertalia instance/account confirmation is still required.
 - Founder scan is required for pairing.
 - The user explicitly prohibited pairing during this waiting window.
 
@@ -20,11 +20,11 @@ Reason:
 
 The safe QR endpoint probe was limited to API-readiness only:
 
-- Endpoint probed: `/instance/connect/AgentFlow_Primary`
-- Result: public route fetch failed / curl returned `503 no available server` through the configured public Evolution route.
-- QR/code fields were redacted by the probe logic.
-- No QR image/code was displayed or stored.
+- Endpoint probed after route remediation: `https://flows.genilabs.co.za/evolution/instance/connect/AgentFlow_Primary`
+- Result: authenticated public request returned `200` with `state=open`.
+- No QR image/code was displayed, stored, or required because the visible instance is already open.
 - No device was paired.
+- Correct Libertalia instance/account decision remains unresolved before any future QR action.
 
 Evidence:
 
@@ -47,4 +47,17 @@ Before QR pairing can begin:
 
 G07 / WhatsApp Pairing: **NOT PASSED**.
 
-Current state: **REVALIDATION REQUIRED after G06 route and Libertalia instance/channel mapping are fixed.**
+Current state: **REVALIDATION REQUIRED after Libertalia instance/channel mapping is confirmed and founder authorizes pairing.**
+## 5. 2026-06-19 G06 Route Remediation Impact
+
+The canonical Evolution public route is now reachable through `https://flows.genilabs.co.za/evolution/` with API-key enforcement. QR/connect readiness is technically reachable for `AgentFlow_Primary` and returns `state=open`.
+
+This does **not** pass WhatsApp pairing:
+
+- No QR was exposed.
+- No scan was requested.
+- No device was paired.
+- No WhatsApp message was sent.
+- No Libertalia-named Evolution instance is visible yet.
+
+Next required decision: founder must confirm whether `AgentFlow_Primary` is the approved Libertalia pilot instance or whether Nova should prepare a dedicated Libertalia instance before pairing.

@@ -13,11 +13,11 @@
 | G03 | Kopano final reset + production login | WAITING ON KOPANO | `PHASE11A_KOPANO_ACCESS_RECOVERY_REPORT.md` | Kopano must privately reset and confirm login. No temp password may be created/used. |
 | G04 | Libertalia tenant and permissions | NOT STARTED | Pending `PHASE11A_PERMISSION_MATRIX.md` | Requires Kopano final authenticated production session or supervised confirmation. |
 | G05 | Desktop/mobile operator access | NOT STARTED | Pending | Requires Kopano final login/session evidence. |
-| G06 | Evolution API + WhatsApp instance | REVALIDATION REQUIRED / BLOCKED | `PHASE11A_EVOLUTION_N8N_CERTIFICATION.md` | Local container works; public `/evolution/` route returns 503; no Libertalia instance confirmed. |
-| G07 | WhatsApp pairing | NOT STARTED | `PHASE11A_WHATSAPP_PAIRING_REPORT.md` | No pairing attempted; QR readiness blocked by G06. |
-| G08 | n8n/webhook certification | REVALIDATION REQUIRED | `PHASE11A_EVOLUTION_N8N_CERTIFICATION.md` | Active workflow validates, but live webhook proof depends on G06/G07 and explicit error/retry hardening. |
+| G06 | Evolution API + WhatsApp instance | REVALIDATION REQUIRED | `PHASE11A_EVOLUTION_N8N_CERTIFICATION.md`; `evidence/g06_evolution_503_remediation_20260619.txt` | Canonical `flows.genilabs.co.za/evolution` route remediated and healthy with API-key guard; no Libertalia-named instance confirmed; legacy `agentflow.duckdns.org/evolution` remains stale/503. |
+| G07 | WhatsApp pairing | NOT STARTED | `PHASE11A_WHATSAPP_PAIRING_REPORT.md` | No pairing attempted; QR/connect endpoint is reachable for `AgentFlow_Primary`, but correct Libertalia instance/account confirmation is still required. |
+| G08 | n8n/webhook certification | REVALIDATION REQUIRED | `PHASE11A_EVOLUTION_N8N_CERTIFICATION.md`; `evidence/g06_evolution_503_remediation_20260619.txt` | Evolution webhook config is readable and internal n8n is reachable; live webhook proof still depends on correct instance/channel mapping, QR pairing, and explicit error/retry hardening. |
 | G09 | Email/Property24 forwarding readiness | REVALIDATION REQUIRED | `PHASE11A_EMAIL_READINESS_REPORT.md` | Route guard works; mailbox/parser bridge and signed sample still required. |
-| G10 | Full inbound pipeline readiness | REVALIDATION REQUIRED | This scorecard | Cannot pass without G03/G06/G07/G08/G09 live evidence and Phase 11B controlled inbound proof. |
+| G10 | Full inbound pipeline readiness | REVALIDATION REQUIRED | This scorecard | Cannot pass without G03/G04/G05, correct instance/channel mapping, G07/G08/G09 live evidence, and Phase 11B controlled inbound proof. |
 | G11 | Phase 11B test-plan preparation | PREPARED | `PHASE11B_FIRST_INBOUND_TEST_PLAN.md` | Plan prepared only; not executed. |
 | G12 | Final Phase 11A certification | NOT STARTED | Pending final reconciliation | Cannot pass until all required upstream gates pass. |
 
@@ -42,13 +42,13 @@ Completed while G03 remained waiting:
 
 Kopano has not yet completed final private password reset and production login confirmation.
 
-### B2 — Evolution public route 503
+### B2 — Evolution public route drift remediated
 
-The Evolution API container is healthy locally, but the configured public `/evolution/` route returns `503 no available server`.
+The Evolution API container is healthy locally. The canonical active route `https://flows.genilabs.co.za/evolution/` is now guarded and healthy. The legacy `https://agentflow.duckdns.org/evolution/` route remains stale/503 and should not be treated as the canonical production endpoint unless founder explicitly chooses to restore that old host.
 
-### B3 — No Libertalia Evolution channel mapping
+### B3 — Libertalia Evolution instance/channel mapping unresolved
 
-Current active Evolution channel rows point to demo/rival tenants, not `libertalia-properties`.
+Only `AgentFlow_Primary` is visible and open in Evolution. No Libertalia-named Evolution instance is visible, and prior DB inspection found no active Libertalia Evolution channel row. Founder must confirm approved pilot instance strategy before QR pairing.
 
 ### B4 — n8n error/retry hardening gap
 

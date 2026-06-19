@@ -1,0 +1,271 @@
+# G06 Evolution 503 Remediation Diagnostic Evidence — 2026-06-19T23:09Z+
+
+## Scope Guards
+- No QR pairing attempted.
+- No WhatsApp messages sent.
+- No outbound automation enabled.
+- API keys, tokens, QR contents, and phone numbers redacted.
+
+## Git Context
+branch=release/agentflow-v2-production
+head=6e25184
+
+## Credential Presence (values not printed)
+evolution_credential_file=present
+evolution_api_key=<redacted>
+
+## Public Route Probes — Before Remediation
+public_root_noauth status=503 body=no available server
+public_root_auth status=503 body=no available server
+public_fetch_instances_auth status=503 body=no available server
+public_connection_state_auth status=503 body=no available server
+
+## Local Route Probes — Before Remediation
+local_root_noauth status=200 body={"status":200,"message":"Welcome to the Evolution API, it is working!","version":"1.8.6","swagger":"http://<redacted-number>:8080/docs","manager":"http://<redacted-number>:8080/manager","documentation":"https://doc.evolution-api.com"}
+local_fetch_instances_auth status=200 body=[{"instance":{"instanceName":"AgentFlow_Primary","instanceId":"d5884dd3-12ee-4bea-b830-4e61d7306cec","owner":"<redacted>","profileName":"Gen I labs","profilePictureUrl":"<redacted>","profileStatus":{"status":" ","setAt":"<redacted-number>T09:02:11.000Z"},"status":"open","serverUrl":"https://flows.genilabs.co.za/evolution","apikey":"<redacted>","integration":{"webhook_wa_business":"https://flows.genilabs.co.za/evolution/webhook/whatsapp/AgentFlow_Primary"}}}]
+local_connection_state_auth status=200 body={"instance":{"instanceName":"AgentFlow_Primary","state":"open"}}
+
+## Process / Container Health
+NAMES           IMAGE                          STATUS       PORTS
+evolution_api   atendai/evolution-api:v1.8.7   Up 11 days   <redacted-number>:8080->8080/tcp
+
+## Listening Ports
+LISTEN <redacted-number>:<redacted-number>:*
+LISTEN <redacted-number>:<redacted-number>:*
+LISTEN <redacted-number>:<redacted-number>:*
+LISTEN <redacted-number>:<redacted-number>:*
+LISTEN <redacted-number>             [::]:80            [::]:*
+LISTEN <redacted-number>             [::]:443           [::]:*
+
+## Nginx/System Status
+nginx_active=active
+/bin/bash: line 78: nginx: command not found
+
+## Nginx Evolution References
+/etc/nginx/sites-enabled/crm:7:        proxy_pass http://<redacted-number>:3020;
+/etc/nginx/sites-enabled/ai:5:        proxy_pass http://<redacted-number>:18789;
+/etc/nginx/sites-enabled/flows:15:        proxy_pass http://<redacted-number>:5678;
+/etc/nginx/sites-enabled/flows:33:        proxy_pass http://<redacted-number>:5678;
+/etc/nginx/sites-available/crm:7:        proxy_pass http://<redacted-number>:3020;
+/etc/nginx/sites-available/ai:5:        proxy_pass http://<redacted-number>:18789;
+/etc/nginx/sites-available/flows:15:        proxy_pass http://<redacted-number>:5678;
+/etc/nginx/sites-available/flows:33:        proxy_pass http://<redacted-number>:5678;
+
+## Docker Compose Evolution/Nginx References (sanitized)
+
+## Firewall Summary
+
+## Recent Nginx Error Log Hints
+
+## Canonical Endpoint Discovery — flows.genilabs.co.za
+flows_root_noauth status=200 body=<!DOCTYPE html> <html lang="en"> 	<head> 		<meta charset="utf-8" /> 		<meta http-equiv="X-UA-Compatible" content="IE=edge" /> 		<meta name="viewport" content="width=device-width,initial-scale=1.0" /> 		<link rel="icon" href="/favicon.ico" /> 		<meta name="n8n:config:rest-endpoint" content="cmVzdA=="><meta name="n8n:config:sentry" content="eyJkc24iOiIiLCJlbnZpcm9ubWVudCI6ImRldmVsb3BtZW50IiwicmVsZWFzZSI6Im44bkAyLjE5LjUifQ=="> 		<link rel="stylesheet" href="/static/prefers-color-scheme.css"> 		<script src="/static/base-path.js" type="text/javascript"></script> 		<script src="/static/posthog.init.js" type="text/javascript"></script>  		<title>n8n.io - Workflow Automation</title> 		<script type="module" crossorigin src="/assets/index-CjowH24g.js"></script> 		<link rel="modulepreload" crossorigin href="/assets/_plugin-vue_export-helper-jW_mR90S.js"> 		<link rel="modulepreload" crossorigin href
+flows_root_auth status=200 body=<!DOCTYPE html> <html lang="en"> 	<head> 		<meta charset="utf-8" /> 		<meta http-equiv="X-UA-Compatible" content="IE=edge" /> 		<meta name="viewport" content="width=device-width,initial-scale=1.0" /> 		<link rel="icon" href="/favicon.ico" /> 		<meta name="n8n:config:rest-endpoint" content="cmVzdA=="><meta name="n8n:config:sentry" content="eyJkc24iOiIiLCJlbnZpcm9ubWVudCI6ImRldmVsb3BtZW50IiwicmVsZWFzZSI6Im44bkAyLjE5LjUifQ=="> 		<link rel="stylesheet" href="/static/prefers-color-scheme.css"> 		<script src="/static/base-path.js" type="text/javascript"></script> 		<script src="/static/posthog.init.js" type="text/javascript"></script>  		<title>n8n.io - Workflow Automation</title> 		<script type="module" crossorigin src="/assets/index-CjowH24g.js"></script> 		<link rel="modulepreload" crossorigin href="/assets/_plugin-vue_export-helper-jW_mR90S.js"> 		<link rel="modulepreload" crossorigin href
+flows_fetch_instances_auth status=200 body=<!DOCTYPE html> <html lang="en"> 	<head> 		<meta charset="utf-8" /> 		<meta http-equiv="X-UA-Compatible" content="IE=edge" /> 		<meta name="viewport" content="width=device-width,initial-scale=1.0" /> 		<link rel="icon" href="/favicon.ico" /> 		<meta name="n8n:config:rest-endpoint" content="cmVzdA=="><meta name="n8n:config:sentry" content="eyJkc24iOiIiLCJlbnZpcm9ubWVudCI6ImRldmVsb3BtZW50IiwicmVsZWFzZSI6Im44bkAyLjE5LjUifQ=="> 		<link rel="stylesheet" href="/static/prefers-color-scheme.css"> 		<script src="/static/base-path.js" type="text/javascript"></script> 		<script src="/static/posthog.init.js" type="text/javascript"></script>  		<title>n8n.io - Workflow Automation</title> 		<script type="module" crossorigin src="/assets/index-CjowH24g.js"></script> 		<link rel="modulepreload" crossorigin href="/assets/_plugin-vue_export-helper-jW_mR90S.js"> 		<link rel="modulepreload" crossorigin href
+flows_connection_state_auth status=200 body=<!DOCTYPE html> <html lang="en"> 	<head> 		<meta charset="utf-8" /> 		<meta http-equiv="X-UA-Compatible" content="IE=edge" /> 		<meta name="viewport" content="width=device-width,initial-scale=1.0" /> 		<link rel="icon" href="/favicon.ico" /> 		<meta name="n8n:config:rest-endpoint" content="cmVzdA=="><meta name="n8n:config:sentry" content="eyJkc24iOiIiLCJlbnZpcm9ubWVudCI6ImRldmVsb3BtZW50IiwicmVsZWFzZSI6Im44bkAyLjE5LjUifQ=="> 		<link rel="stylesheet" href="/static/prefers-color-scheme.css"> 		<script src="/static/base-path.js" type="text/javascript"></script> 		<script src="/static/posthog.init.js" type="text/javascript"></script>  		<title>n8n.io - Workflow Automation</title> 		<script type="module" crossorigin src="/assets/index-CjowH24g.js"></script> 		<link rel="modulepreload" crossorigin href="/assets/_plugin-vue_export-helper-jW_mR90S.js"> 		<link rel="modulepreload" crossorigin href
+flows_webhook_find_auth status=200 body=<!DOCTYPE html> <html lang="en"> 	<head> 		<meta charset="utf-8" /> 		<meta http-equiv="X-UA-Compatible" content="IE=edge" /> 		<meta name="viewport" content="width=device-width,initial-scale=1.0" /> 		<link rel="icon" href="/favicon.ico" /> 		<meta name="n8n:config:rest-endpoint" content="cmVzdA=="><meta name="n8n:config:sentry" content="eyJkc24iOiIiLCJlbnZpcm9ubWVudCI6ImRldmVsb3BtZW50IiwicmVsZWFzZSI6Im44bkAyLjE5LjUifQ=="> 		<link rel="stylesheet" href="/static/prefers-color-scheme.css"> 		<script src="/static/base-path.js" type="text/javascript"></script> 		<script src="/static/posthog.init.js" type="text/javascript"></script>  		<title>n8n.io - Workflow Automation</title> 		<script type="module" crossorigin src="/assets/index-CjowH24g.js"></script> 		<link rel="modulepreload" crossorigin href="/assets/_plugin-vue_export-helper-jW_mR90S.js"> 		<link rel="modulepreload" crossorigin href
+flows_settings_find_auth status=200 body=<!DOCTYPE html> <html lang="en"> 	<head> 		<meta charset="utf-8" /> 		<meta http-equiv="X-UA-Compatible" content="IE=edge" /> 		<meta name="viewport" content="width=device-width,initial-scale=1.0" /> 		<link rel="icon" href="/favicon.ico" /> 		<meta name="n8n:config:rest-endpoint" content="cmVzdA=="><meta name="n8n:config:sentry" content="eyJkc24iOiIiLCJlbnZpcm9ubWVudCI6ImRldmVsb3BtZW50IiwicmVsZWFzZSI6Im44bkAyLjE5LjUifQ=="> 		<link rel="stylesheet" href="/static/prefers-color-scheme.css"> 		<script src="/static/base-path.js" type="text/javascript"></script> 		<script src="/static/posthog.init.js" type="text/javascript"></script>  		<title>n8n.io - Workflow Automation</title> 		<script type="module" crossorigin src="/assets/index-CjowH24g.js"></script> 		<link rel="modulepreload" crossorigin href="/assets/_plugin-vue_export-helper-jW_mR90S.js"> 		<link rel="modulepreload" crossorigin href
+
+## Active Nginx Flows Site (sanitized)
+server {
+    server_name flows.genilabs.co.za;
+
+    location = /webhook/agentflow-stage-c-inbound {
+        limit_except POST { deny all; }
+
+        limit_req zone=agentflow_stagec_webhook_rate burst=30 nodelay;
+        limit_conn agentflow_stagec_webhook_conn 10;
+        limit_req_status 429;
+        limit_conn_status 429;
+
+        client_max_body_size 5m;
+        client_body_timeout 15s;
+
+        proxy_pass http://127.0.0.1:5678;
+        proxy_http_version 1.1;
+        proxy_connect_timeout 5s;
+        proxy_send_timeout 30s;
+        proxy_read_timeout 30s;
+
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-Host $host;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_cache_bypass $http_upgrade;
+
+        add_header X-AgentFlow-Ingress-Governance "phase-9e-mp3b" always;
+    }
+
+    location / {
+        proxy_pass http://127.0.0.1:5678;
+        proxy_http_version 1.1;
+
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+    }
+
+
+    listen 443 ssl; # managed by Certbot
+    ssl_certificate /etc/letsencrypt/live/flows.genilabs.co.za/fullchain.pem; # managed by Certbot
+    ssl_certificate_key /etc/letsencrypt/live/flows.genilabs.co.za/privkey.pem; # managed by Certbot
+    include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
+
+}
+server {
+    if ($host = flows.genilabs.co.za) {
+        return 301 https://$host$request_uri;
+    } # managed by Certbot
+
+
+    server_name flows.genilabs.co.za;
+    listen 80;
+    return 404; # managed by Certbot
+
+
+}
+## DNS Resolution Snapshot
+<redacted-number> DGRAM
+<redacted-number> RAW
+<redacted-number> STREAM flows.genilabs.co.za
+<redacted-number> DGRAM
+<redacted-number> RAW
+<redacted-number> STREAM agentflow.duckdns.org
+<redacted-number> DGRAM
+<redacted-number> RAW
+<redacted-number> STREAM
+<redacted-number> DGRAM
+<redacted-number> RAW
+<redacted-number> STREAM cname.vercel-dns.com
+
+## Remediation Applied
+- Added guarded nginx location `/evolution/` on `flows.genilabs.co.za` proxying to `http://127.0.0.1:8080/`.
+- Added root-only nginx include for expected Evolution API key comparison; value not printed.
+- Ran `/usr/sbin/nginx -t` successfully and reloaded nginx.
+- No application code, Vercel config, Supabase config, n8n workflow, Evolution instance, or outbound setting changed.
+
+## Public Route Probes — After Remediation
+flows_root_noauth_after status=401 headers=HTTP/1.1 401 Unauthorized
+ Content-Type: text/html
+ X-AgentFlow-Evolution-Governance: phase-11a-g06
+  body=<html>
+ <head><title>401 Authorization Required</title></head>
+ <body>
+ <center><h1>401 Authorization Required</h1></center>
+ <hr><center>nginx/1.24.0 (Ubuntu)</center>
+ </body>
+ </html>
+
+flows_root_auth_after status=200 headers=HTTP/1.1 200 OK
+ Content-Type: application/json; charset=utf-8
+ X-AgentFlow-Evolution-Governance: phase-11a-g06
+  body={"status":200,"message":"Welcome to the Evolution API, it is working!","version":"1.8.6","swagger":"http://flows.genilabs.co.za/docs","manager":"http://flows.genilabs.co.za/manager","documentation":"https://doc.evolution-api.com"}
+flows_fetch_instances_noauth_after status=401 headers=HTTP/1.1 401 Unauthorized
+ Content-Type: text/html
+ X-AgentFlow-Evolution-Governance: phase-11a-g06
+  body=<html>
+ <head><title>401 Authorization Required</title></head>
+ <body>
+ <center><h1>401 Authorization Required</h1></center>
+ <hr><center>nginx/1.24.0 (Ubuntu)</center>
+ </body>
+ </html>
+
+flows_fetch_instances_auth_after status=200 headers=HTTP/1.1 200 OK
+ Content-Type: application/json; charset=utf-8
+ X-AgentFlow-Evolution-Governance: phase-11a-g06
+  body=[{"instance":{"instanceName":"AgentFlow_Primary","instanceId":"d5884dd3-12ee-4bea-b830-4e61d7306cec","owner":"<redacted>","profileName":"Gen I labs","profilePictureUrl":"<redacted>","profileStatus":{"status":" ","setAt":"<redacted-number>T09:02:11.000Z"},"status":"open","serverUrl":"https://flows.genilabs.co.za/evolution","apikey":"<redacted>","integration":{"webhook_wa_business":"https://flows.genilabs.co.za/evolution/webhook/whatsapp/AgentFlow_Primary"}}}]
+flows_connection_state_auth_after status=200 headers=HTTP/1.1 200 OK
+ Content-Type: application/json; charset=utf-8
+ X-AgentFlow-Evolution-Governance: phase-11a-g06
+  body={"instance":{"instanceName":"AgentFlow_Primary","state":"open"}}
+flows_webhook_find_auth_after status=200 headers=HTTP/1.1 200 OK
+ Content-Type: application/json; charset=utf-8
+ X-AgentFlow-Evolution-Governance: phase-11a-g06
+  body={"enabled":true,"url":"http://n8n:5678/webhook/agentflow-stage-c-inbound","events":["MESSAGES_UPSERT"],"webhook_by_events":false,"webhook_base64":false}
+flows_settings_find_auth_after status=200 headers=HTTP/1.1 200 OK; Content-Type: application/json; X-AgentFlow-Evolution-Governance: phase-11a-g06 body=<raw settings omitted; summarized below>
+flows_qr_readiness_auth_after status=200 headers=HTTP/1.1 200 OK
+ Content-Type: application/json; charset=utf-8
+ X-AgentFlow-Evolution-Governance: phase-11a-g06
+  body={"instance":{"instanceName":"AgentFlow_Primary","state":"open"}}
+
+## Legacy/Stale Route Check — After Remediation
+duckdns_root_auth_after status=503 headers=HTTP/2 503
+ content-type: text/plain; charset=utf-8
+ x-content-type-options: nosniff
+  body=no available server
+duckdns_fetch_instances_auth_after status=503 headers=HTTP/2 503
+ content-type: text/plain; charset=utf-8
+ x-content-type-options: nosniff
+  body=no available server
+
+## Local Service Recheck — After Remediation
+local_root_noauth_after status=200 headers=HTTP/1.1 200 OK
+ Content-Type: application/json; charset=utf-8
+  body={"status":200,"message":"Welcome to the Evolution API, it is working!","version":"1.8.6","swagger":"http://127.0.0.1:8080/docs","manager":"http://127.0.0.1:8080/manager","documentation":"https://doc.evolution-api.com"}
+local_fetch_instances_auth_after status=200 headers=HTTP/1.1 200 OK
+ Content-Type: application/json; charset=utf-8
+  body=[{"instance":{"instanceName":"AgentFlow_Primary","instanceId":"d5884dd3-12ee-4bea-b830-4e61d7306cec","owner":"<redacted>","profileName":"Gen I labs","profilePictureUrl":"<redacted>","profileStatus":{"status":" ","setAt":"<redacted-number>T09:02:11.000Z"},"status":"open","serverUrl":"https://flows.genilabs.co.za/evolution","apikey":"<redacted>","integration":{"webhook_wa_business":"https://flows.genilabs.co.za/evolution/webhook/whatsapp/AgentFlow_Primary"}}}]
+local_connection_state_auth_after status=200 headers=HTTP/1.1 200 OK
+ Content-Type: application/json; charset=utf-8
+  body={"instance":{"instanceName":"AgentFlow_Primary","state":"open"}}
+
+## n8n Public Host Regression Check
+n8n_root_after status=200 headers=HTTP/1.1 200 OK
+ Content-Type: text/html; charset=utf-8
+ X-Content-Type-Options: nosniff
+  body=<!DOCTYPE html> <html lang="en"> 	<head> 		<meta charset="utf-8" /> 		<meta http-equiv="X-UA-Compatible" content="IE=edge" /> 		<meta name="viewport" content="width=device-width,initial-scale=1.0" /> 		<link rel="icon" href="/favicon.ico" /> 		<meta name="n8n:config:rest-endpoint" content="cmVzdA=="><meta name="n8n:config:sentry" content="eyJkc24iOiIiLCJlbnZpcm9ubWVudCI6ImRldmVsb3BtZW50IiwicmVsZWFzZSI6Im44bkAyLjE5LjUifQ=="> 		<link rel="stylesheet" href="/static/prefers-color-scheme.css"> 		<script src="/static/base-path.js" type="text/javascript"></script> 		<script src="/static/posthog.init.js" type="text/javascript"></script>  		<title>n8n.io - Workflow Automation</title> 		<script type="module" crossorigin src="/assets/index-CjowH24g.js"></script> 		<link rel="modulepreload" crossorigin href="/assets/_plugin-vue_export-helper-jW_mR90S.js"> 		<link rel="modulepreload" crossorigin href="/assets/chunk-BmSprMDW.js"> 		<link rel="modulepreload" crossorigin href="/assets/vue.runtime.esm-bundler-x3zUm4yO.js"> 		<link rel="modulepreload" crossorigin href="/assets/_MapCache-Buo50ZZx.js"> 		<link rel="modulepreload" crossorigin href="/assets/get-d8A8T_1d.js"> 		<link rel="modulepreload"
+n8n_stagec_webhook_get_after status=403 headers=HTTP/1.1 403 Forbidden
+ Content-Type: text/html
+ X-AgentFlow-Ingress-Governance: phase-9e-mp3b
+  body=<html>
+ <head><title>403 Forbidden</title></head>
+ <body>
+ <center><h1>403 Forbidden</h1></center>
+ <hr><center>nginx/1.24.0 (Ubuntu)</center>
+ </body>
+ </html>
+
+
+## Outbound Safety Recheck
+- No `/message/sendText` or equivalent send endpoint was called by this remediation.
+- Probes were limited to root, instance fetch, connection state, webhook/settings read, and QR/connect readiness.
+- No WhatsApp messages were sent.
+- No outbound application environment variables were changed.
+
+## Instance / Webhook / Outbound Summary — After Remediation
+instance_count=1
+instance_names=AgentFlow_Primary
+libertalia_named_instance_found=False
+agentflow_primary_status=open
+agentflow_primary_server_url=https://flows.genilabs.co.za/evolution
+webhook_enabled=True
+webhook_events=MESSAGES_UPSERT
+webhook_url_kind=internal_n8n
+webhook_base64=False
+settings_groups_ignore=True
+settings_read_messages=False
+settings_read_status=False
+recent_nginx_send_logout_delete_endpoint_hits_tail500=0
+- `AgentFlow_Primary` is visible and open through the recovered canonical public route.
+- No Libertalia-named Evolution instance is visible through fetchInstances.
+- Treat the Libertalia-specific instance decision/channel mapping as unresolved before QR pairing.
+
+## Docker Network / Internal Webhook Reachability Check
+docker_services:
+n8n Up 5 weeks 127.0.0.1:5678->5678/tcp
+evolution_api Up 11 days 127.0.0.1:8080->8080/tcp
+n8n-postgres-1 Up 5 weeks (healthy) 5432/tcp
+evolution_networks:
+n8n_demo
+n8n_networks:
+n8n_demo
+internal_n8n_root_from_evolution_container:
+Connecting to n8n:<redacted-number>:5678)
+  HTTP/1.1 200 OK
+  Accept-Ranges: bytes
+  Cache-Control: public, max-age=86400
+  Last-Modified: Sun, 10 May 2026 23:41:55 GMT
