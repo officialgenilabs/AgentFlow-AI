@@ -1,6 +1,7 @@
 ﻿"use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/browser";
 import { Button } from "@/components/ui/button";
@@ -15,7 +16,7 @@ export function LoginForm() {
 
   const [email, setEmail] = useState(() => isDemoMode ? "operator@genilabs.ai" : "");
   const [password, setPassword] = useState(() => isDemoMode ? "infrastructure-calm" : "");
-  const [message, setMessage] = useState(() => searchParams.get("error") ?? "");
+  const [message, setMessage] = useState(() => searchParams.get("error") ?? searchParams.get("message") ?? "");
   const [loading, setLoading] = useState(false);
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -101,6 +102,14 @@ export function LoginForm() {
       <Button className="w-full text-xs font-bold uppercase tracking-wider h-11" type="submit" disabled={loading}>
         {loading ? "Decrypting gateway credentials..." : isDemoMode ? "Enter Demo Workspace" : "Enter Secure Workspace"}
       </Button>
+
+      {!isDemoMode && (
+        <div className="text-center">
+          <Link href="/forgot-password" className="text-[11px] font-mono font-bold uppercase tracking-widest text-white/40 transition hover:text-[#00E599]">
+            Recover operator access
+          </Link>
+        </div>
+      )}
     </form>
   );
 }

@@ -2,6 +2,23 @@
 import { type NextRequest, NextResponse } from "next/server";
 
 export async function updateSession(request: NextRequest) {
+  const canonicalAppUrl = process.env.NEXT_PUBLIC_APP_URL;
+
+  if (canonicalAppUrl) {
+    try {
+      const canonicalUrl = new URL(canonicalAppUrl);
+      const requestHost = request.nextUrl.hostname;
+      const localHosts = new Set(["localhost", "127.0.0.1", "0.0.0.0"]);
+
+      if (canonicalUrl.hostname && requestHost !== canonicalUrl.hostname && !localHosts.has(requestHost)) {
+        const redirectUrl = new URL(`${request.nextUrl.pathname}${request.nextUrl.search}`, canonicalUrl.origin);
+        return NextResponse.redirect(redirectUrl, 307);
+      }
+    } catch {
+      // Ignore malformed canonical URL configuration and continue with normal auth handling.
+    }
+  }
+
   if (process.env.NEXT_PUBLIC_DEMO_MODE === "true") {
     return NextResponse.next({ request });
   }

@@ -16,6 +16,7 @@ import {
   Lock,
   Eye,
   Layers,
+  LogOut,
   Menu,
   X
 } from "lucide-react";
@@ -168,6 +169,13 @@ export function AppShell({
                   <Building2 className="size-4 mr-2" /> {mode === "demo" ? "Restart Demo" : "Contexts"}
                 </Link>
               </Button>
+              {mode !== "demo" && (
+                <Button asChild variant="outline" size="sm" className="hidden sm:inline-flex">
+                  <Link href="/logout">
+                    <LogOut className="size-4 mr-2" /> Sign out
+                  </Link>
+                </Button>
+              )}
               <div className="rounded-full border border-white/[0.06] bg-white/[0.04] px-4 py-2 text-xs font-mono font-bold text-white/70 tracking-tight">
                 {profile.email}
               </div>
@@ -232,6 +240,13 @@ export function AppShell({
                   <Building2 className="size-4 mr-2" /> {mode === "demo" ? "Restart Demo" : "Contexts"}
                 </Link>
               </Button>
+              {mode !== "demo" && (
+                <Button asChild variant="outline" size="sm" className="w-full sm:w-auto">
+                  <Link href="/logout" onClick={() => setMobileMenuOpen(false)}>
+                    <LogOut className="size-4 mr-2" /> Sign out
+                  </Link>
+                </Button>
+              )}
             </div>
             <div className="rounded-xl border border-[#6C63FF]/20 bg-[#6C63FF]/5 p-4">
               <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#A29EFF]">Gen I Labs</p>
