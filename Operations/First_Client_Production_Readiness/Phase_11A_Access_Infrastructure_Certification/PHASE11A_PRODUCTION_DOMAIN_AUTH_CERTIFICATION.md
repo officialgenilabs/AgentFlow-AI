@@ -2,7 +2,7 @@
 
 **Created:** 2026-06-19 UTC  
 **Scope:** G01 Production Baseline and G02 Domain/DNS/SSL/Auth Callback Certification  
-**Current status:** G01 `PASSED`; G02 `WAITING ON FOUNDER`
+**Current status:** G01 `PASSED`; G02 `PASSED`; G03 `WAITING ON KOPANO`
 
 ## Evidence Files
 
@@ -70,7 +70,7 @@ Rollback was **not** executed.
 
 ### Status
 
-`IN PROGRESS` — not yet certified.
+`PASSED` — certified after founder/Supabase admin confirmation plus production runtime and canonical recovery-request evidence.
 
 ### Initial Discovery
 
@@ -135,6 +135,27 @@ Founder/Supabase project admin must verify the canonical production auth URL con
 6. Reply only with: `Supabase auth URL config verified for app.genilabs.co.za; no localhost/stale/unauthorized redirects remain.`
 
 After that confirmation, Nova will reopen this plan and ledger, mark G02 accordingly, and proceed to G03 Kopano final reset.
+
+## G02 Founder Checkpoint Resolution
+
+Founder reported at 2026-06-19 08:53 UTC that Supabase Auth URL Configuration for project `vgpguhrmvetutvtctsid` was corrected and saved:
+
+- Site URL: `https://app.genilabs.co.za`
+- Allowed production redirects:
+  - `https://app.genilabs.co.za/auth/callback`
+  - `https://app.genilabs.co.za/**`
+- Founder confirmed there are no localhost, stale-preview, unrelated, or unauthorized redirects.
+
+### Production Evidence After Checkpoint
+
+- Production app remains aliased to `https://app.genilabs.co.za`.
+- Production runtime checks already showed canonical redirect behavior for non-canonical aliases and mobile user agents.
+- Live client bundle contains the canonical Supabase project ref and no legacy Supabase or known stale preview refs.
+- G03 canonical password recovery request for Kopano was accepted with redirect destination `https://app.genilabs.co.za/auth/callback?next=/reset-password`; no reset link, token, or password was logged. Evidence: `evidence/g03_recovery_email_request.txt`.
+
+### G02 Decision
+
+G02 is marked `PASSED` because the previously blocking Supabase Auth URL Configuration has been corrected by the founder/Supabase admin and the production application behavior uses the canonical domain/callback path.
 
 ## Secrets Review
 

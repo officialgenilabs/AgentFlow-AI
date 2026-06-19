@@ -3,7 +3,7 @@
 **Phase:** 11A — Access & Infrastructure Certification
 **Authoritative record:** GitHub repository `officialgenilabs/AgentFlow-AI` / local repo `/opt/agentflow_memory/nova/agentflow-ai`
 **Created:** 2026-06-19 UTC
-**Current active gate:** G02 — Domain, DNS, SSL and Auth Callback Certification
+**Current active gate:** G03 — Kopano Final Reset and Production Login
 **Current final outcome:** Not certified. Phase 11A remains active until every required gate is `PASSED` in `PHASE11A_STATE_LEDGER.md`.
 
 ## 1. Phase Objective

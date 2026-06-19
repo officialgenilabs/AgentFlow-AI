@@ -1,0 +1,13 @@
+PHASE11A_G03_KOPANO_PRECHECK
+timestamp=2026-06-19T08:55:48.480Z
+user_id=196bd175-95ef-42f6-ad4a-ea49a86209a4
+email=kopano@libertaliaproperties.co.za
+email_confirmed=true
+has_invitation_timestamp=false
+has_prior_sign_in=true
+currently_banned=false
+deleted=false
+is_sso_user=false
+identity_providers=email
+membership org_slug=libertalia-properties org_status=active role=member membership_status=active platform_admin=false
+precheck_result=PASS

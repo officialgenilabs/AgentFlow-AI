@@ -1,0 +1,6 @@
+PHASE11A_G03_RECOVERY_EMAIL_REQUEST
+timestamp=2026-06-19T08:56:12.429Z
+email_identity=kopano@libertaliaproperties.co.za
+redirect_destination=https://app.genilabs.co.za/auth/callback?next=/reset-password
+request_result=NO_ERROR
+secret_handling=no_password_no_reset_link_no_token_logged
