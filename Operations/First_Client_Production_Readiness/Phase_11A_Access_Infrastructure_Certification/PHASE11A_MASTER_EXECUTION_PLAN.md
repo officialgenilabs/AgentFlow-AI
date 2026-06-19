@@ -470,3 +470,28 @@ Before Phase 11B begins:
 - Founder explicitly authorizes execution.
 - Authorized sender/destination/timing are confirmed.
 - No Phase 11B test messages have been sent during Phase 11A.
+
+## 13. Waiting-on-Kopano Safe Precheck Mode
+
+Entered: 2026-06-19 UTC after founder directive.
+
+G03 remains `WAITING ON KOPANO`. Nova must not create, assign, store, or share a temporary password for Kopano. Kopano will complete the final private password reset during the founder onboarding meeting. If the recovery link has expired at that meeting, Nova may generate a fresh recovery email only then, with the canonical production redirect, and must not log or expose the reset link.
+
+While G03 is waiting, Nova may continue only Phase 11A work that does not require Kopano's authenticated production session and does not require WhatsApp live pairing:
+
+- Evolution API service and Libertalia instance precheck.
+- QR-generation readiness review without pairing and without exposing QR contents.
+- n8n workflow and webhook certification by inspection / safe health checks.
+- Inbound mapping, threading, deduplication, and tenant-attribution inspection.
+- Email-forwarding infrastructure readiness.
+- Observability, retries, and error-handling review.
+- Phase 11B three-message test-plan preparation.
+
+Explicit prohibitions during this mode:
+
+- Do not send test messages.
+- Do not pair WhatsApp.
+- Do not enable outbound automation.
+- Do not execute Phase 11B.
+- Do not mark G03, G04, G05, G07 WhatsApp pairing, or G10 full inbound readiness `PASSED` without their required real evidence.
+- Mark downstream technical prechecks as `REVALIDATION REQUIRED` where Kopano access, live pairing, or Phase 11B evidence is still necessary.
