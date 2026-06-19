@@ -1,0 +1,79 @@
+PHASE11A_G02_DOMAIN_DNS_SSL_RUNTIME_CHECKS
+timestamp=2026-06-19T08:35:34Z
+dns_resolution_begin
+app.genilabs.co.za 66.33.60.35,76.76.21.123
+agentflow-ai-eta.vercel.app 216.198.79.67,64.29.17.67
+agentflow-ai-officialgenilabs-projects.vercel.app 216.198.79.131,64.29.17.131
+agentflow-ai-officialgenilabs-officialgenilabs-projects.vercel.app 216.198.79.195,64.29.17.195
+agentflow-q97jmw05t-officialgenilabs-projects.vercel.app 216.198.79.131,64.29.17.131
+agentflow-ai-git-release-agent-3555e4-officialgenilabs-projects.vercel.app 216.198.79.195,64.29.17.195
+dns_resolution_end
+ssl_subject_issuer_begin
+domain=app.genilabs.co.za
+subject=CN = app.genilabs.co.za
+issuer=C = US, O = Let's Encrypt, CN = YR2
+notBefore=Jun 16 07:53:12 2026 GMT
+notAfter=Sep 14 07:53:11 2026 GMT
+domain=agentflow-ai-eta.vercel.app
+subject=CN = *.vercel.app
+issuer=C = US, O = Google Trust Services, CN = WR1
+notBefore=Apr 28 02:04:43 2026 GMT
+notAfter=Jul 27 02:04:42 2026 GMT
+domain=agentflow-ai-officialgenilabs-projects.vercel.app
+subject=CN = *.vercel.app
+issuer=C = US, O = Google Trust Services, CN = WR1
+notBefore=Apr 28 02:04:43 2026 GMT
+notAfter=Jul 27 02:04:42 2026 GMT
+domain=agentflow-ai-officialgenilabs-officialgenilabs-projects.vercel.app
+subject=CN = *.vercel.app
+issuer=C = US, O = Google Trust Services, CN = WR1
+notBefore=Apr 28 02:04:43 2026 GMT
+notAfter=Jul 27 02:04:42 2026 GMT
+domain=agentflow-q97jmw05t-officialgenilabs-projects.vercel.app
+subject=CN = *.vercel.app
+issuer=C = US, O = Google Trust Services, CN = WR1
+notBefore=Apr 28 02:04:43 2026 GMT
+notAfter=Jul 27 02:04:42 2026 GMT
+domain=agentflow-ai-git-release-agent-3555e4-officialgenilabs-projects.vercel.app
+subject=CN = *.vercel.app
+issuer=C = US, O = Google Trust Services, CN = WR1
+notBefore=Apr 28 02:04:43 2026 GMT
+notAfter=Jul 27 02:04:42 2026 GMT
+ssl_subject_issuer_end
+http_runtime_begin
+https://app.genilabs.co.za/login status=200 final=https://app.genilabs.co.za/login bytes=15119
+https://app.genilabs.co.za/forgot-password status=200 final=https://app.genilabs.co.za/forgot-password bytes=15200 evidence=Recover Operator Access
+https://app.genilabs.co.za/auth/callback?next=/reset-password status=307 final=https://app.genilabs.co.za/auth/callback?next=/reset-password bytes=0 location=https://app.genilabs.co.za/login?error=auth-code-required
+https://app.genilabs.co.za/logout status=307 final=https://app.genilabs.co.za/logout bytes=0 location=https://app.genilabs.co.za/login?message=signed-out
+https://app.genilabs.co.za/app/libertalia-properties/dashboard status=307 final=https://app.genilabs.co.za/app/libertalia-properties/dashboard bytes=15 location=/login
+https://agentflow-ai-eta.vercel.app/login status=307 final=https://agentflow-ai-eta.vercel.app/login bytes=15 location=https://app.genilabs.co.za/login
+https://agentflow-ai-eta.vercel.app/forgot-password status=307 final=https://agentflow-ai-eta.vercel.app/forgot-password bytes=15 location=https://app.genilabs.co.za/forgot-password
+https://agentflow-ai-eta.vercel.app/auth/callback?next=/reset-password status=307 final=https://agentflow-ai-eta.vercel.app/auth/callback?next=/reset-password bytes=15 location=https://app.genilabs.co.za/auth/callback?next=%2Freset-password
+https://agentflow-ai-eta.vercel.app/logout status=307 final=https://agentflow-ai-eta.vercel.app/logout bytes=15 location=https://app.genilabs.co.za/logout
+https://agentflow-ai-eta.vercel.app/app/libertalia-properties/dashboard status=307 final=https://agentflow-ai-eta.vercel.app/app/libertalia-properties/dashboard bytes=15 location=https://app.genilabs.co.za/app/libertalia-properties/dashboard
+https://agentflow-ai-officialgenilabs-projects.vercel.app/login status=401 final=https://agentflow-ai-officialgenilabs-projects.vercel.app/login bytes=15121
+https://agentflow-ai-officialgenilabs-projects.vercel.app/forgot-password status=401 final=https://agentflow-ai-officialgenilabs-projects.vercel.app/forgot-password bytes=15151
+https://agentflow-ai-officialgenilabs-projects.vercel.app/auth/callback?next=/reset-password status=401 final=https://agentflow-ai-officialgenilabs-projects.vercel.app/auth/callback?next=/reset-password bytes=15238
+https://agentflow-ai-officialgenilabs-projects.vercel.app/logout status=401 final=https://agentflow-ai-officialgenilabs-projects.vercel.app/logout bytes=15124
+https://agentflow-ai-officialgenilabs-projects.vercel.app/app/libertalia-properties/dashboard status=401 final=https://agentflow-ai-officialgenilabs-projects.vercel.app/app/libertalia-properties/dashboard bytes=15223
+https://agentflow-ai-officialgenilabs-officialgenilabs-projects.vercel.app/login status=401 final=https://agentflow-ai-officialgenilabs-officialgenilabs-projects.vercel.app/login bytes=15172
+https://agentflow-ai-officialgenilabs-officialgenilabs-projects.vercel.app/forgot-password status=401 final=https://agentflow-ai-officialgenilabs-officialgenilabs-projects.vercel.app/forgot-password bytes=15202
+https://agentflow-ai-officialgenilabs-officialgenilabs-projects.vercel.app/auth/callback?next=/reset-password status=401 final=https://agentflow-ai-officialgenilabs-officialgenilabs-projects.vercel.app/auth/callback?next=/reset-password bytes=15289
+https://agentflow-ai-officialgenilabs-officialgenilabs-projects.vercel.app/logout status=401 final=https://agentflow-ai-officialgenilabs-officialgenilabs-projects.vercel.app/logout bytes=15175
+https://agentflow-ai-officialgenilabs-officialgenilabs-projects.vercel.app/app/libertalia-properties/dashboard status=401 final=https://agentflow-ai-officialgenilabs-officialgenilabs-projects.vercel.app/app/libertalia-properties/dashboard bytes=15274
+https://agentflow-q97jmw05t-officialgenilabs-projects.vercel.app/login status=401 final=https://agentflow-q97jmw05t-officialgenilabs-projects.vercel.app/login bytes=15142
+https://agentflow-q97jmw05t-officialgenilabs-projects.vercel.app/forgot-password status=401 final=https://agentflow-q97jmw05t-officialgenilabs-projects.vercel.app/forgot-password bytes=15172
+https://agentflow-q97jmw05t-officialgenilabs-projects.vercel.app/auth/callback?next=/reset-password status=401 final=https://agentflow-q97jmw05t-officialgenilabs-projects.vercel.app/auth/callback?next=/reset-password bytes=15259
+https://agentflow-q97jmw05t-officialgenilabs-projects.vercel.app/logout status=401 final=https://agentflow-q97jmw05t-officialgenilabs-projects.vercel.app/logout bytes=15145
+https://agentflow-q97jmw05t-officialgenilabs-projects.vercel.app/app/libertalia-properties/dashboard status=401 final=https://agentflow-q97jmw05t-officialgenilabs-projects.vercel.app/app/libertalia-properties/dashboard bytes=15244
+https://agentflow-ai-git-release-agent-3555e4-officialgenilabs-projects.vercel.app/login status=401 final=https://agentflow-ai-git-release-agent-3555e4-officialgenilabs-projects.vercel.app/login bytes=15196
+https://agentflow-ai-git-release-agent-3555e4-officialgenilabs-projects.vercel.app/forgot-password status=401 final=https://agentflow-ai-git-release-agent-3555e4-officialgenilabs-projects.vercel.app/forgot-password bytes=15226
+https://agentflow-ai-git-release-agent-3555e4-officialgenilabs-projects.vercel.app/auth/callback?next=/reset-password status=401 final=https://agentflow-ai-git-release-agent-3555e4-officialgenilabs-projects.vercel.app/auth/callback?next=/reset-password bytes=15313
+https://agentflow-ai-git-release-agent-3555e4-officialgenilabs-projects.vercel.app/logout status=401 final=https://agentflow-ai-git-release-agent-3555e4-officialgenilabs-projects.vercel.app/logout bytes=15199
+https://agentflow-ai-git-release-agent-3555e4-officialgenilabs-projects.vercel.app/app/libertalia-properties/dashboard status=401 final=https://agentflow-ai-git-release-agent-3555e4-officialgenilabs-projects.vercel.app/app/libertalia-properties/dashboard bytes=15298
+http_runtime_end
+mobile_user_agent_begin
+https://app.genilabs.co.za/login status=200 final=https://app.genilabs.co.za/login bytes=15119
+https://agentflow-ai-eta.vercel.app/login status=307 final=https://agentflow-ai-eta.vercel.app/login bytes=15 location=https://app.genilabs.co.za/login
+https://agentflow-ai-git-release-agent-3555e4-officialgenilabs-projects.vercel.app/login status=401 final=https://agentflow-ai-git-release-agent-3555e4-officialgenilabs-projects.vercel.app/login bytes=15196
+mobile_user_agent_end

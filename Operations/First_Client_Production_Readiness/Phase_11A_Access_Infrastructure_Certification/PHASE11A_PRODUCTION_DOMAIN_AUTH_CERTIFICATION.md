@@ -2,7 +2,7 @@
 
 **Created:** 2026-06-19 UTC  
 **Scope:** G01 Production Baseline and G02 Domain/DNS/SSL/Auth Callback Certification  
-**Current status:** G01 `PASSED`; G02 `IN PROGRESS`
+**Current status:** G01 `PASSED`; G02 `WAITING ON FOUNDER`
 
 ## Evidence Files
 
@@ -97,6 +97,44 @@ A preview deployment also exists for current docs commit `c137baa` under branch 
 - Verify invitation/login/logout redirects.
 - Verify Supabase Site URL and allowed redirect URLs through safe configuration inspection or record exact blocker.
 - Confirm no auth links resolve to localhost, stale preview deployments, obsolete aliases, wrong tenants, or unauthorized domains.
+
+## G02 Partial Certification Results
+
+### Verified Facts
+
+| Item | Observed behavior | Result |
+| --- | --- | --- |
+| Canonical domain | `https://app.genilabs.co.za/login` returns `200` over HTTPS | PASS |
+| Historical alias canonicalization | `https://agentflow-ai-eta.vercel.app/login` returns `307` to `https://app.genilabs.co.za/login` | PASS |
+| Production deployment hostname canonicalization | `https://agentflow-q97jmw05t-officialgenilabs-projects.vercel.app/...` redirects to canonical or is protected as expected | PASS |
+| Preview branch alias | Preview alias for docs commit returns Vercel auth `401`, not a public stale app | PASS |
+| Mobile browser redirect behavior | Mobile UA receives same canonical behavior for `app.genilabs.co.za`; historical alias redirects to canonical | PASS |
+| Auth callback guard | `/auth/callback?next=/reset-password` without code redirects to `/login?error=auth-code-required` on canonical app | PASS |
+| Logout redirect | `/logout` routes to canonical login signed-out state | PASS |
+| Protected route middleware | Anonymous `/app/libertalia-properties/dashboard` redirects/blocks unauthenticated access | PASS |
+| Client bundle Supabase authority | Live client bundle contains canonical Supabase project ref and no legacy project ref | PASS |
+| Client bundle stale-preview scan | Live client bundle contains no known stale preview deployment references | PASS |
+| Client bundle localhost context | `localhost` string exists only in bundled third-party parser/default snippets, not as observed app redirect target | PASS WITH NOTE |
+| Supabase redirect allow-list direct inspection | Not accessible with current local credentials/tooling without dashboard/management token | WAITING ON FOUNDER |
+
+### Supabase Redirect Probe Result
+
+A non-existent validation identity was used to avoid sending a real recovery email. Supabase returned `NO_ERROR` for canonical, historical alias, localhost, and intentionally unauthorized redirect classes. This means the non-existent-user probe is **inconclusive** for allow-list certification and cannot be used as PASS evidence.
+
+G02 therefore remains `WAITING ON FOUNDER` until the Supabase Auth URL Configuration is verified from the dashboard or a safe management API path is provided.
+
+### Human Checkpoint Required
+
+Founder/Supabase project admin must verify the canonical production auth URL configuration for project `vgpguhrmvetutvtctsid`:
+
+1. Open Supabase Dashboard → Project `vgpguhrmvetutvtctsid` → Authentication → URL Configuration.
+2. Confirm **Site URL** is exactly `https://app.genilabs.co.za`.
+3. Confirm redirect URLs support the production callback used by AgentFlow: `https://app.genilabs.co.za/auth/callback` (or an equivalent canonical `https://app.genilabs.co.za/**` entry if Supabase requires wildcard coverage).
+4. Confirm redirect URLs do **not** include localhost, stale preview deployments, obsolete aliases, unrelated tenant domains, or unauthorized domains.
+5. Do not share tokens, reset links, API keys, or screenshots containing secrets.
+6. Reply only with: `Supabase auth URL config verified for app.genilabs.co.za; no localhost/stale/unauthorized redirects remain.`
+
+After that confirmation, Nova will reopen this plan and ledger, mark G02 accordingly, and proceed to G03 Kopano final reset.
 
 ## Secrets Review
 

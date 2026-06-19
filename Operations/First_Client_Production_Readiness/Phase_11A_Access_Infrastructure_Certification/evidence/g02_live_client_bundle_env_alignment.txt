@@ -1,0 +1,8 @@
+PHASE11A_G02_LIVE_CLIENT_BUNDLE_ENV_ALIGNMENT
+timestamp=2026-06-19T08:36:49.143Z
+canonicalAppUrl=no
+localhost=yes
+stalePreview=no
+legacySupabase=no
+canonicalSupabase=yes
+forgotPassword=yes
