@@ -1,0 +1,644 @@
+# Phase 11A Multi-Agent Live Schema Evidence — 2026-06-19
+mode=read_only
+
+## project_ref
+[
+  {
+    "database_name": "postgres",
+    "db_user": "postgres",
+    "server_port": 5432
+  }
+]
+
+## libertalia_organization
+[
+  {
+    "organization_id": "2110c1e8-933e-46c4-8aaf-17ed03a12ae1",
+    "slug": "libertalia-properties",
+    "name": "Libertalia Properties",
+    "status": "active",
+    "industry": "real_estate",
+    "plan": "starter",
+    "created_date": "2026-06-13"
+  }
+]
+
+## libertalia_membership_summary
+[
+  {
+    "role": "member",
+    "status": "active",
+    "member_count": 1,
+    "any_platform_admin": false,
+    "includes_kopano": true
+  }
+]
+
+## organization_members_constraints
+[
+  {
+    "conname": "organization_members_organization_id_fkey",
+    "definition": "FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE"
+  },
+  {
+    "conname": "organization_members_organization_id_user_id_key",
+    "definition": "UNIQUE (organization_id, user_id)"
+  },
+  {
+    "conname": "organization_members_pkey",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "conname": "organization_members_role_check",
+    "definition": "CHECK ((role = ANY (ARRAY['owner'::text, 'admin'::text, 'member'::text])))"
+  },
+  {
+    "conname": "organization_members_status_check",
+    "definition": "CHECK ((status = ANY (ARRAY['active'::text, 'invited'::text, 'disabled'::text])))"
+  },
+  {
+    "conname": "organization_members_user_id_fkey",
+    "definition": "FOREIGN KEY (user_id) REFERENCES profiles(id) ON DELETE CASCADE"
+  }
+]
+
+## libertalia_branding
+[
+  {
+    "organization_id": "2110c1e8-933e-46c4-8aaf-17ed03a12ae1",
+    "has_logo_url": false,
+    "primary_color": "#111827",
+    "secondary_color": "#f8fafc",
+    "accent_color": "#d4af37",
+    "theme_mode": "light",
+    "has_updated_at": true
+  }
+]
+
+## channels_columns
+[
+  {
+    "column_name": "id",
+    "data_type": "uuid",
+    "is_nullable": "NO",
+    "column_default": "gen_random_uuid()"
+  },
+  {
+    "column_name": "organization_id",
+    "data_type": "uuid",
+    "is_nullable": "NO",
+    "column_default": null
+  },
+  {
+    "column_name": "provider",
+    "data_type": "text",
+    "is_nullable": "NO",
+    "column_default": null
+  },
+  {
+    "column_name": "channel_type",
+    "data_type": "text",
+    "is_nullable": "NO",
+    "column_default": "'whatsapp'::text"
+  },
+  {
+    "column_name": "display_name",
+    "data_type": "text",
+    "is_nullable": "NO",
+    "column_default": null
+  },
+  {
+    "column_name": "external_channel_id",
+    "data_type": "text",
+    "is_nullable": "YES",
+    "column_default": null
+  },
+  {
+    "column_name": "inbound_identifier",
+    "data_type": "text",
+    "is_nullable": "YES",
+    "column_default": null
+  },
+  {
+    "column_name": "status",
+    "data_type": "text",
+    "is_nullable": "NO",
+    "column_default": "'active'::text"
+  },
+  {
+    "column_name": "metadata",
+    "data_type": "jsonb",
+    "is_nullable": "NO",
+    "column_default": "'{}'::jsonb"
+  },
+  {
+    "column_name": "created_at",
+    "data_type": "timestamp with time zone",
+    "is_nullable": "NO",
+    "column_default": "now()"
+  },
+  {
+    "column_name": "updated_at",
+    "data_type": "timestamp with time zone",
+    "is_nullable": "NO",
+    "column_default": "now()"
+  }
+]
+
+## conversation_columns
+[
+  {
+    "column_name": "id",
+    "data_type": "uuid",
+    "is_nullable": "NO"
+  },
+  {
+    "column_name": "organization_id",
+    "data_type": "uuid",
+    "is_nullable": "NO"
+  },
+  {
+    "column_name": "channel_id",
+    "data_type": "uuid",
+    "is_nullable": "NO"
+  },
+  {
+    "column_name": "lead_id",
+    "data_type": "uuid",
+    "is_nullable": "YES"
+  },
+  {
+    "column_name": "external_conversation_id",
+    "data_type": "text",
+    "is_nullable": "YES"
+  },
+  {
+    "column_name": "status",
+    "data_type": "text",
+    "is_nullable": "NO"
+  },
+  {
+    "column_name": "assigned_owner_user_id",
+    "data_type": "uuid",
+    "is_nullable": "YES"
+  },
+  {
+    "column_name": "last_message_at",
+    "data_type": "timestamp with time zone",
+    "is_nullable": "YES"
+  }
+]
+
+## lead_ownership_columns
+[
+  {
+    "table_name": "ai_message_drafts",
+    "column_name": "organization_id",
+    "data_type": "uuid",
+    "is_nullable": "NO"
+  },
+  {
+    "table_name": "ai_message_drafts",
+    "column_name": "conversation_id",
+    "data_type": "uuid",
+    "is_nullable": "NO"
+  },
+  {
+    "table_name": "ai_message_drafts",
+    "column_name": "lead_id",
+    "data_type": "uuid",
+    "is_nullable": "YES"
+  },
+  {
+    "table_name": "ai_message_drafts",
+    "column_name": "status",
+    "data_type": "text",
+    "is_nullable": "NO"
+  },
+  {
+    "table_name": "audit_logs",
+    "column_name": "organization_id",
+    "data_type": "uuid",
+    "is_nullable": "NO"
+  },
+  {
+    "table_name": "audit_logs",
+    "column_name": "actor_user_id",
+    "data_type": "uuid",
+    "is_nullable": "YES"
+  },
+  {
+    "table_name": "automation_events",
+    "column_name": "organization_id",
+    "data_type": "uuid",
+    "is_nullable": "NO"
+  },
+  {
+    "table_name": "automation_events",
+    "column_name": "event_type",
+    "data_type": "text",
+    "is_nullable": "NO"
+  },
+  {
+    "table_name": "automation_events",
+    "column_name": "lead_id",
+    "data_type": "uuid",
+    "is_nullable": "YES"
+  },
+  {
+    "table_name": "automation_events",
+    "column_name": "conversation_id",
+    "data_type": "uuid",
+    "is_nullable": "YES"
+  },
+  {
+    "table_name": "automation_events",
+    "column_name": "status",
+    "data_type": "text",
+    "is_nullable": "NO"
+  },
+  {
+    "table_name": "lead_tasks",
+    "column_name": "organization_id",
+    "data_type": "uuid",
+    "is_nullable": "NO"
+  },
+  {
+    "table_name": "lead_tasks",
+    "column_name": "lead_id",
+    "data_type": "uuid",
+    "is_nullable": "YES"
+  },
+  {
+    "table_name": "lead_tasks",
+    "column_name": "status",
+    "data_type": "text",
+    "is_nullable": "NO"
+  },
+  {
+    "table_name": "lead_tasks",
+    "column_name": "assigned_to_user_id",
+    "data_type": "uuid",
+    "is_nullable": "YES"
+  },
+  {
+    "table_name": "leads",
+    "column_name": "organization_id",
+    "data_type": "uuid",
+    "is_nullable": "NO"
+  },
+  {
+    "table_name": "leads",
+    "column_name": "status",
+    "data_type": "text",
+    "is_nullable": "NO"
+  },
+  {
+    "table_name": "leads",
+    "column_name": "qualification_status",
+    "data_type": "text",
+    "is_nullable": "NO"
+  },
+  {
+    "table_name": "leads",
+    "column_name": "assigned_owner_user_id",
+    "data_type": "uuid",
+    "is_nullable": "YES"
+  }
+]
+
+## active_channels_summary
+[
+  {
+    "org_slug": "gen-i-demo-realty",
+    "provider": "evolution",
+    "external_channel_id": "AgentFlow_Primary",
+    "channel_type": "whatsapp",
+    "status": "active",
+    "rows": 1
+  },
+  {
+    "org_slug": "gen-i-demo-realty",
+    "provider": "evolution",
+    "external_channel_id": "stage-e-demo-channel",
+    "channel_type": "whatsapp",
+    "status": "active",
+    "rows": 1
+  },
+  {
+    "org_slug": "gen-i-demo-realty",
+    "provider": "property24",
+    "external_channel_id": "property24",
+    "channel_type": "lead_portal",
+    "status": "active",
+    "rows": 1
+  },
+  {
+    "org_slug": "rival-demo-realty",
+    "provider": "evolution",
+    "external_channel_id": "stage-e-rival-channel",
+    "channel_type": "whatsapp",
+    "status": "active",
+    "rows": 1
+  }
+]
+
+## libertalia_active_channels
+[]
+
+## channel_metadata_owner_key_usage
+[
+  {
+    "org_slug": "gen-i-demo-realty",
+    "provider": "evolution",
+    "external_channel_id": "AgentFlow_Primary",
+    "metadata_owner_user_id": false,
+    "metadata_assigned_owner_user_id": false,
+    "metadata_default_assignee_user_id": false
+  },
+  {
+    "org_slug": "gen-i-demo-realty",
+    "provider": "evolution",
+    "external_channel_id": "stage-e-demo-channel",
+    "metadata_owner_user_id": false,
+    "metadata_assigned_owner_user_id": false,
+    "metadata_default_assignee_user_id": false
+  },
+  {
+    "org_slug": "rival-demo-realty",
+    "provider": "evolution",
+    "external_channel_id": "stage-e-rival-channel",
+    "metadata_owner_user_id": false,
+    "metadata_assigned_owner_user_id": false,
+    "metadata_default_assignee_user_id": false
+  }
+]
+
+## unique_indexes_channel_identity
+[
+  {
+    "indexname": "channels_org_provider_external_unique_idx",
+    "indexdef": "CREATE UNIQUE INDEX channels_org_provider_external_unique_idx ON public.channels USING btree (organization_id, provider, external_channel_id) WHERE (external_channel_id IS NOT NULL)"
+  },
+  {
+    "indexname": "channels_org_status_idx",
+    "indexdef": "CREATE INDEX channels_org_status_idx ON public.channels USING btree (organization_id, status)"
+  },
+  {
+    "indexname": "channels_pkey",
+    "indexdef": "CREATE UNIQUE INDEX channels_pkey ON public.channels USING btree (id)"
+  },
+  {
+    "indexname": "channels_provider_external_global_unique_idx",
+    "indexdef": "CREATE UNIQUE INDEX channels_provider_external_global_unique_idx ON public.channels USING btree (provider, external_channel_id) WHERE (external_channel_id IS NOT NULL)"
+  },
+  {
+    "indexname": "conversations_channel_idx",
+    "indexdef": "CREATE INDEX conversations_channel_idx ON public.conversations USING btree (channel_id, updated_at DESC)"
+  },
+  {
+    "indexname": "conversations_org_channel_external_unique_idx",
+    "indexdef": "CREATE UNIQUE INDEX conversations_org_channel_external_unique_idx ON public.conversations USING btree (organization_id, channel_id, external_conversation_id) WHERE (external_conversation_id IS NOT NULL)"
+  },
+  {
+    "indexname": "leads_org_identity_confidence_idx",
+    "indexdef": "CREATE INDEX leads_org_identity_confidence_idx ON public.leads USING btree (organization_id, identity_confidence, created_at DESC)"
+  },
+  {
+    "indexname": "leads_org_owner_idx",
+    "indexdef": "CREATE INDEX leads_org_owner_idx ON public.leads USING btree (organization_id, assigned_owner_user_id)"
+  },
+  {
+    "indexname": "messages_org_channel_external_unique_idx",
+    "indexdef": "CREATE UNIQUE INDEX messages_org_channel_external_unique_idx ON public.messages USING btree (organization_id, channel_id, external_message_id) WHERE (external_message_id IS NOT NULL)"
+  }
+]
+
+## rls_enabled_core_tables
+[
+  {
+    "table_name": "ai_message_drafts",
+    "rls_enabled": true
+  },
+  {
+    "table_name": "audit_logs",
+    "rls_enabled": true
+  },
+  {
+    "table_name": "automation_events",
+    "rls_enabled": true
+  },
+  {
+    "table_name": "channels",
+    "rls_enabled": true
+  },
+  {
+    "table_name": "conversations",
+    "rls_enabled": true
+  },
+  {
+    "table_name": "lead_tasks",
+    "rls_enabled": true
+  },
+  {
+    "table_name": "leads",
+    "rls_enabled": true
+  },
+  {
+    "table_name": "messages",
+    "rls_enabled": true
+  },
+  {
+    "table_name": "organization_branding",
+    "rls_enabled": true
+  },
+  {
+    "table_name": "organization_members",
+    "rls_enabled": true
+  },
+  {
+    "table_name": "organizations",
+    "rls_enabled": true
+  }
+]
+
+## policy_names_core_tables
+[
+  {
+    "tablename": "ai_message_drafts",
+    "policyname": "ai_message_drafts_select_members_or_platform_admin",
+    "cmd": "SELECT"
+  },
+  {
+    "tablename": "ai_message_drafts",
+    "policyname": "ai_message_drafts_update_members_or_platform_admin",
+    "cmd": "UPDATE"
+  },
+  {
+    "tablename": "audit_logs",
+    "policyname": "audit_logs_insert_members_or_platform_admin",
+    "cmd": "INSERT"
+  },
+  {
+    "tablename": "audit_logs",
+    "policyname": "audit_logs_select_members_or_platform_admin",
+    "cmd": "SELECT"
+  },
+  {
+    "tablename": "automation_events",
+    "policyname": "automation_events_platform_admin_update",
+    "cmd": "UPDATE"
+  },
+  {
+    "tablename": "automation_events",
+    "policyname": "automation_events_select_members_or_platform_admin",
+    "cmd": "SELECT"
+  },
+  {
+    "tablename": "channels",
+    "policyname": "channels_manage_org_admin_or_platform_admin",
+    "cmd": "ALL"
+  },
+  {
+    "tablename": "channels",
+    "policyname": "channels_select_members_or_platform_admin",
+    "cmd": "SELECT"
+  },
+  {
+    "tablename": "conversations",
+    "policyname": "conversations_select_members_or_platform_admin",
+    "cmd": "SELECT"
+  },
+  {
+    "tablename": "conversations",
+    "policyname": "conversations_update_members_or_platform_admin",
+    "cmd": "UPDATE"
+  },
+  {
+    "tablename": "lead_tasks",
+    "policyname": "lead_tasks_insert_members_or_platform_admin",
+    "cmd": "INSERT"
+  },
+  {
+    "tablename": "lead_tasks",
+    "policyname": "lead_tasks_select_members_or_platform_admin",
+    "cmd": "SELECT"
+  },
+  {
+    "tablename": "lead_tasks",
+    "policyname": "lead_tasks_update_members_or_platform_admin",
+    "cmd": "UPDATE"
+  },
+  {
+    "tablename": "leads",
+    "policyname": "leads_insert_members_or_platform_admin",
+    "cmd": "INSERT"
+  },
+  {
+    "tablename": "leads",
+    "policyname": "leads_select_members_or_platform_admin",
+    "cmd": "SELECT"
+  },
+  {
+    "tablename": "leads",
+    "policyname": "leads_update_members_or_platform_admin",
+    "cmd": "UPDATE"
+  },
+  {
+    "tablename": "messages",
+    "policyname": "messages_select_members_or_platform_admin",
+    "cmd": "SELECT"
+  },
+  {
+    "tablename": "organization_branding",
+    "policyname": "organization_branding_admin_update",
+    "cmd": "UPDATE"
+  },
+  {
+    "tablename": "organization_branding",
+    "policyname": "organization_branding_admin_write",
+    "cmd": "INSERT"
+  },
+  {
+    "tablename": "organization_branding",
+    "policyname": "organization_branding_select_members_or_platform_admin",
+    "cmd": "SELECT"
+  },
+  {
+    "tablename": "organization_members",
+    "policyname": "organization_members_platform_admin_write",
+    "cmd": "ALL"
+  },
+  {
+    "tablename": "organization_members",
+    "policyname": "organization_members_select_self_org_or_platform_admin",
+    "cmd": "SELECT"
+  },
+  {
+    "tablename": "organizations",
+    "policyname": "organizations_platform_admin_write",
+    "cmd": "ALL"
+  },
+  {
+    "tablename": "organizations",
+    "policyname": "organizations_select_members_or_platform_admin",
+    "cmd": "SELECT"
+  }
+]
+
+## function_presence
+[
+  {
+    "schema": "app_private",
+    "function_name": "assert_channel_integrity",
+    "args": ""
+  },
+  {
+    "schema": "app_private",
+    "function_name": "assert_conversation_integrity",
+    "args": ""
+  },
+  {
+    "schema": "app_private",
+    "function_name": "assert_message_integrity",
+    "args": ""
+  },
+  {
+    "schema": "app_private",
+    "function_name": "can_manage_org",
+    "args": "org_id uuid"
+  },
+  {
+    "schema": "app_private",
+    "function_name": "is_org_member",
+    "args": "org_id uuid"
+  },
+  {
+    "schema": "app_private",
+    "function_name": "is_same_org_member",
+    "args": "org_id uuid, member_user_id uuid"
+  },
+  {
+    "schema": "public",
+    "function_name": "ingest_inbound_message",
+    "args": "p_channel_id uuid, p_external_conversation_id text, p_external_message_id text, p_message_body text, p_occurred_at timestamp with time zone, p_sender_display_name text DEFAULT NULL::text, p_sender_phone text DEFAULT NULL::text, p_sender_email text DEFAULT NULL::text, p_sender_external_id text DEFAULT NULL::text, p_raw_payload jsonb DEFAULT '{}'::jsonb"
+  },
+  {
+    "schema": "public",
+    "function_name": "ingest_lead_from_intake",
+    "args": "p_organization_id uuid, p_full_name text, p_exact_source text, p_source_subtype text, p_original_inbound_channel text, p_captured_at timestamp with time zone, p_email text DEFAULT NULL::text, p_phone text DEFAULT NULL::text, p_company text DEFAULT NULL::text, p_source_reference text DEFAULT NULL::text, p_lead_origin_metadata jsonb DEFAULT '{}'::jsonb, p_status text DEFAULT 'new'::text, p_priority text DEFAULT 'medium'::text, p_estimated_value numeric DEFAULT NULL::numeric"
+  },
+  {
+    "schema": "public",
+    "function_name": "review_ai_message_draft",
+    "args": "p_draft_id uuid, p_status text, p_draft_content text, p_outbound_frozen boolean DEFAULT true"
+  },
+  {
+    "schema": "public",
+    "function_name": "send_outbound_message",
+    "args": "p_draft_id uuid, p_action text DEFAULT 'prepare'::text, p_delivery_status text DEFAULT NULL::text, p_external_message_id text DEFAULT NULL::text, p_delivery_response jsonb DEFAULT '{}'::jsonb, p_delivery_error text DEFAULT NULL::text, p_execution_secret text DEFAULT NULL::text"
+  }
+]
+
+## automation_event_types_libertalia
+[]

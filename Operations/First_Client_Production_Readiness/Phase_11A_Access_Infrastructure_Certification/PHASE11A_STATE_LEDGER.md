@@ -51,3 +51,29 @@
 - Instance status: only `AgentFlow_Primary` is visible and open; no Libertalia-named Evolution instance is visible. Treat the instance strategy/channel mapping as unresolved before QR pairing.
 - QR status: `/instance/connect/AgentFlow_Primary` is reachable and returns `state=open`; no QR content was exposed and no pairing was attempted.
 - Outbound safety: no send/logout/delete endpoints were called; no WhatsApp messages were sent; no outbound automation or app env changed.
+## 2026-06-19 Libertalia Multi-Agent Architecture Checkpoint Start
+
+- 2026-06-19T23:52Z: Founder directed Nova to pause before creating any dedicated Libertalia Evolution instance and certify multi-agent / multi-channel readiness first.
+- Scope: tenant model, user/role model, branding model, channel/Evolution instance model, inbound routing, multi-agent operations, security/isolation, scaling readiness, and instance naming recommendation.
+- Explicit prohibitions remain: do not create an Evolution instance, do not pair QR, do not send WhatsApp messages, do not enable outbound, do not execute Phase 11B, do not mark G03/G04/G05/G07/G10 passed without required real evidence.
+- New required reports: `PHASE11A_LIBERTALIA_MULTI_AGENT_ARCHITECTURE_REPORT.md`, `PHASE11A_CHANNEL_OWNERSHIP_MAPPING_REPORT.md`, `PHASE11A_TENANT_BRANDING_READINESS_REPORT.md`, `PHASE11A_MULTI_AGENT_SCALE_SCORECARD.md`.
+
+## 2026-06-20 Libertalia Multi-Agent Architecture Checkpoint Result
+
+- Architecture outcome: **MULTI-AGENT ARCHITECTURE PARTIAL — CONFIG/FIXES REQUIRED BEFORE INSTANCE CREATION**.
+- Reports created:
+  - `PHASE11A_LIBERTALIA_MULTI_AGENT_ARCHITECTURE_REPORT.md`
+  - `PHASE11A_CHANNEL_OWNERSHIP_MAPPING_REPORT.md`
+  - `PHASE11A_TENANT_BRANDING_READINESS_REPORT.md`
+  - `PHASE11A_MULTI_AGENT_SCALE_SCORECARD.md`
+- Evidence created/used:
+  - `evidence/g06_g10_multi_agent_architecture_source_evidence_20260619.txt`
+  - `evidence/g06_g10_multi_agent_live_schema_evidence_20260619.txt`
+  - `evidence/g06_g10_multi_agent_architecture_followup_evidence_20260619.txt`
+  - `evidence/g08_n8n_multi_agent_routing_checkpoint_20260620.md`
+- Certified foundations: Libertalia tenant exists, multi-user membership model exists, tenant branding exists, tenant-scoped inbox/leads/tasks/approvals/audit surfaces exist, and Evolution instance-to-channel-to-tenant routing is structurally supported when a correct active channel row exists.
+- Not certified: per-agent Evolution/WhatsApp ownership, deterministic channel-to-agent assignment, safe unknown-instance behavior, live Libertalia channel row, QR pairing, and Phase 11B inbound proof.
+- Key blocker: `channels` does not have a first-class owner/default assignee column, and current ingestion does not assign conversation/lead owner from channel ownership. n8n also currently falls back to `AgentFlow_Primary` if instance identity is missing.
+- Instance naming recommendation: use `Libertalia_Kopano_Primary` only if the first number is Kopano-owned; use `Libertalia_Agency_Primary` only for a shared agency/principal number. Current intended per-agent model favors `Libertalia_Kopano_Primary` after routing fixes.
+- Safe next action: prepare a narrow channel-owner / fail-closed routing fix plan. Do not create the instance until founder approval follows this checkpoint.
+- Gate impact: G06/G08/G10 remain `REVALIDATION REQUIRED`; G07 remains not executed; G03 remains `WAITING ON KOPANO`; Phase 11B remains prepared only.

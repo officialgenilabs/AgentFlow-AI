@@ -70,3 +70,33 @@ Phase 11B can only begin after:
 4. WhatsApp is paired by founder scan.
 5. n8n/webhook/live inbound path is revalidated.
 6. Founder explicitly authorizes the three-message Phase 11B test.
+
+## 5. 2026-06-20 Multi-Agent Architecture Checkpoint Addendum
+
+**Architecture outcome:** **MULTI-AGENT ARCHITECTURE PARTIAL — CONFIG/FIXES REQUIRED BEFORE INSTANCE CREATION**
+
+### Updated gate impact
+
+| Gate | Status after architecture checkpoint | Reason |
+|---|---:|---|
+| G03 | WAITING ON KOPANO | Kopano must complete private reset/login; no temporary password may be created or used. |
+| G04 | NOT STARTED | Requires Kopano's real production login/session evidence. |
+| G05 | NOT STARTED | Requires Kopano's real production login/session evidence. |
+| G06 | REVALIDATION REQUIRED | Public Evolution route is healthy, but no Libertalia instance/channel/owner mapping is certified. |
+| G07 | NOT STARTED | No QR pairing authorized. |
+| G08 | REVALIDATION REQUIRED | Active n8n workflow routes by Evolution instance, but current fallback to `AgentFlow_Primary` is unsafe for client multi-agent routing. |
+| G10 | REVALIDATION REQUIRED | Tenant-level ingestion is structurally ready; deterministic agent routing and live proof are missing. |
+| G11 | PREPARED | Phase 11B remains a plan only. |
+| G12 | NOT STARTED | Final certification blocked by upstream gates. |
+
+### Additional blockers
+
+- `channels` has no first-class owner/default assignee field.
+- Inbound ingestion does not currently assign `conversations.assigned_owner_user_id` or `leads.assigned_owner_user_id` from a channel owner/default assignee.
+- Live evidence shows no active Libertalia Evolution channel row.
+- Active n8n normalization currently falls back to `AgentFlow_Primary` when instance identity is missing; this must fail closed before client multi-agent operation.
+- Agency-wide visibility exists, but per-agent private queues / “my inbox only” behavior are not enforced.
+
+### Safe next action
+
+Prepare a narrow channel ownership and fail-closed routing fix plan. Do **not** create `Libertalia_Kopano_Primary`, pair WhatsApp, send test messages, enable outbound, or execute Phase 11B until founder approval is given after this checkpoint.

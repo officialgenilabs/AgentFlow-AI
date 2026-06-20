@@ -495,3 +495,35 @@ Explicit prohibitions during this mode:
 - Do not execute Phase 11B.
 - Do not mark G03, G04, G05, G07 WhatsApp pairing, or G10 full inbound readiness `PASSED` without their required real evidence.
 - Mark downstream technical prechecks as `REVALIDATION REQUIRED` where Kopano access, live pairing, or Phase 11B evidence is still necessary.
+
+## 13. Libertalia Multi-Agent Architecture Checkpoint Addendum — 2026-06-20
+
+Founder directed a pause before creating any dedicated Libertalia Evolution instance so the system could be certified for multi-agent / multi-channel readiness.
+
+Checkpoint reports:
+
+- `PHASE11A_LIBERTALIA_MULTI_AGENT_ARCHITECTURE_REPORT.md`
+- `PHASE11A_CHANNEL_OWNERSHIP_MAPPING_REPORT.md`
+- `PHASE11A_TENANT_BRANDING_READINESS_REPORT.md`
+- `PHASE11A_MULTI_AGENT_SCALE_SCORECARD.md`
+
+Checkpoint outcome:
+
+**MULTI-AGENT ARCHITECTURE PARTIAL — CONFIG/FIXES REQUIRED BEFORE INSTANCE CREATION**
+
+Plan impact:
+
+- G03 remains `WAITING ON KOPANO`.
+- G04/G05 remain blocked on Kopano's real production login/session evidence.
+- G06 remains `REVALIDATION REQUIRED` because public route health is fixed but Libertalia instance/channel/agent mapping is not certified.
+- G07 remains not executed; no QR pairing has been authorized.
+- G08/G10 remain `REVALIDATION REQUIRED` until deterministic channel/owner routing, live pairing, n8n proof, and Phase 11B controlled inbound evidence exist.
+- `AgentFlow_Primary` remains reserved for Gen I Labs / internal operations and must not be used for Libertalia.
+
+Minimum new pre-instance requirements:
+
+1. Add or enforce a deterministic channel owner/default assignee contract for `public.channels`.
+2. Update inbound ingestion so new conversations/leads can inherit the resolved channel owner/default assignee.
+3. Update n8n Evolution normalization to fail closed on missing/unknown instance identity instead of falling back to `AgentFlow_Primary`.
+4. Create a Libertalia channel row only after founder approves the exact instance name and ownership model.
+5. Keep outbound frozen and Phase 11B unexecuted until all upstream gates pass and founder explicitly authorizes testing.

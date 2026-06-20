@@ -1,0 +1,562 @@
+# Phase 11A Multi-Agent Architecture Source Evidence — sanitized — 2026-06-20
+mode=source_only_explicit_file_whitelist_no_build_artifacts_no_secret_values
+
+## Git Context
+branch=release/agentflow-v2-production
+head=c29be45
+
+## Tenant / membership / role schema
+10:create table if not exists public.profiles (
+15:  is_platform_admin boolean not null default false,
+24:alter table public.profiles add column if not exists is_platform_admin boolean not null default false;
+28:create table if not exists public.organizations (
+32:  status text not null default 'setup',
+41:alter table public.organizations add column if not exists status text not null default 'setup';
+58:create table if not exists public.organization_members (
+62:  role text not null default 'member' check (role in ('owner', 'admin', 'member')),
+63:  status text not null default 'active' check (status in ('active', 'invited', 'disabled')),
+68:create table if not exists public.organization_branding (
+81:create table if not exists public.audit_logs (
+138:create or replace function app_private.is_platform_admin()
+148:      and p.is_platform_admin = true
+152:create or replace function app_private.is_org_member(org_id uuid)
+167:create or replace function app_private.can_manage_org(org_id uuid)
+174:  select app_private.is_platform_admin() or exists (
+186:alter table public.organization_branding enable row level security;
+192:FOR SELECT USING (id = auth.uid() OR app_private.is_platform_admin());
+196:FOR UPDATE USING (id = auth.uid()) WITH CHECK (id = auth.uid() AND is_platform_admin = false);
+201:FOR SELECT USING (app_private.is_platform_admin() OR app_private.is_org_member(id));
+205:FOR ALL USING (app_private.is_platform_admin()) WITH CHECK (app_private.is_platform_admin());
+210:FOR SELECT USING (app_private.is_platform_admin() OR user_id = auth.uid() OR app_private.is_org_member(organization_id));
+214:FOR ALL USING (app_private.is_platform_admin()) WITH CHECK (app_private.is_platform_admin());
+217:DROP POLICY IF EXISTS "organization_branding_select_members_or_platform_admin" ON public.organization_branding;
+218:CREATE POLICY "organization_branding_select_members_or_platform_admin" ON public.organization_branding
+219:FOR SELECT USING (app_private.is_platform_admin() OR app_private.is_org_member(organization_id));
+221:DROP POLICY IF EXISTS "organization_branding_admin_write" ON public.organization_branding;
+222:CREATE POLICY "organization_branding_admin_write" ON public.organization_branding
+223:FOR INSERT WITH CHECK (app_private.can_manage_org(organization_id));
+225:DROP POLICY IF EXISTS "organization_branding_admin_update" ON public.organization_branding;
+226:CREATE POLICY "organization_branding_admin_update" ON public.organization_branding
+227:FOR UPDATE USING (app_private.can_manage_org(organization_id))
+228:WITH CHECK (app_private.can_manage_org(organization_id));
+233:FOR SELECT USING (app_private.is_platform_admin() OR app_private.is_org_member(organization_id));
+237:FOR INSERT WITH CHECK (app_private.can_manage_org(organization_id));
+252:    app_private.is_platform_admin()
+253:    or app_private.can_manage_org((storage.foldername(name))[1]::uuid)
+262:    app_private.is_platform_admin()
+263:    or app_private.can_manage_org((storage.foldername(name))[1]::uuid)
+268:    app_private.is_platform_admin()
+269:    or app_private.can_manage_org((storage.foldername(name))[1]::uuid)
+277:grant select, insert, update on public.organization_branding to authenticated;
+281:grant execute on function app_private.is_platform_admin() to authenticated;
+282:grant execute on function app_private.is_org_member(uuid) to authenticated;
+283:grant execute on function app_private.can_manage_org(uuid) to authenticated;
+
+## CRM owner/task/audit schema
+supabase/migrations/20260429_stage_b_crm_core.sql:11:create table if not exists public.lead_pipeline_stages (
+supabase/migrations/20260429_stage_b_crm_core.sql:26:create table if not exists public.leads (
+supabase/migrations/20260429_stage_b_crm_core.sql:41:  original_inbound_channel text not null,
+supabase/migrations/20260429_stage_b_crm_core.sql:49:  assigned_owner_user_id uuid references public.profiles(id) on delete set null,
+supabase/migrations/20260429_stage_b_crm_core.sql:61:    and length(btrim(original_inbound_channel)) > 0
+supabase/migrations/20260429_stage_b_crm_core.sql:67:create table if not exists public.lead_notes (
+supabase/migrations/20260429_stage_b_crm_core.sql:78:create table if not exists public.lead_events (
+supabase/migrations/20260429_stage_b_crm_core.sql:89:  constraint lead_events_metadata_is_object check (jsonb_typeof(metadata) = 'object')
+supabase/migrations/20260429_stage_b_crm_core.sql:92:create table if not exists public.lead_tasks (
+supabase/migrations/20260429_stage_b_crm_core.sql:101:  assigned_to_user_id uuid references public.profiles(id) on delete set null,
+supabase/migrations/20260429_stage_b_crm_core.sql:110:create index if not exists leads_org_owner_idx on public.leads(organization_id, assigned_owner_user_id);
+supabase/migrations/20260429_stage_b_crm_core.sql:113:create index if not exists leads_source_trace_idx on public.leads(organization_id, exact_source, source_subtype, original_inbound_channel);
+supabase/migrations/20260429_stage_b_crm_core.sql:115:create index if not exists lead_events_lead_created_idx on public.lead_events(lead_id, created_at desc);
+supabase/migrations/20260429_stage_b_crm_core.sql:116:create index if not exists lead_events_org_created_idx on public.lead_events(organization_id, created_at desc);
+supabase/migrations/20260429_stage_b_crm_core.sql:117:create index if not exists lead_tasks_org_due_idx on public.lead_tasks(organization_id, status, due_at asc nulls last);
+supabase/migrations/20260429_stage_b_crm_core.sql:118:create index if not exists lead_tasks_lead_idx on public.lead_tasks(lead_id, created_at desc);
+supabase/migrations/20260429_stage_b_crm_core.sql:150:  if new.assigned_owner_user_id is not null and not app_private.is_same_org_member(new.organization_id, new.assigned_owner_user_id) then
+supabase/migrations/20260429_stage_b_crm_core.sql:151:    raise exception 'assigned_owner_must_belong_to_same_organization';
+supabase/migrations/20260429_stage_b_crm_core.sql:201:  if new.assigned_to_user_id is not null and not app_private.is_same_org_member(new.organization_id, new.assigned_to_user_id) then
+supabase/migrations/20260429_stage_b_crm_core.sql:210:create or replace function app_private.record_lead_event(
+supabase/migrations/20260429_stage_b_crm_core.sql:225:  insert into public.lead_events (organization_id, lead_id, actor_user_id, event_type, field_name, old_value, new_value, metadata)
+supabase/migrations/20260429_stage_b_crm_core.sql:238:    perform app_private.record_lead_event(
+supabase/migrations/20260429_stage_b_crm_core.sql:248:        'original_inbound_channel', new.original_inbound_channel,
+supabase/migrations/20260429_stage_b_crm_core.sql:252:        'assigned_owner_user_id', new.assigned_owner_user_id
+supabase/migrations/20260429_stage_b_crm_core.sql:256:    perform app_private.record_lead_event(
+supabase/migrations/20260429_stage_b_crm_core.sql:265:        'original_inbound_channel', new.original_inbound_channel,
+supabase/migrations/20260429_stage_b_crm_core.sql:276:    perform app_private.record_lead_event(new.organization_id, new.id, 'lead.status_changed', 'status', to_jsonb(old.status), to_jsonb(new.status));
+supabase/migrations/20260429_stage_b_crm_core.sql:280:    perform app_private.record_lead_event(new.organization_id, new.id, 'lead.pipeline_stage_changed', 'pipeline_stage_id', to_jsonb(old.pipeline_stage_id), to_jsonb(new.pipeline_stage_id));
+supabase/migrations/20260429_stage_b_crm_core.sql:283:  if old.assigned_owner_user_id is distinct from new.assigned_owner_user_id then
+supabase/migrations/20260429_stage_b_crm_core.sql:284:    perform app_private.record_lead_event(new.organization_id, new.id, 'lead.assigned', 'assigned_owner_user_id', to_jsonb(old.assigned_owner_user_id), to_jsonb(new.assigned_owner_user_id));
+supabase/migrations/20260429_stage_b_crm_core.sql:289:    perform app_private.record_lead_event(
+supabase/migrations/20260429_stage_b_crm_core.sql:300:    perform app_private.record_lead_event(new.organization_id, new.id, 'lead.first_contact_recorded', 'first_contact_at', to_jsonb(old.first_contact_at), to_jsonb(new.first_contact_at));
+supabase/migrations/20260429_stage_b_crm_core.sql:314:  perform app_private.record_lead_event(new.organization_id, new.lead_id, 'lead.note_added', 'lead_notes', null, to_jsonb(new.id), jsonb_build_object('visibility', new.visibility));
+supabase/migrations/20260429_stage_b_crm_core.sql:328:      perform app_private.record_lead_event(new.organization_id, new.lead_id, 'lead.task_created', 'lead_tasks', null, to_jsonb(new.id), jsonb_build_object('title', new.title, 'assigned_to_user_id', new.assigned_to_user_id, 'due_at', new.due_at));
+supabase/migrations/20260429_stage_b_crm_core.sql:333:  if new.lead_id is not null and (old.status is distinct from new.status or old.assigned_to_user_id is distinct from new.assigned_to_user_id or old.due_at is distinct from new.due_at) then
+supabase/migrations/20260429_stage_b_crm_core.sql:334:    perform app_private.record_lead_event(
+supabase/migrations/20260429_stage_b_crm_core.sql:338:      'lead_tasks',
+supabase/migrations/20260429_stage_b_crm_core.sql:339:      jsonb_build_object('status', old.status, 'assigned_to_user_id', old.assigned_to_user_id, 'due_at', old.due_at),
+supabase/migrations/20260429_stage_b_crm_core.sql:340:      jsonb_build_object('status', new.status, 'assigned_to_user_id', new.assigned_to_user_id, 'due_at', new.due_at)
+supabase/migrations/20260429_stage_b_crm_core.sql:396:drop trigger if exists lead_tasks_integrity_before_write on public.lead_tasks;
+supabase/migrations/20260429_stage_b_crm_core.sql:397:create trigger lead_tasks_integrity_before_write before insert or update on public.lead_tasks for each row execute function app_private.assert_lead_task_integrity();
+supabase/migrations/20260429_stage_b_crm_core.sql:399:drop trigger if exists lead_tasks_record_event_after_write on public.lead_tasks;
+supabase/migrations/20260429_stage_b_crm_core.sql:400:create trigger lead_tasks_record_event_after_write after insert or update on public.lead_tasks for each row execute function app_private.record_lead_task_event();
+supabase/migrations/20260429_stage_b_crm_core.sql:405:alter table public.lead_events enable row level security;
+supabase/migrations/20260429_stage_b_crm_core.sql:406:alter table public.lead_tasks enable row level security;
+supabase/migrations/20260429_stage_b_crm_core.sql:446:DROP POLICY IF EXISTS "lead_events_select_members_or_platform_admin" ON public.lead_events;
+supabase/migrations/20260429_stage_b_crm_core.sql:447:CREATE POLICY "lead_events_select_members_or_platform_admin" ON public.lead_events
+supabase/migrations/20260429_stage_b_crm_core.sql:450:DROP POLICY IF EXISTS "lead_events_insert_members_or_platform_admin" ON public.lead_events;
+supabase/migrations/20260429_stage_b_crm_core.sql:453:DROP POLICY IF EXISTS "lead_tasks_select_members_or_platform_admin" ON public.lead_tasks;
+supabase/migrations/20260429_stage_b_crm_core.sql:454:CREATE POLICY "lead_tasks_select_members_or_platform_admin" ON public.lead_tasks
+supabase/migrations/20260429_stage_b_crm_core.sql:457:DROP POLICY IF EXISTS "lead_tasks_insert_members_or_platform_admin" ON public.lead_tasks;
+supabase/migrations/20260429_stage_b_crm_core.sql:458:CREATE POLICY "lead_tasks_insert_members_or_platform_admin" ON public.lead_tasks
+supabase/migrations/20260429_stage_b_crm_core.sql:461:DROP POLICY IF EXISTS "lead_tasks_update_members_or_platform_admin" ON public.lead_tasks;
+supabase/migrations/20260429_stage_b_crm_core.sql:462:CREATE POLICY "lead_tasks_update_members_or_platform_admin" ON public.lead_tasks
+supabase/migrations/20260429_stage_b_crm_core.sql:469:grant select on public.lead_events to authenticated;
+supabase/migrations/20260429_stage_b_crm_core.sql:470:grant select, insert, update on public.lead_tasks to authenticated;
+supabase/migrations/20260430_phase_2_5_lead_identity_intake_bridge.sql:116:  new.original_inbound_channel = nullif(btrim(new.original_inbound_channel), '');
+supabase/migrations/20260430_phase_2_5_lead_identity_intake_bridge.sql:124:  if new.exact_source is null or new.source_subtype is null or new.original_inbound_channel is null then
+supabase/migrations/20260430_phase_2_5_lead_identity_intake_bridge.sql:149:  if new.assigned_owner_user_id is not null and not app_private.is_same_org_member(new.organization_id, new.assigned_owner_user_id) then
+supabase/migrations/20260430_phase_2_5_lead_identity_intake_bridge.sql:150:    raise exception 'assigned_owner_must_belong_to_same_organization';
+supabase/migrations/20260430_phase_2_5_lead_identity_intake_bridge.sql:261:  p_original_inbound_channel text,
+supabase/migrations/20260430_phase_2_5_lead_identity_intake_bridge.sql:298:    or nullif(btrim(coalesce(p_original_inbound_channel, '')), '') is null
+supabase/migrations/20260430_phase_2_5_lead_identity_intake_bridge.sql:308:    perform app_private.record_lead_event(
+supabase/migrations/20260430_phase_2_5_lead_identity_intake_bridge.sql:317:        'original_inbound_channel', btrim(p_original_inbound_channel),
+supabase/migrations/20260430_phase_2_5_lead_identity_intake_bridge.sql:346:      original_inbound_channel,
+supabase/migrations/20260430_phase_2_5_lead_identity_intake_bridge.sql:364:      btrim(p_original_inbound_channel),
+supabase/migrations/20260430_phase_2_5_lead_identity_intake_bridge.sql:404:'Canonical ingestion shape v1 for all external lead intake: organization_id, full_name, exact_source, source_subtype, original_inbound_channel, captured_at, optional identity/contact/source reference/metadata. Uses deterministic org-scoped strong identity matching and creates or returns a lead id without inbox/conversation coupling.';
+
+## Stage C channels / conversations / messages / automation events
+supabase/migrations/20260430_stage_c_conversations_inbox.sql:5:--   2. Inbound messages must use public.ingest_inbound_message, which calls public.ingest_lead_from_intake.
+supabase/migrations/20260430_stage_c_conversations_inbox.sql:15:create table if not exists public.channels (
+supabase/migrations/20260430_stage_c_conversations_inbox.sql:21:  external_channel_id text,
+supabase/migrations/20260430_stage_c_conversations_inbox.sql:24:  metadata jsonb not null default '{}'::jsonb,
+supabase/migrations/20260430_stage_c_conversations_inbox.sql:34:create unique index if not exists channels_org_provider_external_unique_idx
+supabase/migrations/20260430_stage_c_conversations_inbox.sql:35:on public.channels (organization_id, provider, external_channel_id)
+supabase/migrations/20260430_stage_c_conversations_inbox.sql:36:where external_channel_id is not null;
+supabase/migrations/20260430_stage_c_conversations_inbox.sql:40:create table if not exists public.conversations (
+supabase/migrations/20260430_stage_c_conversations_inbox.sql:43:  channel_id uuid not null references public.channels(id) on delete restrict,
+supabase/migrations/20260430_stage_c_conversations_inbox.sql:47:  assigned_owner_user_id uuid references public.profiles(id) on delete set null,
+supabase/migrations/20260430_stage_c_conversations_inbox.sql:50:  metadata jsonb not null default '{}'::jsonb,
+supabase/migrations/20260430_stage_c_conversations_inbox.sql:57:create unique index if not exists conversations_org_channel_external_unique_idx
+supabase/migrations/20260430_stage_c_conversations_inbox.sql:58:on public.conversations (organization_id, channel_id, external_conversation_id)
+supabase/migrations/20260430_stage_c_conversations_inbox.sql:63:create index if not exists conversations_channel_idx on public.conversations (channel_id, updated_at desc);
+supabase/migrations/20260430_stage_c_conversations_inbox.sql:65:create table if not exists public.messages (
+supabase/migrations/20260430_stage_c_conversations_inbox.sql:68:  channel_id uuid not null references public.channels(id) on delete restrict,
+supabase/migrations/20260430_stage_c_conversations_inbox.sql:86:create unique index if not exists messages_org_channel_external_unique_idx
+supabase/migrations/20260430_stage_c_conversations_inbox.sql:87:on public.messages (organization_id, channel_id, external_message_id)
+supabase/migrations/20260430_stage_c_conversations_inbox.sql:94:create table if not exists public.automation_events (
+supabase/migrations/20260430_stage_c_conversations_inbox.sql:107:  constraint automation_events_type_not_blank check (length(btrim(event_type)) > 0),
+supabase/migrations/20260430_stage_c_conversations_inbox.sql:108:  constraint automation_events_aggregate_type_not_blank check (length(btrim(aggregate_type)) > 0),
+supabase/migrations/20260430_stage_c_conversations_inbox.sql:109:  constraint automation_events_payload_is_object check (jsonb_typeof(payload) = 'object'),
+supabase/migrations/20260430_stage_c_conversations_inbox.sql:110:  constraint automation_events_status_check check (status in ('pending', 'processing', 'processed', 'failed', 'ignored'))
+supabase/migrations/20260430_stage_c_conversations_inbox.sql:113:create index if not exists automation_events_org_created_idx on public.automation_events (organization_id, created_at desc);
+supabase/migrations/20260430_stage_c_conversations_inbox.sql:114:create index if not exists automation_events_type_status_idx on public.automation_events (event_type, status, created_at asc);
+supabase/migrations/20260430_stage_c_conversations_inbox.sql:115:create index if not exists automation_events_conversation_idx on public.automation_events (conversation_id, created_at desc) where conversation_id is not null;
+supabase/migrations/20260430_stage_c_conversations_inbox.sql:117:create or replace function app_private.assert_channel_integrity()
+supabase/migrations/20260430_stage_c_conversations_inbox.sql:127:  new.external_channel_id = nullif(btrim(coalesce(new.external_channel_id, '')), '');
+supabase/migrations/20260430_stage_c_conversations_inbox.sql:138:create or replace function app_private.assert_conversation_integrity()
+supabase/migrations/20260430_stage_c_conversations_inbox.sql:148:  select c.organization_id into v_channel_org from public.channels c where c.id = new.channel_id;
+supabase/migrations/20260430_stage_c_conversations_inbox.sql:154:    raise exception 'conversation_must_inherit_channel_organization';
+supabase/migrations/20260430_stage_c_conversations_inbox.sql:164:  if new.assigned_owner_user_id is not null and not app_private.is_same_org_member(new.organization_id, new.assigned_owner_user_id) then
+supabase/migrations/20260430_stage_c_conversations_inbox.sql:179:create or replace function app_private.assert_message_integrity()
+supabase/migrations/20260430_stage_c_conversations_inbox.sql:192:    raise exception 'messages_must_use_ingest_inbound_message';
+supabase/migrations/20260430_stage_c_conversations_inbox.sql:195:  select c.organization_id, c.channel_id, c.lead_id into v_conversation
+supabase/migrations/20260430_stage_c_conversations_inbox.sql:207:  if new.channel_id <> v_conversation.channel_id then
+supabase/migrations/20260430_stage_c_conversations_inbox.sql:211:  select ch.organization_id into v_channel_org from public.channels ch where ch.id = new.channel_id;
+supabase/migrations/20260430_stage_c_conversations_inbox.sql:213:    raise exception 'message_channel_must_match_organization';
+supabase/migrations/20260430_stage_c_conversations_inbox.sql:240:create or replace function app_private.assert_automation_event_integrity()
+supabase/migrations/20260430_stage_c_conversations_inbox.sql:279:drop trigger if exists assert_channel_integrity on public.channels;
+supabase/migrations/20260430_stage_c_conversations_inbox.sql:280:create trigger assert_channel_integrity before insert or update on public.channels for each row execute function app_private.assert_channel_integrity();
+supabase/migrations/20260430_stage_c_conversations_inbox.sql:282:drop trigger if exists assert_conversation_integrity on public.conversations;
+supabase/migrations/20260430_stage_c_conversations_inbox.sql:283:create trigger assert_conversation_integrity before insert or update on public.conversations for each row execute function app_private.assert_conversation_integrity();
+supabase/migrations/20260430_stage_c_conversations_inbox.sql:285:drop trigger if exists assert_message_integrity on public.messages;
+supabase/migrations/20260430_stage_c_conversations_inbox.sql:286:create trigger assert_message_integrity before insert or update on public.messages for each row execute function app_private.assert_message_integrity();
+supabase/migrations/20260430_stage_c_conversations_inbox.sql:288:drop trigger if exists assert_automation_event_integrity on public.automation_events;
+supabase/migrations/20260430_stage_c_conversations_inbox.sql:289:create trigger assert_automation_event_integrity before insert or update on public.automation_events for each row execute function app_private.assert_automation_event_integrity();
+supabase/migrations/20260430_stage_c_conversations_inbox.sql:291:create or replace function public.ingest_inbound_message(
+supabase/migrations/20260430_stage_c_conversations_inbox.sql:292:  p_channel_id uuid,
+supabase/migrations/20260430_stage_c_conversations_inbox.sql:305:  channel_id uuid,
+supabase/migrations/20260430_stage_c_conversations_inbox.sql:331:  where c.id = p_channel_id
+supabase/migrations/20260430_stage_c_conversations_inbox.sql:335:    raise exception 'active_channel_required';
+supabase/migrations/20260430_stage_c_conversations_inbox.sql:370:      'channel_id', v_channel.id,
+supabase/migrations/20260430_stage_c_conversations_inbox.sql:383:      and c.channel_id = v_channel.id
+supabase/migrations/20260430_stage_c_conversations_inbox.sql:392:      and c.channel_id = v_channel.id
+supabase/migrations/20260430_stage_c_conversations_inbox.sql:402:      channel_id,
+supabase/migrations/20260430_stage_c_conversations_inbox.sql:417:      jsonb_build_object('created_by', 'ingest_inbound_message', 'intake_action', v_intake.intake_action)
+supabase/migrations/20260430_stage_c_conversations_inbox.sql:434:      and m.channel_id = v_channel.id
+supabase/migrations/20260430_stage_c_conversations_inbox.sql:444:      channel_id,
+supabase/migrations/20260430_stage_c_conversations_inbox.sql:479:    insert into public.automation_events (organization_id, event_type, aggregate_type, aggregate_id, lead_id, conversation_id, payload)
+supabase/migrations/20260430_stage_c_conversations_inbox.sql:487:      jsonb_build_object('channel_id', v_channel.id, 'external_conversation_id', nullif(btrim(coalesce(p_external_conversation_id, '')), ''), 'intake_action', v_intake.intake_action)
+supabase/migrations/20260430_stage_c_conversations_inbox.sql:491:  insert into public.automation_events (organization_id, event_type, aggregate_type, aggregate_id, lead_id, conversation_id, message_id, payload)
+supabase/migrations/20260430_stage_c_conversations_inbox.sql:500:    jsonb_build_object('channel_id', v_channel.id, 'external_message_id', nullif(btrim(coalesce(p_external_message_id, '')), ''), 'identity_confidence', v_intake.identity_confidence)
+supabase/migrations/20260430_stage_c_conversations_inbox.sql:504:  channel_id := v_channel.id;
+supabase/migrations/20260430_stage_c_conversations_inbox.sql:517:comment on function public.ingest_inbound_message(uuid, text, text, text, timestamptz, text, text, text, text, jsonb) is
+supabase/migrations/20260430_stage_c_conversations_inbox.sql:523:alter table public.automation_events enable row level security;
+supabase/migrations/20260430_stage_c_conversations_inbox.sql:546:DROP POLICY IF EXISTS "automation_events_select_members_or_platform_admin" ON public.automation_events;
+supabase/migrations/20260430_stage_c_conversations_inbox.sql:547:CREATE POLICY "automation_events_select_members_or_platform_admin" ON public.automation_events
+supabase/migrations/20260430_stage_c_conversations_inbox.sql:550:DROP POLICY IF EXISTS "automation_events_platform_admin_update" ON public.automation_events;
+supabase/migrations/20260430_stage_c_conversations_inbox.sql:551:CREATE POLICY "automation_events_platform_admin_update" ON public.automation_events
+supabase/migrations/20260430_stage_c_conversations_inbox.sql:557:revoke all on public.automation_events from anon, authenticated;
+supabase/migrations/20260430_stage_c_conversations_inbox.sql:559:grant select on public.channels, public.conversations, public.messages, public.automation_events to authenticated;
+supabase/migrations/20260430_stage_c_conversations_inbox.sql:562:grant execute on function public.ingest_inbound_message(uuid, text, text, text, timestamptz, text, text, text, text, jsonb) to authenticated, service_role;
+supabase/migrations/20260430_stage_c_activation_ingestion_contract.sql:5:create unique index if not exists channels_provider_external_global_unique_idx
+supabase/migrations/20260430_stage_c_activation_ingestion_contract.sql:6:on public.channels (provider, external_channel_id)
+supabase/migrations/20260430_stage_c_activation_ingestion_contract.sql:7:where external_channel_id is not null;
+supabase/migrations/20260430_stage_c_activation_ingestion_contract.sql:9:create or replace function public.ingest_inbound_message(
+supabase/migrations/20260430_stage_c_activation_ingestion_contract.sql:10:  p_channel_id uuid,
+supabase/migrations/20260430_stage_c_activation_ingestion_contract.sql:23:  channel_id uuid,
+supabase/migrations/20260430_stage_c_activation_ingestion_contract.sql:49:  where c.id = p_channel_id
+supabase/migrations/20260430_stage_c_activation_ingestion_contract.sql:53:    raise exception 'active_channel_required';
+supabase/migrations/20260430_stage_c_activation_ingestion_contract.sql:88:      'channel_id', v_channel.id,
+supabase/migrations/20260430_stage_c_activation_ingestion_contract.sql:101:      and c.channel_id = v_channel.id
+supabase/migrations/20260430_stage_c_activation_ingestion_contract.sql:110:      and c.channel_id = v_channel.id
+supabase/migrations/20260430_stage_c_activation_ingestion_contract.sql:120:      channel_id,
+supabase/migrations/20260430_stage_c_activation_ingestion_contract.sql:135:      jsonb_build_object('created_by', 'ingest_inbound_message', 'intake_action', v_intake.intake_action)
+supabase/migrations/20260430_stage_c_activation_ingestion_contract.sql:152:      and m.channel_id = v_channel.id
+supabase/migrations/20260430_stage_c_activation_ingestion_contract.sql:162:      channel_id,
+supabase/migrations/20260430_stage_c_activation_ingestion_contract.sql:197:    insert into public.automation_events (organization_id, event_type, aggregate_type, aggregate_id, lead_id, conversation_id, payload)
+supabase/migrations/20260430_stage_c_activation_ingestion_contract.sql:205:      jsonb_build_object('channel_id', v_channel.id, 'external_conversation_id', nullif(btrim(coalesce(p_external_conversation_id, '')), ''), 'intake_action', v_intake.intake_action)
+supabase/migrations/20260430_stage_c_activation_ingestion_contract.sql:209:  insert into public.automation_events (organization_id, event_type, aggregate_type, aggregate_id, lead_id, conversation_id, message_id, payload)
+supabase/migrations/20260430_stage_c_activation_ingestion_contract.sql:218:    jsonb_build_object('channel_id', v_channel.id, 'external_message_id', nullif(btrim(coalesce(p_external_message_id, '')), ''), 'identity_confidence', v_intake.identity_confidence)
+supabase/migrations/20260430_stage_c_activation_ingestion_contract.sql:222:  channel_id := v_channel.id;
+supabase/migrations/20260430_stage_c_activation_ingestion_contract.sql:235:comment on function public.ingest_inbound_message(uuid, text, text, text, timestamptz, text, text, text, text, jsonb) is
+
+## Governed approvals / outbound guard schema and code
+supabase/migrations/20260524_phase10_property24_ingress_and_draft_review.sql:2:-- Backend-only operationalization. No outbound send is triggered by this migration.
+supabase/migrations/20260524_phase10_property24_ingress_and_draft_review.sql:11:alter table public.ai_message_drafts add column if not exists approved_by_user_id uuid references public.profiles(id) on delete set null;
+supabase/migrations/20260524_phase10_property24_ingress_and_draft_review.sql:45:create or replace function public.review_ai_message_draft(
+supabase/migrations/20260524_phase10_property24_ingress_and_draft_review.sql:97:      approved_by_user_id = case when v_status = 'approved' then v_actor else null end,
+supabase/migrations/20260524_phase10_property24_ingress_and_draft_review.sql:110:  insert into public.audit_logs (
+supabase/migrations/20260524_phase10_property24_ingress_and_draft_review.sql:129:      'outbound_frozen', true,
+supabase/migrations/20260524_phase10_property24_ingress_and_draft_review.sql:134:  insert into public.automation_events (
+supabase/migrations/20260524_phase10_property24_ingress_and_draft_review.sql:157:      'outbound_frozen', true,
+supabase/migrations/20260524_phase10_property24_ingress_and_draft_review.sql:168:comment on function public.review_ai_message_draft(uuid, text, text) is
+supabase/migrations/20260524_phase10_property24_ingress_and_draft_review.sql:169:'Phase 10 governed draft review RPC. Persists edits/approval/discard in one transaction and writes audit_logs + automation_events. Does not send outbound messages.';
+supabase/migrations/20260524_phase10_property24_ingress_and_draft_review.sql:171:revoke all on function public.review_ai_message_draft(uuid, text, text) from public;
+supabase/migrations/20260524_phase10_property24_ingress_and_draft_review.sql:172:grant execute on function public.review_ai_message_draft(uuid, text, text) to authenticated;
+supabase/migrations/20260524_phase10_property24_ingress_and_draft_review.sql:505:    insert into public.automation_events (organization_id, event_type, aggregate_type, aggregate_id, lead_id, conversation_id, payload)
+supabase/migrations/20260524_phase10_property24_ingress_and_draft_review.sql:517:  insert into public.automation_events (organization_id, event_type, aggregate_type, aggregate_id, lead_id, conversation_id, message_id, payload)
+supabase/migrations/20260525_phase10b_governed_outbound_certification.sql:1:-- Phase 10B: governed outbound execution certification layer
+supabase/migrations/20260525_phase10b_governed_outbound_certification.sql:2:-- Backend-only hardening. Keeps outbound server-controlled and human-approved.
+supabase/migrations/20260525_phase10b_governed_outbound_certification.sql:21:drop function if exists public.review_ai_message_draft(uuid, text, text);
+supabase/migrations/20260525_phase10b_governed_outbound_certification.sql:23:create or replace function public.review_ai_message_draft(
+supabase/migrations/20260525_phase10b_governed_outbound_certification.sql:27:  p_outbound_frozen boolean default true
+supabase/migrations/20260525_phase10b_governed_outbound_certification.sql:46:  v_outbound_frozen boolean := coalesce(p_outbound_frozen, true);
+supabase/migrations/20260525_phase10b_governed_outbound_certification.sql:77:      approved_by_user_id = case when v_status = 'approved' then v_actor else null end,
+supabase/migrations/20260525_phase10b_governed_outbound_certification.sql:90:  insert into public.audit_logs (
+supabase/migrations/20260525_phase10b_governed_outbound_certification.sql:109:      'outbound_frozen', v_outbound_frozen,
+supabase/migrations/20260525_phase10b_governed_outbound_certification.sql:110:      'outbound_governance', case when v_status = 'approved' and not v_outbound_frozen then 'human_approved_for_governed_send' else 'human_review_required' end,
+supabase/migrations/20260525_phase10b_governed_outbound_certification.sql:111:      'phase', 'phase_10b_governed_outbound'
+supabase/migrations/20260525_phase10b_governed_outbound_certification.sql:115:  insert into public.automation_events (
+supabase/migrations/20260525_phase10b_governed_outbound_certification.sql:138:      'outbound_frozen', v_outbound_frozen,
+supabase/migrations/20260525_phase10b_governed_outbound_certification.sql:139:      'outbound_governance', case when v_status = 'approved' and not v_outbound_frozen then 'human_approved_for_governed_send' else 'human_review_required' end,
+supabase/migrations/20260525_phase10b_governed_outbound_certification.sql:140:      'phase', 'phase_10b_governed_outbound'
+supabase/migrations/20260525_phase10b_governed_outbound_certification.sql:150:comment on function public.review_ai_message_draft(uuid, text, text, boolean) is
+supabase/migrations/20260525_phase10b_governed_outbound_certification.sql:151:'Phase 10B governed draft review RPC. Persists edits/approval/discard in one transaction and writes audit_logs + automation_events. Sending remains separate and server-controlled.';
+supabase/migrations/20260525_phase10b_governed_outbound_certification.sql:153:revoke all on function public.review_ai_message_draft(uuid, text, text, boolean) from public, anon, authenticated;
+supabase/migrations/20260525_phase10b_governed_outbound_certification.sql:154:grant execute on function public.review_ai_message_draft(uuid, text, text, boolean) to authenticated;
+supabase/migrations/20260525_phase10b_governed_outbound_certification.sql:167:  v_outbound_context text := current_setting('app.outbound_context', true);
+supabase/migrations/20260525_phase10b_governed_outbound_certification.sql:173:  elsif new.direction = 'outbound' then
+supabase/migrations/20260525_phase10b_governed_outbound_certification.sql:174:    if v_outbound_context <> 'controlled_outbound_send_v1' then
+supabase/migrations/20260525_phase10b_governed_outbound_certification.sql:175:      raise exception 'outbound_messages_must_use_send_outbound_message';
+supabase/migrations/20260525_phase10b_governed_outbound_certification.sql:178:      raise exception 'outbound_sender_must_be_agent';
+supabase/migrations/20260525_phase10b_governed_outbound_certification.sql:181:      raise exception 'outbound_status_invalid';
+supabase/migrations/20260525_phase10b_governed_outbound_certification.sql:228:  if new.direction = 'outbound' and nullif(new.raw_payload->>'draft_id', '') is null then
+supabase/migrations/20260525_phase10b_governed_outbound_certification.sql:229:    raise exception 'outbound_message_requires_draft_id';
+supabase/migrations/20260525_phase10b_governed_outbound_certification.sql:236:drop function if exists public.send_outbound_message(uuid, text, text, text, jsonb, text);
+supabase/migrations/20260525_phase10b_governed_outbound_certification.sql:238:create or replace function public.send_outbound_message(
+supabase/migrations/20260525_phase10b_governed_outbound_certification.sql:257:  evolution_instance text,
+supabase/migrations/20260525_phase10b_governed_outbound_certification.sql:290:  where s.source = 'governed_outbound';
+supabase/migrations/20260525_phase10b_governed_outbound_certification.sql:295:    raise exception 'invalid_outbound_execution_secret';
+supabase/migrations/20260525_phase10b_governed_outbound_certification.sql:325:    raise exception 'outbound_draft_not_found';
+supabase/migrations/20260525_phase10b_governed_outbound_certification.sql:340:  if v_draft.status <> 'approved' or v_draft.approved_by_user_id is null or v_draft.approved_at is null then
+supabase/migrations/20260525_phase10b_governed_outbound_certification.sql:341:    raise exception 'outbound_draft_must_be_approved';
+supabase/migrations/20260525_phase10b_governed_outbound_certification.sql:351:    raise exception 'active_channel_required_for_send';
+supabase/migrations/20260525_phase10b_governed_outbound_certification.sql:380:  evolution_instance := coalesce(
+supabase/migrations/20260525_phase10b_governed_outbound_certification.sql:381:    nullif(btrim(coalesce(v_channel.metadata->>'evolution_instance', '')), ''),
+supabase/migrations/20260525_phase10b_governed_outbound_certification.sql:388:    and m.direction = 'outbound'
+supabase/migrations/20260525_phase10b_governed_outbound_certification.sql:402:        raise exception 'outbound_send_already_pending';
+supabase/migrations/20260525_phase10b_governed_outbound_certification.sql:407:    perform set_config('app.outbound_context', 'controlled_outbound_send_v1', true);
+supabase/migrations/20260525_phase10b_governed_outbound_certification.sql:428:        'outbound',
+supabase/migrations/20260525_phase10b_governed_outbound_certification.sql:438:          'approved_by_user_id', v_draft.approved_by_user_id,
+supabase/migrations/20260525_phase10b_governed_outbound_certification.sql:446:          'phase', 'phase_10b_governed_outbound'
+supabase/migrations/20260525_phase10b_governed_outbound_certification.sql:466:              'phase', 'phase_10b_governed_outbound'
+supabase/migrations/20260525_phase10b_governed_outbound_certification.sql:472:    perform set_config('app.outbound_context', '', true);
+supabase/migrations/20260525_phase10b_governed_outbound_certification.sql:474:    insert into public.audit_logs (
+supabase/migrations/20260525_phase10b_governed_outbound_certification.sql:484:      'outbound_message_prepared',
+supabase/migrations/20260525_phase10b_governed_outbound_certification.sql:494:        'phase', 'phase_10b_governed_outbound'
+supabase/migrations/20260525_phase10b_governed_outbound_certification.sql:513:    raise exception 'outbound_message_prepare_required';
+supabase/migrations/20260525_phase10b_governed_outbound_certification.sql:524:  perform set_config('app.outbound_context', 'controlled_outbound_send_v1', true);
+supabase/migrations/20260525_phase10b_governed_outbound_certification.sql:537:          'phase', 'phase_10b_governed_outbound'
+supabase/migrations/20260525_phase10b_governed_outbound_certification.sql:542:  perform set_config('app.outbound_context', '', true);
+supabase/migrations/20260525_phase10b_governed_outbound_certification.sql:549:  insert into public.automation_events (
+supabase/migrations/20260525_phase10b_governed_outbound_certification.sql:578:      'phase', 'phase_10b_governed_outbound'
+supabase/migrations/20260525_phase10b_governed_outbound_certification.sql:584:  insert into public.audit_logs (
+supabase/migrations/20260525_phase10b_governed_outbound_certification.sql:594:    case when v_delivery_status = 'sent' then 'outbound_message_sent' else 'outbound_message_failed' end,
+supabase/migrations/20260525_phase10b_governed_outbound_certification.sql:606:      'phase', 'phase_10b_governed_outbound'
+supabase/migrations/20260525_phase10b_governed_outbound_certification.sql:624:comment on function public.send_outbound_message(uuid, text, text, text, jsonb, text, text) is
+supabase/migrations/20260525_phase10b_governed_outbound_certification.sql:625:'Phase 10B governed outbound RPC. Requires authenticated org access, approved draft, server-held execution secret, prepare-before-finalize, and writes message/audit/automation evidence. It does not call external transport directly.';
+supabase/migrations/20260525_phase10b_governed_outbound_certification.sql:627:revoke all on function public.send_outbound_message(uuid, text, text, text, jsonb, text, text) from public, anon, authenticated;
+supabase/migrations/20260525_phase10b_governed_outbound_certification.sql:628:grant execute on function public.send_outbound_message(uuid, text, text, text, jsonb, text, text) to authenticated;
+src/features/approvals/actions.ts:19:  evolution_instance: string | null;
+src/features/approvals/actions.ts:34:function outboundTransportEnabled() {
+src/features/approvals/actions.ts:35:  return process.env.OUTBOUND_TRANSPORT_ENABLED === "true";
+src/features/approvals/actions.ts:38:function outboundExecutionSecret() {
+src/features/approvals/actions.ts:39:  return process.env.GOVERNED_OUTBOUND_EXECUTION_SECRET || process.env.OUTBOUND_EXECUTION_SECRET || "";
+src/features/approvals/actions.ts:67:  const shouldSend = status === "approved" && outboundTransportEnabled();
+src/features/approvals/actions.ts:68:  const executionSecret = outboundExecutionSecret();
+src/features/approvals/actions.ts:75:    redirect(`/app/${orgSlug}/approvals?error=outbound-execution-secret-missing`);
+src/features/approvals/actions.ts:78:  const { error: reviewError } = await supabase.rpc("review_ai_message_draft", {
+src/features/approvals/actions.ts:82:    p_outbound_frozen: !shouldSend,
+src/features/approvals/actions.ts:95:  const { data: preparedData, error: prepareError } = await supabase.rpc("send_outbound_message", {
+src/features/approvals/actions.ts:109:      instance: prepared.evolution_instance,
+src/features/approvals/actions.ts:114:    await supabase.rpc("send_outbound_message", {
+src/features/approvals/actions.ts:128:  const { error: finalizeError } = await supabase.rpc("send_outbound_message", {
+src/lib/data/approvals.ts:137:    .select("id, organization_id, conversation_id, message_id, lead_id, draft_content, status, generation_model, generation_context, edited_by_user_id, approved_by_user_id, approved_at, discarded_by_user_id, created_at, updated_at, conversations(id, organization_id, channel_id, lead_id, external_conversation_id, status, assigned_owner_user_id, subject, last_message_at, metadata, created_at, updated_at, channels(display_name, provider, channel_type)), messages(id, body, occurred_at, sender_display_name, raw_payload), leads(id, pipeline_stage_id, full_name, email, phone, identity_confidence, priority, estimated_value, exact_source, source_subtype, original_inbound_channel, source_reference, captured_at, first_contact_at, qualification_status, ai_qualification_decision_path, lead_origin_metadata)")
+
+## Application tenant-scoped data access
+src/lib/data/auth.ts:31:    .select("id, full_name, email, avatar_url, is_platform_admin")
+src/lib/data/auth.ts:44:  if (!profile.is_platform_admin) {
+src/lib/data/auth.ts:58:  if (profile.is_platform_admin) {
+src/lib/data/auth.ts:69:    .from("organization_members")
+src/lib/data/auth.ts:82:export async function resolveTenantBySlug(orgSlug: string, forceDemo?: boolean): Promise<TenantContext> {
+src/lib/data/auth.ts:87:      membership: {
+src/lib/data/auth.ts:88:        id: "demo-member-id",
+src/lib/data/auth.ts:89:        organization_id: "demo-org-id",
+src/lib/data/auth.ts:91:        role: "admin",
+src/lib/data/auth.ts:113:  let membership: OrganizationMember | undefined;
+src/lib/data/auth.ts:115:  if (!profile.is_platform_admin) {
+src/lib/data/auth.ts:116:    const { data: member, error: memberError } = await supabase
+src/lib/data/auth.ts:117:      .from("organization_members")
+src/lib/data/auth.ts:118:      .select("id, organization_id, user_id, role, status")
+src/lib/data/auth.ts:119:      .eq("organization_id", organization.id)
+src/lib/data/auth.ts:124:    if (memberError || !member) {
+src/lib/data/auth.ts:128:    membership = member as OrganizationMember;
+src/lib/data/auth.ts:133:    .select("organization_id, logo_url, primary_color, secondary_color, accent_color, theme_mode, updated_at")
+src/lib/data/auth.ts:134:    .eq("organization_id", organization.id)
+src/lib/data/auth.ts:140:    membership,
+src/lib/data/auth.ts:142:      organization_id: organization.id,
+src/lib/data/crm.ts:3:import { resolveTenantBySlug } from "@/lib/data/auth";
+src/lib/data/crm.ts:10:export async function getOrgMembers(organizationId: string, forceDemo?: boolean): Promise<OrgMemberWithProfile[]> {
+src/lib/data/crm.ts:14:        id: "demo-member-id",
+src/lib/data/crm.ts:15:        organization_id: "demo-org-id",
+src/lib/data/crm.ts:17:        role: "admin",
+src/lib/data/crm.ts:26:    .from("organization_members")
+src/lib/data/crm.ts:27:    .select("id, organization_id, user_id, role, status, profiles!organization_members_user_id_fkey(full_name, email)")
+src/lib/data/crm.ts:28:    .eq("organization_id", organizationId)
+src/lib/data/crm.ts:34:  return (data ?? []).map((member) => ({
+src/lib/data/crm.ts:35:    id: member.id,
+src/lib/data/crm.ts:36:    organization_id: member.organization_id,
+src/lib/data/crm.ts:37:    user_id: member.user_id,
+src/lib/data/crm.ts:38:    role: member.role,
+src/lib/data/crm.ts:39:    status: member.status,
+src/lib/data/crm.ts:40:    profile: Array.isArray(member.profiles) ? member.profiles[0] : member.profiles,
+src/lib/data/crm.ts:52:    .select("id, organization_id, name, slug, position, probability, is_closed, is_won")
+src/lib/data/crm.ts:53:    .eq("organization_id", organizationId)
+src/lib/data/crm.ts:60:export async function getLeadList(orgSlug: string, forceDemo?: boolean): Promise<{ tenant: Awaited<ReturnType<typeof resolveTenantBySlug>>; leads: Lead[]; members: OrgMemberWithProfile[]; stages: LeadPipelineStage[] }> {
+src/lib/data/crm.ts:62:    const tenant = await resolveTenantBySlug(orgSlug, true);
+src/lib/data/crm.ts:64:    const members = await getOrgMembers(tenant.organization.id, true);
+src/lib/data/crm.ts:66:    return { tenant, leads, members, stages };
+src/lib/data/crm.ts:69:  const tenant = await resolveTenantBySlug(orgSlug);
+src/lib/data/crm.ts:71:  const [{ data: leads }, members, stages] = await Promise.all([
+src/lib/data/crm.ts:74:      .select("id, organization_id, pipeline_stage_id, full_name, email, phone, normalized_email, normalized_phone_e164, identity_confidence, company, status, priority, estimated_value, exact_source, source_subtype, original_inbound_channel, source_reference, captured_at, first_contact_at, qualification_status, ai_qualification_decision_path, lead_origin_metadata, assigned_owner_user_id, created_by_user_id, updated_by_user_id, created_at, updated_at")
+src/lib/data/crm.ts:75:      .eq("organization_id", tenant.organization.id)
+src/lib/data/crm.ts:77:    getOrgMembers(tenant.organization.id),
+src/lib/data/crm.ts:81:  return { tenant, leads: (leads ?? []) as Lead[], members, stages };
+src/lib/data/crm.ts:86:    const tenant = await resolveTenantBySlug(orgSlug, true);
+src/lib/data/crm.ts:92:    const members = await getOrgMembers(tenant.organization.id, true);
+src/lib/data/crm.ts:100:      members,
+src/lib/data/crm.ts:105:  const tenant = await resolveTenantBySlug(orgSlug);
+src/lib/data/crm.ts:110:    .select("id, organization_id, pipeline_stage_id, full_name, email, phone, normalized_email, normalized_phone_e164, identity_confidence, company, status, priority, estimated_value, exact_source, source_subtype, original_inbound_channel, source_reference, captured_at, first_contact_at, qualification_status, ai_qualification_decision_path, lead_origin_metadata, assigned_owner_user_id, created_by_user_id, updated_by_user_id, created_at, updated_at")
+src/lib/data/crm.ts:111:    .eq("organization_id", tenant.organization.id)
+src/lib/data/crm.ts:117:  const [{ data: notes }, { data: events }, { data: tasks }, members, stages] = await Promise.all([
+src/lib/data/crm.ts:120:      .select("id, organization_id, lead_id, author_user_id, body, visibility, created_at, updated_at")
+src/lib/data/crm.ts:121:      .eq("organization_id", tenant.organization.id)
+src/lib/data/crm.ts:126:      .select("id, organization_id, lead_id, actor_user_id, event_type, field_name, old_value, new_value, metadata, created_at")
+src/lib/data/crm.ts:127:      .eq("organization_id", tenant.organization.id)
+src/lib/data/crm.ts:133:      .select("id, organization_id, lead_id, title, description, status, priority, due_at, assigned_to_user_id, created_by_user_id, completed_at, created_at, updated_at")
+src/lib/data/crm.ts:134:      .eq("organization_id", tenant.organization.id)
+src/lib/data/crm.ts:137:    getOrgMembers(tenant.organization.id),
+src/lib/data/crm.ts:147:    members,
+src/lib/data/crm.ts:152:export async function getTaskList(orgSlug: string, forceDemo?: boolean) {
+src/lib/data/crm.ts:154:    const tenant = await resolveTenantBySlug(orgSlug, true);
+src/lib/data/crm.ts:156:    const members = await getOrgMembers(tenant.organization.id, true);
+src/lib/data/crm.ts:157:    return { tenant, tasks, members };
+src/lib/data/crm.ts:160:  const tenant = await resolveTenantBySlug(orgSlug);
+src/lib/data/crm.ts:162:  const [{ data: tasks }, members] = await Promise.all([
+src/lib/data/crm.ts:165:      .select("id, organization_id, lead_id, title, description, status, priority, due_at, assigned_to_user_id, created_by_user_id, completed_at, created_at, updated_at, leads(id, full_name, status)")
+src/lib/data/crm.ts:166:      .eq("organization_id", tenant.organization.id)
+src/lib/data/crm.ts:169:    getOrgMembers(tenant.organization.id),
+src/lib/data/crm.ts:177:  return { tenant, tasks: normalizedTasks, members };
+src/lib/data/crm.ts:180:export function displayMember(members: OrgMemberWithProfile[], userId: string | null) {
+src/lib/data/crm.ts:182:  const member = members.find((item) => item.user_id === userId);
+src/lib/data/crm.ts:183:  return member?.profile?.full_name || member?.profile?.email || "Assigned user";
+src/lib/data/inbox.ts:3:import { resolveTenantBySlug } from "@/lib/data/auth";
+src/lib/data/inbox.ts:4:import { displayMember, getOrgMembers } from "@/lib/data/crm";
+src/lib/data/inbox.ts:29:  | "assigned_owner_user_id"
+src/lib/data/inbox.ts:38:  tenant: Awaited<ReturnType<typeof resolveTenantBySlug>>;
+src/lib/data/inbox.ts:45:  members: Awaited<ReturnType<typeof getOrgMembers>>;
+src/lib/data/inbox.ts:48:export async function getInbox(orgSlug: string, conversationId?: string, forceDemo?: boolean): Promise<ConversationThread> {
+src/lib/data/inbox.ts:50:    const tenant = await resolveTenantBySlug(orgSlug, true);
+src/lib/data/inbox.ts:51:    const members = await getOrgMembers(tenant.organization.id, true);
+src/lib/data/inbox.ts:88:      members,
+src/lib/data/inbox.ts:92:  const tenant = await resolveTenantBySlug(orgSlug);
+src/lib/data/inbox.ts:95:  const [{ data: conversations }, members] = await Promise.all([
+src/lib/data/inbox.ts:98:      .select("id, organization_id, channel_id, lead_id, external_conversation_id, status, assigned_owner_user_id, subject, last_message_at, metadata, created_at, updated_at, channels(display_name, provider, channel_type), leads(id, pipeline_stage_id, full_name, email, phone, identity_confidence, status, priority, estimated_value, exact_source, source_subtype, original_inbound_channel, source_reference, captured_at, first_contact_at, qualification_status, ai_qualification_decision_path, lead_origin_metadata, assigned_owner_user_id)")
+src/lib/data/inbox.ts:99:      .eq("organization_id", tenant.organization.id)
+src/lib/data/inbox.ts:102:    getOrgMembers(tenant.organization.id),
+src/lib/data/inbox.ts:131:          .select("id, organization_id, channel_id, conversation_id, lead_id, direction, sender_type, sender_external_id, sender_display_name, external_message_id, body, occurred_at, status, sent_at, raw_payload, created_at")
+src/lib/data/inbox.ts:132:          .eq("organization_id", tenant.organization.id)
+src/lib/data/inbox.ts:139:          .select("id, organization_id, conversation_id, message_id, lead_id, draft_content, status, generation_model, generation_context, edited_by_user_id, approved_by_user_id, approved_at, discarded_by_user_id, created_at, updated_at")
+src/lib/data/inbox.ts:140:          .eq("organization_id", tenant.organization.id)
+src/lib/data/inbox.ts:148:          .eq("organization_id", tenant.organization.id)
+src/lib/data/inbox.ts:156:          .eq("organization_id", tenant.organization.id)
+src/lib/data/inbox.ts:170:    members,
+src/lib/data/inbox.ts:174:export function displayConversationOwner(members: Awaited<ReturnType<typeof getOrgMembers>>, conversation: ConversationListItem | null) {
+src/lib/data/inbox.ts:176:  return displayMember(members, conversation.assigned_owner_user_id ?? conversation.lead?.assigned_owner_user_id ?? null);
+src/lib/data/approvals.ts:1:import { resolveTenantBySlug } from "@/lib/data/auth";
+src/lib/data/approvals.ts:36:  tenant: Awaited<ReturnType<typeof resolveTenantBySlug>>;
+src/lib/data/approvals.ts:131:export async function getApprovalQueue(orgSlug: string): Promise<ApprovalQueue> {
+src/lib/data/approvals.ts:132:  const tenant = await resolveTenantBySlug(orgSlug);
+src/lib/data/approvals.ts:137:    .select("id, organization_id, conversation_id, message_id, lead_id, draft_content, status, generation_model, generation_context, edited_by_user_id, approved_by_user_id, approved_at, discarded_by_user_id, created_at, updated_at, conversations(id, organization_id, channel_id, lead_id, external_conversation_id, status, assigned_owner_user_id, subject, last_message_at, metadata, created_at, updated_at, channels(display_name, provider, channel_type)), messages(id, body, occurred_at, sender_display_name, raw_payload), leads(id, pipeline_stage_id, full_name, email, phone, identity_confidence, priority, estimated_value, exact_source, source_subtype, original_inbound_channel, source_reference, captured_at, first_contact_at, qualification_status, ai_qualification_decision_path, lead_origin_metadata)")
+src/lib/data/approvals.ts:138:    .eq("organization_id", tenant.organization.id)
+src/lib/data/approvals.ts:152:          .eq("organization_id", tenant.organization.id)
+src/lib/data/approvals.ts:159:      .eq("organization_id", tenant.organization.id),
+src/features/crm/actions.ts:6:import { resolveTenantBySlug } from "@/lib/data/auth";
+src/features/crm/actions.ts:7:import { getOrgMembers } from "@/lib/data/crm";
+src/features/crm/actions.ts:66:  const members = await getOrgMembers(organizationId);
+src/features/crm/actions.ts:67:  return members.some((member) => member.user_id === assignedUserId) ? assignedUserId : null;
+src/features/crm/actions.ts:76:  const tenant = await resolveTenantBySlug(orgSlug);
+src/features/crm/actions.ts:88:  const assignedOwner = await assertAssignable(tenant.organization.id, nullableText(formData.get("assigned_owner_user_id")));
+src/features/crm/actions.ts:97:      organization_id: tenant.organization.id,
+src/features/crm/actions.ts:119:      assigned_owner_user_id: assignedOwner,
+src/features/crm/actions.ts:130:    organization_id: tenant.organization.id,
+src/features/crm/actions.ts:148:  const tenant = await resolveTenantBySlug(orgSlug);
+src/features/crm/actions.ts:150:  const assignedOwner = await assertAssignable(tenant.organization.id, nullableText(formData.get("assigned_owner_user_id")));
+src/features/crm/actions.ts:160:      assigned_owner_user_id: assignedOwner,
+src/features/crm/actions.ts:164:    .eq("organization_id", tenant.organization.id)
+src/features/crm/actions.ts:170:    organization_id: tenant.organization.id,
+src/features/crm/actions.ts:188:  const tenant = await resolveTenantBySlug(orgSlug);
+src/features/crm/actions.ts:194:    organization_id: tenant.organization.id,
+src/features/crm/actions.ts:216:  const tenant = await resolveTenantBySlug(orgSlug);
+src/features/crm/actions.ts:221:  const assignedTo = await assertAssignable(tenant.organization.id, nullableText(formData.get("assigned_to_user_id")));
+src/features/crm/actions.ts:223:    organization_id: tenant.organization.id,
+src/features/crm/actions.ts:229:    assigned_to_user_id: assignedTo,
+src/features/crm/actions.ts:248:  const tenant = await resolveTenantBySlug(orgSlug);
+src/features/crm/actions.ts:259:    .eq("organization_id", tenant.organization.id)
+src/features/branding/actions.ts:6:import { resolveTenantBySlug } from "@/lib/data/auth";
+src/features/branding/actions.ts:19:  const tenant = await resolveTenantBySlug(orgSlug);
+src/features/branding/actions.ts:22:  if (!tenant.profile.is_platform_admin && !["owner", "admin"].includes(tenant.membership?.role ?? "")) {
+src/features/branding/actions.ts:44:    organization_id: tenant.organization.id,
+src/features/branding/actions.ts:53:  const { error } = await supabase.from("organization_branding").upsert(payload, { onConflict: "organization_id" });
+src/features/branding/actions.ts:57:    organization_id: tenant.organization.id,
+src/app/app/[orgSlug]/inbox/page.tsx:7:import { getInbox, displayConversationOwner } from "@/lib/data/inbox";
+src/app/app/[orgSlug]/inbox/page.tsx:19:  const { tenant, conversations, selectedConversation, selectedLeadStage, selectedLeadTasks, messages, drafts, members } = await getInbox(orgSlug, query.conversationId);
+src/app/app/[orgSlug]/inbox/page.tsx:99:                    Owner: <span className="text-white/50">{displayConversationOwner(members, conversation)}</span>
+src/app/app/[orgSlug]/inbox/page.tsx:244:                        {displayConversationOwner(members, selectedConversation)}
+src/app/app/[orgSlug]/leads/page.tsx:6:import { displayMember, getLeadList } from "@/lib/data/crm";
+src/app/app/[orgSlug]/leads/page.tsx:11:  const { tenant, leads, members, stages } = await getLeadList(orgSlug);
+src/app/app/[orgSlug]/leads/page.tsx:111:                        {displayMember(members, lead.assigned_owner_user_id)}
+src/app/app/[orgSlug]/tasks/page.tsx:6:import { displayMember, getTaskList } from "@/lib/data/crm";
+src/app/app/[orgSlug]/tasks/page.tsx:23:  const { tenant, tasks, members } = await getTaskList(orgSlug);
+src/app/app/[orgSlug]/tasks/page.tsx:34:              Manage physical viewings, governed follow-ups, and administrative compliance gates.
+src/app/app/[orgSlug]/tasks/page.tsx:106:                            Owner: <span className="text-[#FAFAFA] font-medium">{displayMember(members, task.assigned_to_user_id)}</span>
+
+## Branding implementation
+src/lib/data/auth.ts:132:    .from("organization_branding")
+src/lib/data/auth.ts:133:    .select("organization_id, logo_url, primary_color, secondary_color, accent_color, theme_mode, updated_at")
+src/lib/data/auth.ts:143:      logo_url: null,
+src/lib/data/auth.ts:144:      primary_color: "#111827",
+src/lib/data/auth.ts:145:      secondary_color: "#f8fafc",
+src/lib/data/auth.ts:146:      accent_color: "#c8a96a",
+src/features/branding/actions.ts:14:export async function updateBranding(orgSlug: string, formData: FormData) {
+src/features/branding/actions.ts:23:    redirect(`/app/${orgSlug}/branding?error=manager-role-required`);
+src/features/branding/actions.ts:26:  let logoUrl = tenant.branding.logo_url;
+src/features/branding/actions.ts:45:    logo_url: logoUrl,
+src/features/branding/actions.ts:46:    primary_color: safeColor(formData.get("primary_color"), tenant.branding.primary_color),
+src/features/branding/actions.ts:47:    secondary_color: safeColor(formData.get("secondary_color"), tenant.branding.secondary_color),
+src/features/branding/actions.ts:48:    accent_color: safeColor(formData.get("accent_color"), tenant.branding.accent_color),
+src/features/branding/actions.ts:53:  const { error } = await supabase.from("organization_branding").upsert(payload, { onConflict: "organization_id" });
+src/features/branding/actions.ts:59:    action: "organization_branding.updated",
+src/features/branding/actions.ts:60:    target_type: "organization_branding",
+src/features/branding/branding-form.tsx:2:import { updateBranding } from "@/features/branding/actions";
+src/features/branding/branding-form.tsx:7:export function BrandingForm({ organization, branding }: { organization: Organization; branding: OrganizationBranding }) {
+src/features/branding/branding-form.tsx:8:  const action = updateBranding.bind(null, organization.slug);
+src/features/branding/branding-form.tsx:37:            <Label htmlFor="primary_color" className="text-xs font-semibold uppercase tracking-wider text-[#888888]">Primary Color</Label>
+src/features/branding/branding-form.tsx:39:              <input id="primary_color" name="primary_color" type="color" defaultValue={branding.primary_color} className="w-6 h-6 border-0 rounded-md bg-transparent cursor-pointer" />
+src/features/branding/branding-form.tsx:40:              <span className="text-xs text-[#FAFAFA] font-mono">{branding.primary_color}</span>
+src/features/branding/branding-form.tsx:44:            <Label htmlFor="secondary_color" className="text-xs font-semibold uppercase tracking-wider text-[#888888]">Surface Color</Label>
+src/features/branding/branding-form.tsx:46:              <input id="secondary_color" name="secondary_color" type="color" defaultValue={branding.secondary_color} className="w-6 h-6 border-0 rounded-md bg-transparent cursor-pointer" />
+src/features/branding/branding-form.tsx:47:              <span className="text-xs text-[#FAFAFA] font-mono">{branding.secondary_color}</span>
+src/features/branding/branding-form.tsx:51:            <Label htmlFor="accent_color" className="text-xs font-semibold uppercase tracking-wider text-[#888888]">Accent Color</Label>
+src/features/branding/branding-form.tsx:53:              <input id="accent_color" name="accent_color" type="color" defaultValue={branding.accent_color} className="w-6 h-6 border-0 rounded-md bg-transparent cursor-pointer" />
+src/features/branding/branding-form.tsx:54:              <span className="text-xs text-[#FAFAFA] font-mono">{branding.accent_color}</span>
+src/features/branding/branding-form.tsx:64:      <div className="rounded-2xl border border-white/[0.06] bg-[#111111]/80 backdrop-blur-xl p-6 flex flex-col justify-between" style={{ "--brand-primary": branding.primary_color, "--brand-secondary": branding.secondary_color, "--brand-accent": branding.accent_color } as React.CSSProperties}>
+src/features/branding/branding-form.tsx:70:          <div className="rounded-2xl bg-[var(--brand-secondary)] border border-white/[0.04] p-5 space-y-6">
+src/features/branding/branding-form.tsx:72:              <div className="flex size-12 items-center justify-center overflow-hidden rounded-xl bg-[var(--brand-primary)] text-[#FAFAFA] font-sans font-bold shadow-lg">
+src/features/branding/branding-form.tsx:73:                {branding.logo_url ? (
+src/features/branding/branding-form.tsx:74:                  <Image src={branding.logo_url} alt={`${organization.name} logo`} width={48} height={48} className="h-full w-full object-contain p-1" />
+src/features/branding/branding-form.tsx:76:                  organization.name.slice(0, 1)
+src/features/branding/branding-form.tsx:80:                <p className="text-sm font-semibold text-[#FAFAFA]">{organization.name}</p>
+src/features/branding/branding-form.tsx:86:              <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[var(--brand-accent)]">
+src/app/app/[orgSlug]/branding/page.tsx:2:import { BrandingForm } from "@/features/branding/branding-form";
+src/app/app/[orgSlug]/branding/page.tsx:10:    <AppShell profile={tenant.profile} organization={tenant.organization} branding={tenant.branding}>
+src/app/app/[orgSlug]/branding/page.tsx:29:            Brand persistence failed: {query.error === "manager-role-required" ? "Manager role required" : query.error}
+src/app/app/[orgSlug]/branding/page.tsx:33:        <BrandingForm organization={tenant.organization} branding={tenant.branding} />
+src/components/layout/shell.tsx:90:        "--brand-primary": branding?.primary_color ?? "#00E599",
+src/components/layout/shell.tsx:91:        "--brand-secondary": branding?.secondary_color ?? "#6C63FF",
+src/components/layout/shell.tsx:92:        "--brand-accent": branding?.accent_color ?? "#00E599",
+
+## Evolution references in source-only files
+src/features/approvals/actions.ts:6:import { sendEvolutionTextMessage } from "@/lib/evolution";
+src/features/approvals/actions.ts:19:  evolution_instance: string | null;
+src/features/approvals/actions.ts:49:  return "evolution_send_failed";
+src/features/approvals/actions.ts:106:  let delivery: Awaited<ReturnType<typeof sendEvolutionTextMessage>>;
+src/features/approvals/actions.ts:108:    delivery = await sendEvolutionTextMessage({
+src/features/approvals/actions.ts:109:      instance: prepared.evolution_instance,
+src/lib/evolution.ts:3:export type EvolutionSendInput = {
+src/lib/evolution.ts:9:export type EvolutionSendResult = {
+src/lib/evolution.ts:23:  return instance || process.env.EVOLUTION_INSTANCE_NAME || process.env.EVOLUTION_INSTANCE || "AgentFlow_Primary";
+src/lib/evolution.ts:26:function normalizeEvolutionResponse(value: unknown): Record<string, unknown> {
+src/lib/evolution.ts:75:    return (instanceInfo as Record<string, unknown>).instanceName === instance;
+src/lib/evolution.ts:86:    throw new Error("evolution_recipient_is_instance_owner");
+src/lib/evolution.ts:90:export async function sendEvolutionTextMessage(input: EvolutionSendInput): Promise<EvolutionSendResult> {
+src/lib/evolution.ts:95:  if (!baseUrl) throw new Error("evolution_base_url_missing");
+src/lib/evolution.ts:96:  if (!REDACTED throw new Error("evolution_REDACTED");
+src/lib/evolution.ts:97:  if (!input.number || input.number.length < 8) throw new Error("evolution_recipient_missing");
+src/lib/evolution.ts:98:  if (!input.text.trim()) throw new Error("evolution_text_missing");
+src/lib/evolution.ts:123:  const normalized = normalizeEvolutionResponse(parsed);
+src/lib/evolution.ts:126:    const message = typeof normalized.message === "string" ? normalized.message : `evolution_send_failed_${response.status}`;
+src/lib/types.ts:136:  external_channel_id: string | null;
+src/app/demo/vision/page.tsx:19:            Explore the multi-phase evolution from a real estate conversational wedge to a generalized operational intelligence network.
+src/app/app/[orgSlug]/routing/page.tsx:19:    description: "Draft responses remain governed approval records. This surface does not dispatch WhatsApp, Evolution, or Property24 actions.",
+supabase/migrations/20260524_phase10_property24_ingress_and_draft_review.sql:272:    external_channel_id,
+supabase/migrations/20260524_phase10_property24_ingress_and_draft_review.sql:286:  on conflict (organization_id, provider, external_channel_id) where external_channel_id is not null
+supabase/migrations/20260430_stage_c_activation_ingestion_contract.sql:2:-- Ensures Evolution instance/channel identity maps to one channel and CRM intake receives
+supabase/migrations/20260430_stage_c_activation_ingestion_contract.sql:3:-- exact_source='whatsapp', source_subtype='evolution', original_inbound_channel=<channel id>.
+supabase/migrations/20260430_stage_c_activation_ingestion_contract.sql:6:on public.channels (provider, external_channel_id)
+supabase/migrations/20260430_stage_c_activation_ingestion_contract.sql:7:where external_channel_id is not null;
+supabase/migrations/20260430_stage_c_activation_ingestion_contract.sql:9:create or replace function public.ingest_inbound_message(
+supabase/migrations/20260430_stage_c_activation_ingestion_contract.sql:76:    'evolution',
+supabase/migrations/20260430_stage_c_activation_ingestion_contract.sql:86:      'source_subtype', 'evolution',
+supabase/migrations/20260430_stage_c_activation_ingestion_contract.sql:135:      jsonb_build_object('created_by', 'ingest_inbound_message', 'intake_action', v_intake.intake_action)
+supabase/migrations/20260430_stage_c_activation_ingestion_contract.sql:235:comment on function public.ingest_inbound_message(uuid, text, text, text, timestamptz, text, text, text, text, jsonb) is
+supabase/migrations/20260430_stage_c_conversations_inbox.sql:5:--   2. Inbound messages must use public.ingest_inbound_message, which calls public.ingest_lead_from_intake.
+supabase/migrations/20260430_stage_c_conversations_inbox.sql:21:  external_channel_id text,
+supabase/migrations/20260430_stage_c_conversations_inbox.sql:35:on public.channels (organization_id, provider, external_channel_id)
+supabase/migrations/20260430_stage_c_conversations_inbox.sql:36:where external_channel_id is not null;
+supabase/migrations/20260430_stage_c_conversations_inbox.sql:127:  new.external_channel_id = nullif(btrim(coalesce(new.external_channel_id, '')), '');
+supabase/migrations/20260430_stage_c_conversations_inbox.sql:192:    raise exception 'messages_must_use_ingest_inbound_message';
+supabase/migrations/20260430_stage_c_conversations_inbox.sql:291:create or replace function public.ingest_inbound_message(
+supabase/migrations/20260430_stage_c_conversations_inbox.sql:358:    'evolution',
+supabase/migrations/20260430_stage_c_conversations_inbox.sql:368:      'source_subtype', 'evolution',
+supabase/migrations/20260430_stage_c_conversations_inbox.sql:417:      jsonb_build_object('created_by', 'ingest_inbound_message', 'intake_action', v_intake.intake_action)
+supabase/migrations/20260430_stage_c_conversations_inbox.sql:517:comment on function public.ingest_inbound_message(uuid, text, text, text, timestamptz, text, text, text, text, jsonb) is
+supabase/migrations/20260430_stage_c_conversations_inbox.sql:562:grant execute on function public.ingest_inbound_message(uuid, text, text, text, timestamptz, text, text, text, text, jsonb) to authenticated, REDACTED
+supabase/migrations/20260525_phase10b_governed_outbound_certification.sql:171:      raise exception 'messages_must_use_ingest_inbound_message';
+supabase/migrations/20260525_phase10b_governed_outbound_certification.sql:257:  evolution_instance text,
+supabase/migrations/20260525_phase10b_governed_outbound_certification.sql:380:  evolution_instance := coalesce(
+supabase/migrations/20260525_phase10b_governed_outbound_certification.sql:381:    nullif(btrim(coalesce(v_channel.metadata->>'evolution_instance', '')), ''),
+supabase/migrations/20260525_phase10b_governed_outbound_certification.sql:382:    nullif(btrim(coalesce(v_channel.external_channel_id, '')), '')
+supabase/migrations/20260525_phase10b_governed_outbound_certification.sql:445:          'transport', 'evolution',
+supabase/migrations/20260525_phase10b_governed_outbound_certification.sql:465:              'transport', 'evolution',
+supabase/migrations/20260525_phase10b_governed_outbound_certification.sql:493:        'transport', 'evolution',
+supabase/migrations/20260525_phase10b_governed_outbound_certification.sql:535:          'evolution_response', v_delivery_response,
+supabase/migrations/20260525_phase10b_governed_outbound_certification.sql:576:      'transport', 'evolution',
+supabase/migrations/20260525_phase10b_governed_outbound_certification.sql:604:      'transport', 'evolution',

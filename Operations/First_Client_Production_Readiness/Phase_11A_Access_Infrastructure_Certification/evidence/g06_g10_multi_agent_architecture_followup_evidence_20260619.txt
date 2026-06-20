@@ -1,0 +1,683 @@
+# Targeted Phase 11A architecture follow-up evidence — 2026-06-20T00:00:18Z
+
+## channel/owner columns
+supabase/migrations/20260430_stage_c_conversations_inbox.sql:15:create table if not exists public.channels (
+supabase/migrations/20260430_stage_c_conversations_inbox.sql:17:  organization_id uuid not null references public.organizations(id) on delete cascade,
+supabase/migrations/20260430_stage_c_conversations_inbox.sql:18:  provider text not null,
+supabase/migrations/20260430_stage_c_conversations_inbox.sql:20:  display_name text not null,
+supabase/migrations/20260430_stage_c_conversations_inbox.sql:21:  external_channel_id text,
+supabase/migrations/20260430_stage_c_conversations_inbox.sql:24:  metadata jsonb not null default '{}'::jsonb,
+supabase/migrations/20260430_stage_c_conversations_inbox.sql:34:create unique index if not exists channels_org_provider_external_unique_idx
+supabase/migrations/20260430_stage_c_conversations_inbox.sql:35:on public.channels (organization_id, provider, external_channel_id)
+supabase/migrations/20260430_stage_c_conversations_inbox.sql:36:where external_channel_id is not null;
+supabase/migrations/20260430_stage_c_conversations_inbox.sql:40:create table if not exists public.conversations (
+supabase/migrations/20260430_stage_c_conversations_inbox.sql:42:  organization_id uuid not null references public.organizations(id) on delete cascade,
+supabase/migrations/20260430_stage_c_conversations_inbox.sql:47:  assigned_owner_user_id uuid references public.profiles(id) on delete set null,
+supabase/migrations/20260430_stage_c_conversations_inbox.sql:50:  metadata jsonb not null default '{}'::jsonb,
+supabase/migrations/20260430_stage_c_conversations_inbox.sql:65:create table if not exists public.messages (
+supabase/migrations/20260430_stage_c_conversations_inbox.sql:67:  organization_id uuid not null references public.organizations(id) on delete cascade,
+supabase/migrations/20260430_stage_c_conversations_inbox.sql:74:  sender_display_name text,
+supabase/migrations/20260430_stage_c_conversations_inbox.sql:94:create table if not exists public.automation_events (
+supabase/migrations/20260430_stage_c_conversations_inbox.sql:96:  organization_id uuid not null references public.organizations(id) on delete cascade,
+supabase/migrations/20260430_stage_c_conversations_inbox.sql:127:  new.external_channel_id = nullif(btrim(coalesce(new.external_channel_id, '')), '');
+supabase/migrations/20260430_stage_c_conversations_inbox.sql:164:  if new.assigned_owner_user_id is not null and not app_private.is_same_org_member(new.organization_id, new.assigned_owner_user_id) then
+supabase/migrations/20260430_stage_c_conversations_inbox.sql:297:  p_sender_display_name text default null,
+supabase/migrations/20260430_stage_c_activation_ingestion_contract.sql:5:create unique index if not exists channels_provider_external_global_unique_idx
+supabase/migrations/20260430_stage_c_activation_ingestion_contract.sql:6:on public.channels (provider, external_channel_id)
+supabase/migrations/20260430_stage_c_activation_ingestion_contract.sql:7:where external_channel_id is not null;
+supabase/migrations/20260430_stage_c_activation_ingestion_contract.sql:15:  p_sender_display_name text default null,
+
+## app data access / UI ownership surfaces
+src/lib/data/inbox.ts:3:import { resolveTenantBySlug } from "@/lib/data/auth";
+src/lib/data/inbox.ts:28:  | "lead_origin_metadata"
+src/lib/data/inbox.ts:29:  | "assigned_owner_user_id"
+src/lib/data/inbox.ts:38:  tenant: Awaited<ReturnType<typeof resolveTenantBySlug>>;
+src/lib/data/inbox.ts:45:  members: Awaited<ReturnType<typeof getOrgMembers>>;
+src/lib/data/inbox.ts:50:    const tenant = await resolveTenantBySlug(orgSlug, true);
+src/lib/data/inbox.ts:51:    const members = await getOrgMembers(tenant.organization.id, true);
+src/lib/data/inbox.ts:88:      members,
+src/lib/data/inbox.ts:92:  const tenant = await resolveTenantBySlug(orgSlug);
+src/lib/data/inbox.ts:95:  const [{ data: conversations }, members] = await Promise.all([
+src/lib/data/inbox.ts:98:      .select("id, organization_id, channel_id, lead_id, external_conversation_id, status, assigned_owner_user_id, subject, last_message_at, metadata, created_at, updated_at, channels(display_name, provider, channel_type), leads(id, pipeline_stage_id, full_name, email, phone, identity_confidence, status, priority, estimated_value, exact_source, source_subtype, original_inbound_channel, source_reference, captured_at, first_contact_at, qualification_status, ai_qualification_decision_path, lead_origin_metadata, assigned_owner_user_id)")
+src/lib/data/inbox.ts:99:      .eq("organization_id", tenant.organization.id)
+src/lib/data/inbox.ts:131:          .select("id, organization_id, channel_id, conversation_id, lead_id, direction, sender_type, sender_external_id, sender_display_name, external_message_id, body, occurred_at, status, sent_at, raw_payload, created_at")
+src/lib/data/inbox.ts:132:          .eq("organization_id", tenant.organization.id)
+src/lib/data/inbox.ts:139:          .select("id, organization_id, conversation_id, message_id, lead_id, draft_content, status, generation_model, generation_context, edited_by_user_id, approved_by_user_id, approved_at, discarded_by_user_id, created_at, updated_at")
+src/lib/data/inbox.ts:140:          .eq("organization_id", tenant.organization.id)
+src/lib/data/inbox.ts:148:          .eq("organization_id", tenant.organization.id)
+src/lib/data/inbox.ts:156:          .eq("organization_id", tenant.organization.id)
+src/lib/data/inbox.ts:170:    members,
+src/lib/data/inbox.ts:174:export function displayConversationOwner(members: Awaited<ReturnType<typeof getOrgMembers>>, conversation: ConversationListItem | null) {
+src/lib/data/inbox.ts:176:  return displayMember(members, conversation.assigned_owner_user_id ?? conversation.lead?.assigned_owner_user_id ?? null);
+src/lib/data/crm.ts:3:import { resolveTenantBySlug } from "@/lib/data/auth";
+src/lib/data/crm.ts:14:        id: "demo-member-id",
+src/lib/data/crm.ts:15:        organization_id: "demo-org-id",
+src/lib/data/crm.ts:17:        role: "admin",
+src/lib/data/crm.ts:26:    .from("organization_members")
+src/lib/data/crm.ts:27:    .select("id, organization_id, user_id, role, status, profiles!organization_members_user_id_fkey(full_name, email)")
+src/lib/data/crm.ts:28:    .eq("organization_id", organizationId)
+src/lib/data/crm.ts:34:  return (data ?? []).map((member) => ({
+src/lib/data/crm.ts:35:    id: member.id,
+src/lib/data/crm.ts:36:    organization_id: member.organization_id,
+src/lib/data/crm.ts:37:    user_id: member.user_id,
+src/lib/data/crm.ts:38:    role: member.role,
+src/lib/data/crm.ts:39:    status: member.status,
+src/lib/data/crm.ts:40:    profile: Array.isArray(member.profiles) ? member.profiles[0] : member.profiles,
+src/lib/data/crm.ts:52:    .select("id, organization_id, name, slug, position, probability, is_closed, is_won")
+src/lib/data/crm.ts:53:    .eq("organization_id", organizationId)
+src/lib/data/crm.ts:60:export async function getLeadList(orgSlug: string, forceDemo?: boolean): Promise<{ tenant: Awaited<ReturnType<typeof resolveTenantBySlug>>; leads: Lead[]; members: OrgMemberWithProfile[]; stages: LeadPipelineStage[] }> {
+src/lib/data/crm.ts:62:    const tenant = await resolveTenantBySlug(orgSlug, true);
+src/lib/data/crm.ts:64:    const members = await getOrgMembers(tenant.organization.id, true);
+src/lib/data/crm.ts:66:    return { tenant, leads, members, stages };
+src/lib/data/crm.ts:69:  const tenant = await resolveTenantBySlug(orgSlug);
+src/lib/data/crm.ts:71:  const [{ data: leads }, members, stages] = await Promise.all([
+src/lib/data/crm.ts:74:      .select("id, organization_id, pipeline_stage_id, full_name, email, phone, normalized_email, normalized_phone_e164, identity_confidence, company, status, priority, estimated_value, exact_source, source_subtype, original_inbound_channel, source_reference, captured_at, first_contact_at, qualification_status, ai_qualification_decision_path, lead_origin_metadata, assigned_owner_user_id, created_by_user_id, updated_by_user_id, created_at, updated_at")
+src/lib/data/crm.ts:75:      .eq("organization_id", tenant.organization.id)
+src/lib/data/crm.ts:81:  return { tenant, leads: (leads ?? []) as Lead[], members, stages };
+src/lib/data/crm.ts:86:    const tenant = await resolveTenantBySlug(orgSlug, true);
+src/lib/data/crm.ts:92:    const members = await getOrgMembers(tenant.organization.id, true);
+src/lib/data/crm.ts:100:      members,
+src/lib/data/crm.ts:105:  const tenant = await resolveTenantBySlug(orgSlug);
+src/lib/data/crm.ts:110:    .select("id, organization_id, pipeline_stage_id, full_name, email, phone, normalized_email, normalized_phone_e164, identity_confidence, company, status, priority, estimated_value, exact_source, source_subtype, original_inbound_channel, source_reference, captured_at, first_contact_at, qualification_status, ai_qualification_decision_path, lead_origin_metadata, assigned_owner_user_id, created_by_user_id, updated_by_user_id, created_at, updated_at")
+src/lib/data/crm.ts:111:    .eq("organization_id", tenant.organization.id)
+src/lib/data/crm.ts:117:  const [{ data: notes }, { data: events }, { data: tasks }, members, stages] = await Promise.all([
+src/lib/data/crm.ts:120:      .select("id, organization_id, lead_id, author_user_id, body, visibility, created_at, updated_at")
+src/lib/data/crm.ts:121:      .eq("organization_id", tenant.organization.id)
+src/lib/data/crm.ts:126:      .select("id, organization_id, lead_id, actor_user_id, event_type, field_name, old_value, new_value, metadata, created_at")
+src/lib/data/crm.ts:127:      .eq("organization_id", tenant.organization.id)
+src/lib/data/crm.ts:133:      .select("id, organization_id, lead_id, title, description, status, priority, due_at, assigned_to_user_id, created_by_user_id, completed_at, created_at, updated_at")
+src/lib/data/crm.ts:134:      .eq("organization_id", tenant.organization.id)
+src/lib/data/crm.ts:147:    members,
+src/lib/data/crm.ts:154:    const tenant = await resolveTenantBySlug(orgSlug, true);
+src/lib/data/crm.ts:156:    const members = await getOrgMembers(tenant.organization.id, true);
+src/lib/data/crm.ts:157:    return { tenant, tasks, members };
+src/lib/data/crm.ts:160:  const tenant = await resolveTenantBySlug(orgSlug);
+src/lib/data/crm.ts:162:  const [{ data: tasks }, members] = await Promise.all([
+src/lib/data/crm.ts:165:      .select("id, organization_id, lead_id, title, description, status, priority, due_at, assigned_to_user_id, created_by_user_id, completed_at, created_at, updated_at, leads(id, full_name, status)")
+src/lib/data/crm.ts:166:      .eq("organization_id", tenant.organization.id)
+src/lib/data/crm.ts:177:  return { tenant, tasks: normalizedTasks, members };
+src/lib/data/crm.ts:180:export function displayMember(members: OrgMemberWithProfile[], userId: string | null) {
+src/lib/data/crm.ts:182:  const member = members.find((item) => item.user_id === userId);
+src/lib/data/crm.ts:183:  return member?.profile?.full_name || member?.profile?.email || "Assigned user";
+src/lib/data/approvals.ts:1:import { resolveTenantBySlug } from "@/lib/data/auth";
+src/lib/data/approvals.ts:36:  tenant: Awaited<ReturnType<typeof resolveTenantBySlug>>;
+src/lib/data/approvals.ts:58:  | "lead_origin_metadata"
+src/lib/data/approvals.ts:132:  const tenant = await resolveTenantBySlug(orgSlug);
+src/lib/data/approvals.ts:137:    .select("id, organization_id, conversation_id, message_id, lead_id, draft_content, status, generation_model, generation_context, edited_by_user_id, approved_by_user_id, approved_at, discarded_by_user_id, created_at, updated_at, conversations(id, organization_id, channel_id, lead_id, external_conversation_id, status, assigned_owner_user_id, subject, last_message_at, metadata, created_at, updated_at, channels(display_name, provider, channel_type)), messages(id, body, occurred_at, sender_display_name, raw_payload), leads(id, pipeline_stage_id, full_name, email, phone, identity_confidence, priority, estimated_value, exact_source, source_subtype, original_inbound_channel, source_reference, captured_at, first_contact_at, qualification_status, ai_qualification_decision_path, lead_origin_metadata)")
+src/lib/data/approvals.ts:138:    .eq("organization_id", tenant.organization.id)
+src/lib/data/approvals.ts:152:          .eq("organization_id", tenant.organization.id)
+src/lib/data/approvals.ts:159:      .eq("organization_id", tenant.organization.id),
+src/lib/data/auth.ts:31:    .select("id, full_name, email, avatar_url, is_platform_admin")
+src/lib/data/auth.ts:44:  if (!profile.is_platform_admin) {
+src/lib/data/auth.ts:58:  if (profile.is_platform_admin) {
+src/lib/data/auth.ts:69:    .from("organization_members")
+src/lib/data/auth.ts:82:export async function resolveTenantBySlug(orgSlug: string, forceDemo?: boolean): Promise<TenantContext> {
+src/lib/data/auth.ts:87:      membership: {
+src/lib/data/auth.ts:88:        id: "demo-member-id",
+src/lib/data/auth.ts:89:        organization_id: "demo-org-id",
+src/lib/data/auth.ts:91:        role: "admin",
+src/lib/data/auth.ts:113:  let membership: OrganizationMember | undefined;
+src/lib/data/auth.ts:115:  if (!profile.is_platform_admin) {
+src/lib/data/auth.ts:116:    const { data: member, error: memberError } = await supabase
+src/lib/data/auth.ts:117:      .from("organization_members")
+src/lib/data/auth.ts:118:      .select("id, organization_id, user_id, role, status")
+src/lib/data/auth.ts:119:      .eq("organization_id", organization.id)
+src/lib/data/auth.ts:124:    if (memberError || !member) {
+src/lib/data/auth.ts:128:    membership = member as OrganizationMember;
+src/lib/data/auth.ts:133:    .select("organization_id, logo_url, primary_color, secondary_color, accent_color, theme_mode, updated_at")
+src/lib/data/auth.ts:134:    .eq("organization_id", organization.id)
+src/lib/data/auth.ts:140:    membership,
+src/lib/data/auth.ts:142:      organization_id: organization.id,
+src/features/branding/actions.ts:6:import { resolveTenantBySlug } from "@/lib/data/auth";
+src/features/branding/actions.ts:19:  const tenant = await resolveTenantBySlug(orgSlug);
+src/features/branding/actions.ts:22:  if (!tenant.profile.is_platform_admin && !["owner", "admin"].includes(tenant.membership?.role ?? "")) {
+src/features/branding/actions.ts:44:    organization_id: tenant.organization.id,
+src/features/branding/actions.ts:53:  const { error } = await supabase.from("organization_branding").upsert(payload, { onConflict: "organization_id" });
+src/features/branding/actions.ts:57:    organization_id: tenant.organization.id,
+src/features/branding/actions.ts:62:    metadata: { source: "dashboard" },
+src/features/crm/actions.ts:6:import { resolveTenantBySlug } from "@/lib/data/auth";
+src/features/crm/actions.ts:66:  const members = await getOrgMembers(organizationId);
+src/features/crm/actions.ts:67:  return members.some((member) => member.user_id === assignedUserId) ? assignedUserId : null;
+src/features/crm/actions.ts:76:  const tenant = await resolveTenantBySlug(orgSlug);
+src/features/crm/actions.ts:88:  const assignedOwner = await assertAssignable(tenant.organization.id, nullableText(formData.get("assigned_owner_user_id")));
+src/features/crm/actions.ts:97:      organization_id: tenant.organization.id,
+src/features/crm/actions.ts:114:      lead_origin_metadata: {
+src/features/crm/actions.ts:119:      assigned_owner_user_id: assignedOwner,
+src/features/crm/actions.ts:130:    organization_id: tenant.organization.id,
+src/features/crm/actions.ts:135:    metadata: { exact_source: exactSource, source_subtype: sourceSubtype, original_inbound_channel: originalInboundChannel },
+src/features/crm/actions.ts:148:  const tenant = await resolveTenantBySlug(orgSlug);
+src/features/crm/actions.ts:150:  const assignedOwner = await assertAssignable(tenant.organization.id, nullableText(formData.get("assigned_owner_user_id")));
+src/features/crm/actions.ts:160:      assigned_owner_user_id: assignedOwner,
+src/features/crm/actions.ts:164:    .eq("organization_id", tenant.organization.id)
+src/features/crm/actions.ts:170:    organization_id: tenant.organization.id,
+src/features/crm/actions.ts:175:    metadata: { source: "crm_detail" },
+src/features/crm/actions.ts:188:  const tenant = await resolveTenantBySlug(orgSlug);
+src/features/crm/actions.ts:194:    organization_id: tenant.organization.id,
+src/features/crm/actions.ts:216:  const tenant = await resolveTenantBySlug(orgSlug);
+src/features/crm/actions.ts:223:    organization_id: tenant.organization.id,
+src/features/crm/actions.ts:248:  const tenant = await resolveTenantBySlug(orgSlug);
+src/features/crm/actions.ts:259:    .eq("organization_id", tenant.organization.id)
+src/features/approvals/actions.ts:5:import { resolveTenantBySlug } from "@/lib/data/auth";
+src/features/approvals/actions.ts:10:  organization_id: string;
+src/features/approvals/actions.ts:11:  channel_id: string;
+src/features/approvals/actions.ts:62:  await resolveTenantBySlug(orgSlug);
+src/app/app/[orgSlug]/inbox/page.tsx:7:import { getInbox, displayConversationOwner } from "@/lib/data/inbox";
+src/app/app/[orgSlug]/inbox/page.tsx:19:  const { tenant, conversations, selectedConversation, selectedLeadStage, selectedLeadTasks, messages, drafts, members } = await getInbox(orgSlug, query.conversationId);
+src/app/app/[orgSlug]/inbox/page.tsx:99:                    Owner: <span className="text-white/50">{displayConversationOwner(members, conversation)}</span>
+src/app/app/[orgSlug]/inbox/page.tsx:198:              Qualification, viewing, missing-info, action, confidence, and source metadata for the selected thread.
+src/app/app/[orgSlug]/inbox/page.tsx:244:                        {displayConversationOwner(members, selectedConversation)}
+src/app/app/[orgSlug]/leads/page.tsx:11:  const { tenant, leads, members, stages } = await getLeadList(orgSlug);
+src/app/app/[orgSlug]/leads/page.tsx:111:                        {displayMember(members, lead.assigned_owner_user_id)}
+src/app/app/[orgSlug]/tasks/page.tsx:23:  const { tenant, tasks, members } = await getTaskList(orgSlug);
+src/app/app/[orgSlug]/tasks/page.tsx:34:              Manage physical viewings, governed follow-ups, and administrative compliance gates.
+src/app/app/[orgSlug]/tasks/page.tsx:106:                            Owner: <span className="text-[#FAFAFA] font-medium">{displayMember(members, task.assigned_to_user_id)}</span>
+src/components/layout/shell.tsx:56:  mode?: "tenant" | "admin" | "demo"
+src/components/layout/shell.tsx:62:  const nav = mode === "admin"
+src/components/layout/shell.tsx:64:        { href: "/admin/dashboard", label: "Founder Control", icon: ShieldCheck },
+src/components/layout/shell.tsx:65:        { href: "/admin/tenants", label: "Tenants", icon: Building2 },
+src/components/layout/shell.tsx:158:                {mode === "admin" ? "Founder Context" : mode === "demo" ? "Demo-Safe Layer" : "Tenant Operations"}
+src/components/layout/shell.tsx:161:                {mode === "admin" ? "Founder Cockpit" : mode === "demo" ? "Protected Demo Workspace" : organization?.name}
+
+## signal orchestration / routing audit trail surfaces
+src/features/crm/actions.ts:129:  await supabase.from("audit_logs").insert({
+src/features/crm/actions.ts:169:  await supabase.from("audit_logs").insert({
+src/features/branding/actions.ts:56:  await supabase.from("audit_logs").insert({
+src/features/approvals/actions.ts:34:function outboundTransportEnabled() {
+src/features/approvals/actions.ts:38:function outboundExecutionSecret() {
+src/features/approvals/actions.ts:67:  const shouldSend = status === "approved" && outboundTransportEnabled();
+src/features/approvals/actions.ts:68:  const executionSecret = outboundExecutionSecret();
+src/features/approvals/actions.ts:71:    redirect(`/app/${orgSlug}/approvals?error=draft-content-required`);
+src/features/approvals/actions.ts:75:    redirect(`/app/${orgSlug}/approvals?error=outbound-execution-secret-missing`);
+src/features/approvals/actions.ts:82:    p_outbound_frozen: !shouldSend,
+src/features/approvals/actions.ts:86:    redirect(`/app/${orgSlug}/approvals?error=draft-review-failed`);
+src/features/approvals/actions.ts:90:    revalidatePath(`/app/${orgSlug}/approvals`);
+src/features/approvals/actions.ts:92:    redirect(`/app/${orgSlug}/approvals?draft=${status}`);
+src/features/approvals/actions.ts:95:  const { data: preparedData, error: prepareError } = await supabase.rpc("send_outbound_message", {
+src/features/approvals/actions.ts:103:    redirect(`/app/${orgSlug}/approvals?error=send-prepare-failed`);
+src/features/approvals/actions.ts:114:    await supabase.rpc("send_outbound_message", {
+src/features/approvals/actions.ts:123:    revalidatePath(`/app/${orgSlug}/approvals`);
+src/features/approvals/actions.ts:125:    redirect(`/app/${orgSlug}/approvals?error=send-failed-manual-retry`);
+src/features/approvals/actions.ts:128:  const { error: finalizeError } = await supabase.rpc("send_outbound_message", {
+src/features/approvals/actions.ts:137:  if (finalizeError) redirect(`/app/${orgSlug}/approvals?error=send-finalize-failed`);
+src/features/approvals/actions.ts:139:  revalidatePath(`/app/${orgSlug}/approvals`);
+src/features/approvals/actions.ts:141:  redirect(`/app/${orgSlug}/approvals?sent=1`);
+src/features/approvals/approval-queue-client.tsx:9:import type { ApprovalQueueItem } from "@/lib/data/approvals";
+src/features/approvals/approval-queue-client.tsx:10:import { reviewAiMessageDraft } from "@/features/approvals/actions";
+src/features/approvals/approval-queue-client.tsx:23:    description: "Outbound frozen: approval persists to the governed draft ledger only.",
+src/features/approvals/approval-queue-client.tsx:27:    description: "Manual send posture: approval records operator intent without autonomous dispatch.",
+src/features/approvals/approval-queue-client.tsx:31:    description: "Governed WhatsApp transport: server-side approval, execution secret, and audit evidence are required.",
+src/features/approvals/approval-queue-client.tsx:147:                  <Network className="size-3 text-white/30" /> Ingress Routing Rationale
+src/features/approvals/approval-queue-client.tsx:150:                  {selectedItem.routingRationale}
+src/features/approvals/approval-queue-client.tsx:244:                Read-only draft review signals from existing lead, source, task, and governance records.
+src/components/dashboard/pending-approvals-summary.tsx:52:  emptyState = "No outbound approvals pending",
+src/components/dashboard/pending-approvals-summary.tsx:66:            <CardDescription className="text-xs text-white/45">Human-reviewed drafts staged before any outbound action.</CardDescription>
+src/components/dashboard/viewing-ready-queue.tsx:26:              Leads surfaced only when existing stage, qualification, task, or conversation signals indicate viewing discussion readiness.
+src/components/dashboard/viewing-ready-queue.tsx:38:              This stays empty until existing pipeline, qualification, task, or thread state indicates a real viewing discussion signal.
+src/components/dashboard/routing-audit-trail.tsx:6:export interface RoutingAuditEntry {
+src/components/dashboard/routing-audit-trail.tsx:13:interface RoutingAuditTrailProps {
+src/components/dashboard/routing-audit-trail.tsx:14:  entries: RoutingAuditEntry[];
+src/components/dashboard/routing-audit-trail.tsx:28:export function RoutingAuditTrail({
+src/components/dashboard/routing-audit-trail.tsx:30:  title = "Live Routing Audit Trail",
+src/components/dashboard/routing-audit-trail.tsx:31:  description = "Demo-safe governance events for capture, routing, and approval state.",
+src/components/dashboard/routing-audit-trail.tsx:32:  emptyState = "No routing audit entries available for this surface yet.",
+src/components/dashboard/routing-audit-trail.tsx:34:}: RoutingAuditTrailProps) {
+src/components/dashboard/signal-orchestration-flow.tsx:6:export type SignalOrchestrationTone = "safe" | "intelligence" | "warning" | "blocked";
+src/components/dashboard/signal-orchestration-flow.tsx:8:export interface SignalOrchestrationStep {
+src/components/dashboard/signal-orchestration-flow.tsx:12:  tone: SignalOrchestrationTone;
+src/components/dashboard/signal-orchestration-flow.tsx:15:interface SignalOrchestrationFlowProps {
+src/components/dashboard/signal-orchestration-flow.tsx:18:  steps: SignalOrchestrationStep[];
+src/components/dashboard/signal-orchestration-flow.tsx:58:export function SignalOrchestrationFlow({
+src/components/dashboard/signal-orchestration-flow.tsx:64:}: SignalOrchestrationFlowProps) {
+src/components/dashboard/signal-orchestration-flow.tsx:73:              {mode === "demo" ? "Demo-Safe Layer" : "Tenant Signal Layer"}
+src/components/dashboard/hot-leads-next-actions.tsx:61:                    {item.signal} / {item.stageName}
+src/components/dashboard/hot-leads-next-actions.tsx:65:                  <Badge variant={scoreVariant(item.score)}>{item.score} Signal</Badge>
+src/components/leads/lead-qualification-summary-card.tsx:47:              Deterministic read-only intelligence from existing lead, task, qualification, conversation, and approval signals.
+src/components/layout/shell.tsx:70:        { href: `${tenantHref}/approvals`, label: "Approvals", icon: ShieldCheck },
+src/components/layout/shell.tsx:72:        { href: `${tenantHref}/routing`, label: "Routing Flow", icon: GitBranch },
+src/components/layout/shell.tsx:143:                : "Human-supervised operational intelligence active. Outbound remains governed by approval controls."}
+src/lib/demo/provider.tsx:10:  approvals: AIApprovalItem[];
+src/lib/demo/provider.tsx:24:  approvals: [],
+src/lib/demo/provider.tsx:40:  const [approvals, setApprovals] = useState<AIApprovalItem[]>(demoApprovals);
+src/lib/demo/provider.tsx:48:    const item = approvals.find((a) => a.id === id);
+src/lib/demo/provider.tsx:57:      direction: "outbound",
+src/lib/demo/provider.tsx:113:    const conv = approvals.find((a) => (a.leadId === "lead-sibusiso" ? "conv-sibusiso" : `conv-${a.leadId}`) === conversationId);
+src/lib/demo/provider.tsx:122:      direction: "outbound",
+src/lib/demo/provider.tsx:140:        approvals,
+src/lib/demo/data.ts:326:    direction: "outbound",
+src/lib/demo/data.ts:435:      field_name: "outbound_hold",
+src/lib/demo/data.ts:474:      metadata: { reasoning: "Sandton high-value premium listing requires operator confirmation before outbound dispatch." },
+src/lib/demo/data.ts:516:  routingRationale: string;
+src/lib/demo/data.ts:539:    routingRationale: "Addresses Saturday viewing request explicitly and satisfies the critical solar backup power inquiry using property record specifications (verified inventory item: solar + 10kWh battery).",
+src/lib/demo/data.ts:562:    routingRationale: "Held: Flagged by rule [SG-8: Solar backup validation]. Sandton/Clifton premium listings require manual validation of physical battery storage inventory.",
+src/lib/demo/data.ts:584:    routingRationale: "Blocked: Rule [SG-3: Identity Verification Failed]. Secondary email request triggers automatic PII audit alert due to cross-domain mismatch.",
+src/lib/demo/data.ts:627:  approvalQueueState: string;
+src/lib/demo/data.ts:628:  outboundLockState: "locked" | "governed" | "unlocked";
+src/lib/demo/data.ts:635:  approvalQueueState: "Mandatory Human-in-the-Loop",
+src/lib/demo/data.ts:636:  outboundLockState: "governed",
+src/lib/demo/data.ts:640:    { timestamp: new Date(Date.now() - 2 * 3600 * 1000).toISOString(), event: "Approved outbound WhatsApp draft to Jessica Vandermerwe", actor: "Lead Architect" },
+src/lib/demo/data.ts:646:    { id: "sg-3", label: "PII redaction engine active for outbound channels", checked: true },
+src/lib/demo/data.ts:666:export type SignalStepTone = "safe" | "intelligence" | "warning" | "blocked";
+src/lib/demo/data.ts:668:export interface SignalOrchestrationStep {
+src/lib/demo/data.ts:672:  tone: SignalStepTone;
+src/lib/demo/data.ts:675:export const demoSignalOrchestrationSteps: SignalOrchestrationStep[] = [
+src/lib/demo/data.ts:696:export interface RoutingAuditSummaryEntry {
+src/lib/demo/data.ts:703:export const demoRoutingAuditEntries: RoutingAuditSummaryEntry[] = [
+src/lib/demo/data.ts:712:    event: "Security Block: outbound identity mismatch detected on secondary email.",
+src/lib/demo/data.ts:718:    event: "Staged Response Verified: Saturday viewing slots locked for operator approval.",
+src/lib/data/approvals.ts:22:  routingRationale: string;
+src/lib/data/approvals.ts:136:    .from("ai_message_drafts")
+src/lib/data/approvals.ts:183:          governanceState: "Pending human approval",
+src/lib/data/approvals.ts:208:      routingRationale: stringValue(context.routing_rationale)
+src/lib/data/approvals.ts:209:        ?? "Draft generated from a governed inbound event. Outbound remains locked until certification gates pass.",
+src/lib/data/approvals.ts:213:      governanceState: "Pending human approval",
+src/lib/data/approvals.ts:215:        "Outbound transport remains governed; this card does not send messages.",
+src/lib/data/qualification.ts:103:function isViewingSignal(stage: StageForQualification, tasks: TaskForQualification[], blob: string) {
+src/lib/data/qualification.ts:182:  const hasFundingMethod = metadataHas(metadata, ["funding_method", "finance", "cash", "preapproval_status", "pre_approval_status"])
+src/lib/data/qualification.ts:186:  const hasViewingInterest = isViewingSignal(stage, tasks, decisionBlob);
+src/lib/data/qualification.ts:207:  if (hasFundingMethod) knownFields.push("Funding or pre-approval context");
+src/lib/data/qualification.ts:210:  if (hasTimeline) knownFields.push("Timeline / urgency signal");
+src/lib/data/qualification.ts:213:  if (hasViewingInterest) knownFields.push("Viewing interest signal");
+src/lib/data/qualification.ts:219:  if (pendingApprovals > 0) knownFields.push("Draft pending approval");
+src/lib/data/qualification.ts:281:    nextBestAction = "Review the pending governed draft before any follow-up is sent.";
+src/lib/data/qualification.ts:325:    governanceState: context.governanceState ?? (pendingApprovals > 0 ? "Pending approval review" : "Read-only intelligence"),
+src/lib/data/dashboard-intelligence.ts:12:  signal: string;
+src/lib/data/dashboard-intelligence.ts:48:export type TenantSignalOrchestrationStep = {
+src/lib/data/dashboard-intelligence.ts:55:export type TenantRoutingAuditEntry = {
+src/lib/data/dashboard-intelligence.ts:160:function signalFor(lead: LeadRow, stage: StageRow | null, task: TaskRow | null, lastInboundAt: string | null, viewingReadiness: string) {
+src/lib/data/dashboard-intelligence.ts:201:function routingStatusForAutomation(event: AutomationEventRow): TenantRoutingAuditEntry["status"] {
+src/lib/data/dashboard-intelligence.ts:207:  if (eventType.includes("approval") || eventType.includes("review") || eventType.includes("draft")) return "hold";
+src/lib/data/dashboard-intelligence.ts:212:function routingStatusForLeadEvent(event: LeadEventRow): TenantRoutingAuditEntry["status"] {
+src/lib/data/dashboard-intelligence.ts:214:  if (eventType.includes("hold") || eventType.includes("task") || eventType.includes("approval")) return "hold";
+src/lib/data/dashboard-intelligence.ts:220:function routingStatusForAuditLog(log: AuditLogRow): TenantRoutingAuditEntry["status"] {
+src/lib/data/dashboard-intelligence.ts:223:  if (action.includes("approval") || action.includes("draft") || action.includes("govern")) return "hold";
+src/lib/data/dashboard-intelligence.ts:259:export async function getTenantSignalOrchestrationSteps(
+src/lib/data/dashboard-intelligence.ts:262:): Promise<TenantSignalOrchestrationStep[]> {
+src/lib/data/dashboard-intelligence.ts:271:    supabase.from("ai_message_drafts").select("id", { count: "exact", head: true }).eq("organization_id", organizationId).eq("status", "draft"),
+src/lib/data/dashboard-intelligence.ts:304:      detail: "Draft approvals in the governed ledger",
+src/lib/data/dashboard-intelligence.ts:310:      detail: "Computed from real lead, task, stage, and inbound signals",
+src/lib/data/dashboard-intelligence.ts:316:export async function getTenantRoutingAuditTrail(organizationId: string, limit = 5): Promise<TenantRoutingAuditEntry[]> {
+src/lib/data/dashboard-intelligence.ts:320:      .from("automation_events")
+src/lib/data/dashboard-intelligence.ts:326:      .from("lead_events")
+src/lib/data/dashboard-intelligence.ts:332:      .from("audit_logs")
+src/lib/data/dashboard-intelligence.ts:339:  const entries: TenantRoutingAuditEntry[] = [
+src/lib/data/dashboard-intelligence.ts:344:      status: routingStatusForAutomation(event),
+src/lib/data/dashboard-intelligence.ts:345:    } satisfies TenantRoutingAuditEntry)),
+src/lib/data/dashboard-intelligence.ts:350:      status: routingStatusForLeadEvent(event),
+src/lib/data/dashboard-intelligence.ts:351:    } satisfies TenantRoutingAuditEntry)),
+src/lib/data/dashboard-intelligence.ts:356:      status: routingStatusForAuditLog(log),
+src/lib/data/dashboard-intelligence.ts:357:    } satisfies TenantRoutingAuditEntry)),
+src/lib/data/dashboard-intelligence.ts:435:      signal: signalFor(lead, stageById.get(lead.pipeline_stage_id ?? "") ?? null, task, lastInboundAt, summary.viewingReadiness),
+src/lib/data/crm.ts:125:      .from("lead_events")
+src/lib/data/inbox.ts:138:          .from("ai_message_drafts")
+src/lib/types.ts:165:  direction: "inbound" | "outbound" | "internal" | "system" | string;
+src/app/demo/dashboard/page.tsx:9:import { SignalOrchestrationFlow } from "@/components/dashboard/signal-orchestration-flow";
+src/app/demo/dashboard/page.tsx:10:import { PendingApprovalsSummary } from "@/components/dashboard/pending-approvals-summary";
+src/app/demo/dashboard/page.tsx:11:import { RoutingAuditTrail } from "@/components/dashboard/routing-audit-trail";
+src/app/demo/dashboard/page.tsx:14:  demoRoutingAuditEntries,
+src/app/demo/dashboard/page.tsx:15:  demoSignalOrchestrationSteps
+src/app/demo/dashboard/page.tsx:73:        <SignalOrchestrationFlow
+src/app/demo/dashboard/page.tsx:74:          title="Signal Orchestration"
+src/app/demo/dashboard/page.tsx:75:          description="Conversational routing infrastructure from raw signal capture to governed agent delegation."
+src/app/demo/dashboard/page.tsx:76:          steps={demoSignalOrchestrationSteps}
+src/app/demo/dashboard/page.tsx:83:            href="/demo/approvals"
+src/app/demo/dashboard/page.tsx:84:            emptyState="No demo-safe outbound approvals pending"
+src/app/demo/dashboard/page.tsx:86:          <RoutingAuditTrail entries={demoRoutingAuditEntries} />
+src/app/demo/dashboard/page.tsx:97:                  Governed lead signal flow, validation state, and compliance posture with no production writes.
+src/app/demo/dashboard/page.tsx:115:                Every lead preserves exact source metadata, original capture channel, timing logs, and decision paths. Demo data stays isolated, reviewed, and visibly governed.
+src/app/demo/leads/[leadId]/page.tsx:56:              <CardDescription className="text-xs text-[#888888]">Audit trail proving data ingress, security checks, and manual approval gates.</CardDescription>
+src/app/demo/leads/[leadId]/page.tsx:72:                  title = "Ingress Signal Captured";
+src/app/demo/leads/[leadId]/page.tsx:93:                  desc = `Staged outbound response draft generated with ${confidence} accuracy intent matching property record details.`;
+src/app/demo/page.tsx:34:              High-integrity demo-safe operational environment. Demonstrates structured, governed lead routing and transaction compliance metrics within the South African real estate vertical.
+src/app/demo/page.tsx:43:                <p className="text-white/50 mt-0.5">Explore the operations cockpit, governed queues, human-in-the-loop approvals, chronological lead timelines, and compliance settings.</p>
+src/app/demo/page.tsx:51:                <p className="text-white/50 mt-0.5">No active Supabase database mutations or outbound network actions are executed. All demo workflows remain isolated and write-safe.</p>
+src/app/demo/inbox/page.tsx:30:            Demo-safe inbound threads. Every message is attached through identity + intake layers before outbound approval.
+src/app/demo/inbox/page.tsx:59:                  Ingress routing will surface governed messaging streams here.
+src/app/demo/inbox/page.tsx:141:                const isOutbound = message.direction === "outbound";
+src/app/demo/vision/page.tsx:33:                <p className="text-white/50 mt-1">Isolating property intake APIs, WhatsApp conversational loops, manual approvals verification, and viewings reservations.</p>
+src/app/demo/routing/page.tsx:6:export default async function DemoRoutingPage() {
+src/app/demo/routing/page.tsx:14:      desc: "Ingress gateways normalizing incoming signal.",
+src/app/demo/routing/page.tsx:30:      desc: "Route qualified signals to the appropriate operational cluster.",
+src/app/demo/routing/page.tsx:55:    { time: "01:28:44", lead: "Johan de Wet", event: "PII Filter Redacted South African ID number from WhatsApp body", status: "governed" },
+src/app/demo/routing/page.tsx:66:            Signal Orchestration
+src/app/demo/routing/page.tsx:69:            Visualize demo-safe signal propagation from raw message capture to governed agent delegation and viewing coordination.
+src/app/demo/routing/page.tsx:109:              <CardDescription className="text-[#888888] text-xs">Governed routing parameters enforced.</CardDescription>
+src/app/demo/routing/page.tsx:132:                  <p className="text-[10px] text-[#888888] mt-0.5 leading-relaxed">Subdomain routing enabled for boutique Camps Bay properties to Camps Bay brokerage node.</p>
+src/app/demo/routing/page.tsx:142:                <CardTitle className="text-base font-bold text-[#FAFAFA]">Live Routing Audit Trail</CardTitle>
+src/app/demo/routing/page.tsx:143:                <CardDescription className="text-[#888888] text-xs">Demo-safe ledger of signal routing and governance events.</CardDescription>
+src/app/demo/routing/page.tsx:163:                    log.status === "governed" ? "bg-[#6C63FF]/10 text-[#6C63FF]" :
+src/app/demo/approvals/page.tsx:25:  const { approvals, approveItem, rejectItem } = useDemo();
+src/app/demo/approvals/page.tsx:26:  const [selectedId, setSelectedId] = useState<string>(approvals[0]?.id || "");
+src/app/demo/approvals/page.tsx:27:  const [draftText, setDraftText] = useState<string>(approvals[0]?.draftResponse || "");
+src/app/demo/approvals/page.tsx:30:  const selectedItem = approvals.find(a => a.id === selectedId) || approvals[0];
+src/app/demo/approvals/page.tsx:41:    const remaining = approvals.filter(a => a.id !== selectedItem.id);
+src/app/demo/approvals/page.tsx:52:    const remaining = approvals.filter(a => a.id !== selectedItem.id);
+src/app/demo/approvals/page.tsx:60:  const totalPending = approvals.length;
+src/app/demo/approvals/page.tsx:61:  const avgConfidence = approvals.length > 0
+src/app/demo/approvals/page.tsx:62:    ? Math.round(approvals.reduce((acc, curr) => acc + curr.confidenceScore, 0) / approvals.length)
+src/app/demo/approvals/page.tsx:82:  const pendingItems = approvals.filter(a => a.status === "pending");
+src/app/demo/approvals/page.tsx:83:  const holdItems = approvals.filter(a => a.status === "hold");
+src/app/demo/approvals/page.tsx:84:  const blockedItems = approvals.filter(a => a.status === "blocked");
+src/app/demo/approvals/page.tsx:119:              Demo outbound queue is empty. All synthetic ingress pipelines resolved under demo-safe compliance parameters.
+src/app/demo/approvals/page.tsx:261:                        <MessageSquare className="size-3 text-[#00E599]" /> Inbound Customer Signal ({selectedItem.channel})
+src/app/demo/governance/page.tsx:17:    { id: "sg-3", label: "PII redaction engine active for outbound channels", checked: true },
+src/app/demo/governance/page.tsx:58:            Review demo-safe compliance boundaries, PII redactions, and manual override constraints for governed communication flows.
+src/app/demo/governance/page.tsx:69:                Instantly disconnect and freeze all demo WhatsApp and email outbound dispatches across this tenant.
+src/app/demo/governance/page.tsx:103:          description="High-integrity system event log tracking signal ingress, security scans, and manual approval gates."
+src/app/admin/dashboard/page.tsx:73:            description="Avg outbound response generation"
+src/app/admin/dashboard/page.tsx:106:                Tenant configuration is secured via strict platform-level role authorization. Keep all first-client demonstrations and operations governed in staging nodes. No public self-signup vectors are enabled on the edge.
+src/app/admin/tenants/create/route.ts:55:  await supabase.from("audit_logs").insert({
+src/app/admin/tenants/new/page.tsx:47:                  Workplace Routing Slug
+src/app/forgot-password/page.tsx:27:              Send a governed password recovery email to an approved operator mailbox.
+src/app/app/[orgSlug]/dashboard/page.tsx:12:import { PendingApprovalsSummary } from "@/components/dashboard/pending-approvals-summary";
+src/app/app/[orgSlug]/dashboard/page.tsx:15:import { SignalOrchestrationFlow } from "@/components/dashboard/signal-orchestration-flow";
+src/app/app/[orgSlug]/dashboard/page.tsx:16:import { RoutingAuditTrail } from "@/components/dashboard/routing-audit-trail";
+src/app/app/[orgSlug]/dashboard/page.tsx:17:import { getApprovalQueue } from "@/lib/data/approvals";
+src/app/app/[orgSlug]/dashboard/page.tsx:21:  getTenantRoutingAuditTrail,
+src/app/app/[orgSlug]/dashboard/page.tsx:22:  getTenantSignalOrchestrationSteps,
+src/app/app/[orgSlug]/dashboard/page.tsx:25:  type TenantRoutingAuditEntry,
+src/app/app/[orgSlug]/dashboard/page.tsx:26:  type TenantSignalOrchestrationStep,
+src/app/app/[orgSlug]/dashboard/page.tsx:63:  let signalOrchestrationSteps: TenantSignalOrchestrationStep[] = [];
+src/app/app/[orgSlug]/dashboard/page.tsx:64:  let routingAuditEntries: TenantRoutingAuditEntry[] = [];
+src/app/app/[orgSlug]/dashboard/page.tsx:77:    const [leadRes, taskRes, recentRes, pipelineRes, conversationRes, qualifiedRes, approvalQueue, dealDeskQueues, inboundActivity, routingEntries] = await Promise.all([
+src/app/app/[orgSlug]/dashboard/page.tsx:87:      getTenantRoutingAuditTrail(tenant.organization.id),
+src/app/app/[orgSlug]/dashboard/page.tsx:96:    pendingApprovalCount = approvalQueue.items.length;
+src/app/app/[orgSlug]/dashboard/page.tsx:97:    pendingApprovalItems = approvalQueue.items.slice(0, 3).map((item) => ({
+src/app/app/[orgSlug]/dashboard/page.tsx:106:    routingAuditEntries = routingEntries;
+src/app/app/[orgSlug]/dashboard/page.tsx:107:    signalOrchestrationSteps = await getTenantSignalOrchestrationSteps(tenant.organization.id, dealDeskQueues);
+src/app/app/[orgSlug]/dashboard/page.tsx:156:        {signalOrchestrationSteps.length > 0 && (
+src/app/app/[orgSlug]/dashboard/page.tsx:157:          <SignalOrchestrationFlow
+src/app/app/[orgSlug]/dashboard/page.tsx:158:            title="Production Signal Orchestration"
+src/app/app/[orgSlug]/dashboard/page.tsx:159:            description="Tenant-backed capture, qualification, routing, governance, and viewing readiness signals. Counts come from live AgentFlow tables only."
+src/app/app/[orgSlug]/dashboard/page.tsx:160:            steps={signalOrchestrationSteps}
+src/app/app/[orgSlug]/dashboard/page.tsx:219:            href={`/app/${orgSlug}/approvals`}
+src/app/app/[orgSlug]/dashboard/page.tsx:221:            emptyState="No production drafts pending review. Real approval state is synchronized from the governed draft ledger."
+src/app/app/[orgSlug]/dashboard/page.tsx:229:          <RoutingAuditTrail
+src/app/app/[orgSlug]/dashboard/page.tsx:230:            entries={routingAuditEntries}
+src/app/app/[orgSlug]/dashboard/page.tsx:231:            title="Production Routing Audit Trail"
+src/app/app/[orgSlug]/dashboard/page.tsx:232:            description="Newest real automation, lead, and audit ledger events available for this tenant. No synthetic routing events are shown."
+src/app/app/[orgSlug]/dashboard/page.tsx:233:            emptyState="No tenant routing evidence has been written yet. This surface is intentionally empty until real automation, lead, or audit ledger events exist."
+src/app/app/[orgSlug]/dashboard/page.tsx:297:                Every lead preserves exact source metadata, source subtype, original capture channel, timing logs, qualification confidence, AI decision path, and generated events. Completely governed, calm, and bulletproof.
+src/app/app/[orgSlug]/leads/[leadId]/page.tsx:371:            Immutable history trails for attribution, assignment, qualification, and routing.
+src/app/app/[orgSlug]/inbox/page.tsx:28:        governanceState: pendingDraftCount > 0 ? "Draft pending approval" : "Read-only conversation review",
+src/app/app/[orgSlug]/inbox/page.tsx:42:            CRM-backed inbound threads. Every message is attached through identity + intake layers before outbound approval.
+src/app/app/[orgSlug]/inbox/page.tsx:71:                  Ingress routing will surface governed messaging streams here.
+src/app/app/[orgSlug]/inbox/page.tsx:143:                    Select a conversation thread from the queue list to inspect governed communications.
+src/app/app/[orgSlug]/inbox/page.tsx:153:                const isOutbound = message.direction === "outbound";
+src/app/app/[orgSlug]/inbox/page.tsx:183:                        Draft {draft.status} · Review in approvals
+src/app/app/[orgSlug]/positioning/page.tsx:79:              Gen I Labs is not built as a simple chatbot CRM wrapper. The real estate market serves as our wedge to solve fundamental infrastructure-level problem patterns: context memory failure, scheduling coordination delays, and governed communication gates.
+src/app/app/[orgSlug]/vision/page.tsx:16:      desc: "Deploy autonomous CRM timelines, WhatsApp parser engines, and human-supervised AI approval panels to plug high-margin lead leakage in boutique brokerages.",
+src/app/app/[orgSlug]/vision/page.tsx:47:            AgentFlow AI is the wedge. Our target is the deployment of secure, governed, autonomous operational intelligence layers across high-value commerce.
+src/app/app/[orgSlug]/tasks/page.tsx:34:              Manage physical viewings, governed follow-ups, and administrative compliance gates.
+src/app/app/[orgSlug]/routing/page.tsx:4:import { SignalOrchestrationFlow } from "@/components/dashboard/signal-orchestration-flow";
+src/app/app/[orgSlug]/routing/page.tsx:5:import { RoutingAuditTrail } from "@/components/dashboard/routing-audit-trail";
+src/app/app/[orgSlug]/routing/page.tsx:7:import { getTenantRoutingAuditTrail, getTenantSignalOrchestrationSteps } from "@/lib/data/dashboard-intelligence";
+src/app/app/[orgSlug]/routing/page.tsx:13:    description: "Routing evidence is scoped to the authenticated tenant and resolved through existing lead, conversation, and message records.",
+src/app/app/[orgSlug]/routing/page.tsx:18:    title: "Human approval before outbound",
+src/app/app/[orgSlug]/routing/page.tsx:19:    description: "Draft responses remain governed approval records. This surface does not dispatch WhatsApp, Evolution, or Property24 actions.",
+src/app/app/[orgSlug]/routing/page.tsx:20:    evidence: "ai_message_drafts, audit_logs, automation_events",
+src/app/app/[orgSlug]/routing/page.tsx:25:    description: "Lead source, channel, and captured timing stay visible without inventing routing outcomes or synthetic operational volume.",
+src/app/app/[orgSlug]/routing/page.tsx:26:    evidence: "lead source fields + lead_events",
+src/app/app/[orgSlug]/routing/page.tsx:37:export default async function RoutingPage({ params }: { params: Promise<{ orgSlug: string }> }) {
+src/app/app/[orgSlug]/routing/page.tsx:40:  const [signalSteps, auditEntries] = await Promise.all([
+
+## Evolution/n8n instance references
+./src/features/approvals/actions.ts:6:import { sendEvolutionTextMessage } from "@/lib/evolution";
+./src/features/approvals/actions.ts:11:  channel_id: string;
+./src/features/approvals/actions.ts:19:  evolution_instance: string | null;
+./src/features/approvals/actions.ts:49:  return "evolution_send_failed";
+./src/features/approvals/actions.ts:106:  let delivery: Awaited<ReturnType<typeof sendEvolutionTextMessage>>;
+./src/features/approvals/actions.ts:108:    delivery = await sendEvolutionTextMessage({
+./src/features/approvals/actions.ts:109:      instance: prepared.evolution_instance,
+./src/lib/demo/provider.tsx:54:      channel_id: "channel-whatsapp",
+./src/lib/demo/provider.tsx:119:      channel_id: "channel-whatsapp",
+./src/lib/demo/data.ts:210:    channel_id: "channel-whatsapp",
+./src/lib/demo/data.ts:224:    channel_id: "channel-whatsapp",
+./src/lib/demo/data.ts:238:    channel_id: "channel-whatsapp",
+./src/lib/demo/data.ts:257:    channel_id: "channel-whatsapp",
+./src/lib/demo/data.ts:273:    channel_id: "channel-whatsapp",
+./src/lib/demo/data.ts:289:    channel_id: "channel-whatsapp",
+./src/lib/demo/data.ts:307:    channel_id: "channel-whatsapp",
+./src/lib/demo/data.ts:323:    channel_id: "channel-whatsapp",
+./src/lib/demo/data.ts:339:    channel_id: "channel-whatsapp",
+./src/lib/data/approvals.ts:137:    .select("id, organization_id, conversation_id, message_id, lead_id, draft_content, status, generation_model, generation_context, edited_by_user_id, approved_by_user_id, approved_at, discarded_by_user_id, created_at, updated_at, conversations(id, organization_id, channel_id, lead_id, external_conversation_id, status, assigned_owner_user_id, subject, last_message_at, metadata, created_at, updated_at, channels(display_name, provider, channel_type)), messages(id, body, occurred_at, sender_display_name, raw_payload), leads(id, pipeline_stage_id, full_name, email, phone, identity_confidence, priority, estimated_value, exact_source, source_subtype, original_inbound_channel, source_reference, captured_at, first_contact_at, qualification_status, ai_qualification_decision_path, lead_origin_metadata)")
+./src/lib/data/inbox.ts:98:      .select("id, organization_id, channel_id, lead_id, external_conversation_id, status, assigned_owner_user_id, subject, last_message_at, metadata, created_at, updated_at, channels(display_name, provider, channel_type), leads(id, pipeline_stage_id, full_name, email, phone, identity_confidence, status, priority, estimated_value, exact_source, source_subtype, original_inbound_channel, source_reference, captured_at, first_contact_at, qualification_status, ai_qualification_decision_path, lead_origin_metadata, assigned_owner_user_id)")
+./src/lib/data/inbox.ts:131:          .select("id, organization_id, channel_id, conversation_id, lead_id, direction, sender_type, sender_external_id, sender_display_name, external_message_id, body, occurred_at, status, sent_at, raw_payload, created_at")
+./src/lib/evolution.ts:3:export type EvolutionSendInput = {
+./src/lib/evolution.ts:9:export type EvolutionSendResult = {
+./src/lib/evolution.ts:23:  return instance || process.env.EVOLUTION_INSTANCE_NAME || process.env.EVOLUTION_INSTANCE || "AgentFlow_Primary";
+./src/lib/evolution.ts:26:function normalizeEvolutionResponse(value: unknown): Record<string, unknown> {
+./src/lib/evolution.ts:75:    return (instanceInfo as Record<string, unknown>).instanceName === instance;
+./src/lib/evolution.ts:86:    throw new Error("evolution_recipient_is_instance_owner");
+./src/lib/evolution.ts:90:export async function sendEvolutionTextMessage(input: EvolutionSendInput): Promise<EvolutionSendResult> {
+./src/lib/evolution.ts:95:  if (!baseUrl) throw new Error("evolution_base_url_missing");
+./src/lib/evolution.ts:96:  if (!REDACTED throw new Error("evolution_api_key_missing");
+./src/lib/evolution.ts:97:  if (!input.number || input.number.length < 8) throw new Error("evolution_recipient_missing");
+./src/lib/evolution.ts:98:  if (!input.text.trim()) throw new Error("evolution_text_missing");
+./src/lib/evolution.ts:123:  const normalized = normalizeEvolutionResponse(parsed);
+./src/lib/evolution.ts:126:    const message = typeof normalized.message === "string" ? normalized.message : `evolution_send_failed_${response.status}`;
+./src/lib/types.ts:136:  external_channel_id: string | null;
+./src/lib/types.ts:147:  channel_id: string;
+./src/lib/types.ts:162:  channel_id: string;
+./src/app/demo/vision/page.tsx:19:            Explore the multi-phase evolution from a real estate conversational wedge to a generalized operational intelligence network.
+./src/app/app/[orgSlug]/routing/page.tsx:19:    description: "Draft responses remain governed approval records. This surface does not dispatch WhatsApp, Evolution, or Property24 actions.",
+./tsconfig.tsbuildinfo:1:{"fileNames":["./node_modules/typescript/lib/lib.es5.d.ts","./node_modules/typescript/lib/lib.es2015.d.ts","./node_modules/typescript/lib/lib.es2016.d.ts","./node_modules/typescript/lib/lib.es2017.d.ts","./node_modules/typescript/lib/lib.es2018.d.ts","./node_modules/typescript/lib/lib.es2019.d.ts","./node_modules/typescript/lib/lib.es2020.d.ts","./node_modules/typescript/lib/lib.es2021.d.ts","./node_modules/typescript/lib/lib.es2022.d.ts","./node_modules/typescript/lib/lib.es2023.d.ts","./node_modules/typescript/lib/lib.es2024.d.ts","./node_modules/typescript/lib/lib.esnext.d.ts","./node_modules/typescript/lib/lib.dom.d.ts","./node_modules/typescript/lib/lib.dom.iterable.d.ts","./node_modules/typescript/lib/lib.es2015.core.d.ts","./node_modules/typescript/lib/lib.es2015.collection.d.ts","./node_modules/typescript/lib/lib.es2015.generator.d.ts","./node_modules/typescript/lib/lib.es2015.iterable.d.ts","./node_modules/typescript/lib/lib.es2015.promise.d.ts","./node_modules/typescript/lib/lib.es2015.proxy.d.ts","./node_modules/typescript/lib/lib.es2015.reflect.d.ts","./node_modules/typescript/lib/lib.es2015.symbol.d.ts","./node_modules/typescript/lib/lib.es2015.symbol.wellknown.d.ts","./node_modules/typescript/lib/lib.es2016.array.include.d.ts","./node_modules/typescript/lib/lib.es2016.intl.d.ts","./node_modules/typescript/lib/lib.es2017.arraybuffer.d.ts","./node_modules/typescript/lib/lib.es2017.date.d.ts","./node_modules/typescript/lib/lib.es2017.object.d.ts","./node_modules/typescript/lib/lib.es2017.sharedmemory.d.ts","./node_modules/typescript/lib/lib.es2017.string.d.ts","./node_modules/typescript/lib/lib.es2017.intl.d.ts","./node_modules/typescript/lib/lib.es2017.typedarrays.d.ts","./node_modules/typescript/lib/lib.es2018.asyncgenerator.d.ts","./node_modules/typescript/lib/lib.es2018.asynciterable.d.ts","./node_modules/typescript/lib/lib.es2018.intl.d.ts","./node_modules/typescript/lib/lib.es2018.promise.d.ts","./node_modules/typescript/lib/lib.es2018.regexp.d.ts","./node_modules/typescript/lib/lib.es2019.array.d.ts","./node_modules/typescript/lib/lib.es2019.object.d.ts","./node_modules/typescript/lib/lib.es2019.string.d.ts","./node_modules/typescript/lib/lib.es2019.symbol.d.ts","./node_modules/typescript/lib/lib.es2019.intl.d.ts","./node_modules/typescript/lib/lib.es2020.bigint.d.ts","./node_modules/typescript/lib/lib.es2020.date.d.ts","./node_modules/typescript/lib/lib.es2020.promise.d.ts","./node_modules/typescript/lib/lib.es2020.sharedmemory.d.ts","./node_modules/typescript/lib/lib.es2020.string.d.ts","./node_modules/typescript/lib/lib.es2020.symbol.wellknown.d.ts","./node_modules/typescript/lib/lib.es2020.intl.d.ts","./node_modules/typescript/lib/lib.es2020.number.d.ts","./node_modules/typescript/lib/lib.es2021.promise.d.ts","./node_modules/typescript/lib/lib.es2021.string.d.ts","./node_modules/typescript/lib/lib.es2021.weakref.d.ts","./node_modules/typescript/lib/lib.es2021.intl.d.ts","./node_modules/typescript/lib/lib.es2022.array.d.ts","./node_modules/typescript/lib/lib.es2022.error.d.ts","./node_modules/typescript/lib/lib.es2022.intl.d.ts","./node_modules/typescript/lib/lib.es2022.object.d.ts","./node_modules/typescript/lib/lib.es2022.string.d.ts","./node_modules/typescript/lib/lib.es2022.regexp.d.ts","./node_modules/typescript/lib/lib.es2023.array.d.ts","./node_modules/typescript/lib/lib.es2023.collection.d.ts","./node_modules/typescript/lib/lib.es2023.intl.d.ts","./node_modules/typescript/lib/lib.es2024.arraybuffer.d.ts","./node_modules/typescript/lib/lib.es2024.collection.d.ts","./node_modules/typescript/lib/lib.es2024.object.d.ts","./node_modules/typescript/lib/lib.es2024.promise.d.ts","./node_modules/typescript/lib/lib.es2024.regexp.d.ts","./node_modules/typescript/lib/lib.es2024.sharedmemory.d.ts","./node_modules/typescript/lib/lib.es2024.string.d.ts","./node_modules/typescript/lib/lib.esnext.array.d.ts","./node_modules/typescript/lib/lib.esnext.collection.d.ts","./node_modules/typescript/lib/lib.esnext.intl.d.ts","./node_modules/typescript/lib/lib.esnext.disposable.d.ts","./node_modules/typescript/lib/lib.esnext.promise.d.ts","./node_modules/typescript/lib/lib.esnext.decorators.d.ts","./node_modules/typescript/lib/lib.esnext.iterator.d.ts","./node_modules/typescript/lib/lib.esnext.float16.d.ts","./node_modules/typescript/lib/lib.esnext.error.d.ts","./node_modules/typescript/lib/lib.esnext.sharedmemory.d.ts","./node_modules/typescript/lib/lib.decorators.d.ts","./node_modules/typescript/lib/lib.decorators.legacy.d.ts","./node_modules/@types/react/global.d.ts","./node_modules/csstype/index.d.ts","./node_modules/@types/react/index.d.ts","./node_modules/next/dist/styled-jsx/types/css.d.ts","./node_modules/next/dist/styled-jsx/types/macro.d.ts","./node_modules/next/dist/styled-jsx/types/style.d.ts","./node_modules/next/dist/styled-jsx/types/global.d.ts","./node_modules/next/dist/styled-jsx/types/index.d.ts","./node_modules/next/dist/server/get-page-files.d.ts","./node_modules/@types/node/compatibility/disposable.d.ts","./node_modules/@types/node/compatibility/indexable.d.ts","./node_modules/@types/node/compatibility/iterators.d.ts","./node_modules/@types/node/compatibility/index.d.ts","./node_modules/@types/node/globals.typedarray.d.ts","./node_modules/@types/node/buffer.buffer.d.ts","./node_modules/@types/node/globals.d.ts","./node_modules/@types/node/web-globals/abortcontroller.d.ts","./node_modules/@types/node/web-globals/domexception.d.ts","./node_modules/@types/node/web-globals/events.d.ts","./node_modules/undici-types/header.d.ts","./node_modules/undici-types/readable.d.ts","./node_modules/undici-types/file.d.ts","./node_modules/undici-types/fetch.d.ts","./node_modules/undici-types/formdata.d.ts","./node_modules/undici-types/connector.d.ts","./node_modules/undici-types/client.d.ts","./node_modules/undici-types/errors.d.ts","./node_modules/undici-types/dispatcher.d.ts","./node_modules/undici-types/global-dispatcher.d.ts","./node_modules/undici-types/global-origin.d.ts","./node_modules/undici-types/pool-stats.d.ts","./node_modules/undici-types/pool.d.ts","./node_modules/undici-types/handlers.d.ts","./node_modules/undici-types/balanced-pool.d.ts","./node_modules/undici-types/agent.d.ts","./node_modules/undici-types/mock-interceptor.d.ts","./node_modules/undici-types/mock-agent.d.ts","./node_modules/undici-types/mock-client.d.ts","./node_modules/undici-types/mock-pool.d.ts","./node_modules/undici-types/mock-errors.d.ts","./node_modules/undici-types/proxy-agent.d.ts","./node_modules/undici-types/env-http-proxy-agent.d.ts","./node_modules/undici-types/retry-handler.d.ts","./node_modules/undici-types/retry-agent.d.ts","./node_modules/undici-types/api.d.ts","./node_modules/undici-types/interceptors.d.ts","./node_modules/undici-types/util.d.ts","./node_modules/undici-types/cookies.d.ts","./node_modules/undici-types/patch.d.ts","./node_modules/undici-types/websocket.d.ts","./node_modules/undici-types/eventsource.d.ts","./node_modules/undici-types/filereader.d.ts","./node_modules/undici-types/diagnostics-channel.d.ts","./node_modules/undici-types/content-type.d.ts","./node_modules/undici-types/cache.d.ts","./node_modules/undici-types/index.d.ts","./node_modules/@types/node/web-globals/fetch.d.ts","./node_modules/@types/node/assert.d.ts","./node_modules/@types/node/assert/strict.d.ts","./node_modules/@types/node/async_hooks.d.ts","./node_modules/@types/node/buffer.d.ts","./node_modules/@types/node/child_process.d.ts","./node_modules/@types/node/cluster.d.ts","./node_modules/@types/node/console.d.ts","./node_modules/@types/node/constants.d.ts","./node_modules/@types/node/crypto.d.ts","./node_modules/@types/node/dgram.d.ts","./node_modules/@types/node/diagnostics_channel.d.ts","./node_modules/@types/node/dns.d.ts","./node_modules/@types/node/dns/promises.d.ts","./node_modules/@types/node/domain.d.ts","./node_modules/@types/node/events.d.ts","./node_modules/@types/node/fs.d.ts","./node_modules/@types/node/fs/promises.d.ts","./node_modules/@types/node/http.d.ts","./node_modules/@types/node/http2.d.ts","./node_modules/@types/node/https.d.ts","./node_modules/@types/node/inspector.generated.d.ts","./node_modules/@types/node/module.d.ts","./node_modules/@types/node/net.d.ts","./node_modules/@types/node/os.d.ts","./node_modules/@types/node/path.d.ts","./node_modules/@types/node/perf_hooks.d.ts","./node_modules/@types/node/process.d.ts","./node_modules/@types/node/punycode.d.ts","./node_modules/@types/node/querystring.d.ts","./node_modules/@types/node/readline.d.ts","./node_modules/@types/node/readline/promises.d.ts","./node_modules/@types/node/repl.d.ts","./node_modules/@types/node/sea.d.ts","./node_modules/@types/node/stream.d.ts","./node_modules/@types/node/stream/promises.d.ts","./node_modules/@types/node/stream/consumers.d.ts","./node_modules/@types/node/stream/web.d.ts","./node_modules/@types/node/string_decoder.d.ts","./node_modules/@types/node/test.d.ts","./node_modules/@types/node/timers.d.ts","./node_modules/@types/node/timers/promises.d.ts","./node_modules/@types/node/tls.d.ts","./node_modules/@types/node/trace_events.d.ts","./node_modules/@types/node/tty.d.ts","./node_modules/@types/node/url.d.ts","./node_modules/@types/node/util.d.ts","./node_modules/@types/node/v8.d.ts","./node_modules/@types/node/vm.d.ts","./node_modules/@types/node/wasi.d.ts","./node_modules/@types/node/worker_threads.d.ts","./node_modules/@types/node/zlib.d.ts","./node_modules/@types/node/index.d.ts","./node_modules/@types/react/canary.d.ts","./node_modules/@types/react/experimental.d.ts","./node_modules/@types/react-dom/index.d.ts","./node_modules/@types/react-dom/canary.d.ts","./node_modules/@types/react-dom/experimental.d.ts","./node_modules/next/dist/lib/fallback.d.ts","./node_modules/next/dist/compiled/webpack/webpack.d.ts","./node_modules/next/dist/shared/lib/modern-browserslist-target.d.ts","./node_modules/next/dist/shared/lib/entry-constants.d.ts","./node_modules/next/dist/shared/lib/constants.d.ts","./node_modules/next/dist/lib/bundler.d.ts","./node_modules/next/dist/server/config.d.ts","./node_modules/next/dist/lib/load-custom-routes.d.ts","./node_modules/next/dist/shared/lib/image-config.d.ts","./node_modules/next/dist/build/webpack/plugins/subresource-integrity-plugin.d.ts","./node_modules/next/dist/server/body-streams.d.ts","./node_modules/next/dist/server/request/search-params.d.ts","./node_modules/next/dist/shared/lib/segment-cache/vary-params-decoding.d.ts","./node_modules/next/dist/server/app-render/vary-params.d.ts","./node_modules/next/dist/server/request/params.d.ts","./node_modules/next/dist/server/route-kind.d.ts","./node_modules/next/dist/server/route-definitions/route-definition.d.ts","./node_modules/next/dist/server/route-matches/route-match.d.ts","./node_modules/next/dist/client/components/app-router-headers.d.ts","./node_modules/next/dist/server/lib/cache-control.d.ts","./node_modules/next/dist/shared/lib/app-router-types.d.ts","./node_modules/next/dist/server/lib/cache-handlers/types.d.ts","./node_modules/next/dist/server/use-cache/use-cache-wrapper.d.ts","./node_modules/next/dist/server/resume-data-cache/cache-store.d.ts","./node_modules/next/dist/server/resume-data-cache/resume-data-cache.d.ts","./node_modules/next/dist/lib/constants.d.ts","./node_modules/next/dist/server/render-result.d.ts","./node_modules/next/dist/server/response-cache/types.d.ts","./node_modules/next/dist/server/response-cache/index.d.ts","./node_modules/@types/react/jsx-runtime.d.ts","./node_modules/next/dist/next-devtools/userspace/pages/pages-dev-overlay-setup.d.ts","./node_modules/next/dist/build/static-paths/types.d.ts","./node_modules/next/dist/server/route-definitions/app-page-route-definition.d.ts","./node_modules/next/dist/build/adapter/setup-node-env.external.d.ts","./node_modules/next/dist/server/instrumentation/types.d.ts","./node_modules/next/dist/lib/setup-exception-listeners.d.ts","./node_modules/next/dist/lib/worker.d.ts","./node_modules/next/dist/server/lib/experimental/ppr.d.ts","./node_modules/next/dist/lib/page-types.d.ts","./node_modules/next/dist/build/segment-config/app/app-segment-config.d.ts","./node_modules/next/dist/build/segment-config/pages/pages-segment-config.d.ts","./node_modules/next/dist/build/analysis/get-page-static-info.d.ts","./node_modules/next/dist/build/webpack/loaders/get-module-build-info.d.ts","./node_modules/next/dist/build/webpack/plugins/middleware-plugin.d.ts","./node_modules/next/dist/server/require-hook.d.ts","./node_modules/next/dist/server/node-polyfill-crypto.d.ts","./node_modules/next/dist/server/node-environment-baseline.d.ts","./node_modules/next/dist/server/node-environment-extensions/error-inspect.d.ts","./node_modules/next/dist/server/node-environment-extensions/console-file.d.ts","./node_modules/next/dist/server/node-environment-extensions/console-exit.d.ts","./node_modules/next/dist/server/node-environment-extensions/console-dim.external.d.ts","./node_modules/next/dist/server/node-environment-extensions/unhandled-rejection.external.d.ts","./node_modules/next/dist/server/node-environment-extensions/random.d.ts","./node_modules/next/dist/server/node-environment-extensions/date.d.ts","./node_modules/next/dist/server/node-environment-extensions/web-crypto.d.ts","./node_modules/next/dist/server/node-environment-extensions/node-crypto.d.ts","./node_modules/next/dist/server/node-environment-extensions/fast-set-immediate.external.d.ts","./node_modules/next/dist/server/node-environment.d.ts","./node_modules/next/dist/build/page-extensions-type.d.ts","./node_modules/next/dist/server/route-modules/app-page/module.compiled.d.ts","./node_modules/next/dist/server/route-definitions/app-route-route-definition.d.ts","./node_modules/next/dist/server/lib/i18n-provider.d.ts","./node_modules/next/dist/server/web/next-url.d.ts","./node_modules/next/dist/compiled/@edge-runtime/cookies/index.d.ts","./node_modules/next/dist/server/web/spec-extension/cookies.d.ts","./node_modules/next/dist/server/web/spec-extension/request.d.ts","./node_modules/next/dist/shared/lib/deep-readonly.d.ts","./node_modules/next/dist/server/lib/incremental-cache/index.d.ts","./node_modules/next/dist/shared/lib/router/utils/middleware-route-matcher.d.ts","./node_modules/next/dist/build/webpack/plugins/flight-manifest-plugin.d.ts","./node_modules/next/dist/build/webpack/plugins/next-font-manifest-plugin.d.ts","./node_modules/next/dist/server/route-definitions/locale-route-definition.d.ts","./node_modules/next/dist/server/route-definitions/pages-route-definition.d.ts","./node_modules/next/dist/shared/lib/mitt.d.ts","./node_modules/next/dist/client/with-router.d.ts","./node_modules/next/dist/client/router.d.ts","./node_modules/next/dist/client/route-loader.d.ts","./node_modules/next/dist/client/page-loader.d.ts","./node_modules/next/dist/shared/lib/bloom-filter.d.ts","./node_modules/next/dist/shared/lib/router/router.d.ts","./node_modules/next/dist/shared/lib/router-context.shared-runtime.d.ts","./node_modules/next/dist/shared/lib/loadable-context.shared-runtime.d.ts","./node_modules/next/dist/shared/lib/loadable.shared-runtime.d.ts","./node_modules/next/dist/shared/lib/image-config-context.shared-runtime.d.ts","./node_modules/next/dist/client/components/readonly-url-search-params.d.ts","./node_modules/next/dist/shared/lib/hooks-client-context.shared-runtime.d.ts","./node_modules/next/dist/shared/lib/head-manager-context.shared-runtime.d.ts","./node_modules/next/dist/client/flight-data-helpers.d.ts","./node_modules/next/dist/client/components/segment-cache/cache-key.d.ts","./node_modules/next/dist/client/components/router-reducer/fetch-server-response.d.ts","./node_modules/next/dist/client/components/segment-cache/types.d.ts","./node_modules/next/dist/shared/lib/segment-cache/segment-value-encoding.d.ts","./node_modules/next/dist/client/components/segment-cache/scheduler.d.ts","./node_modules/next/dist/client/components/segment-cache/cache-map.d.ts","./node_modules/next/dist/client/components/segment-cache/vary-path.d.ts","./node_modules/next/dist/client/components/segment-cache/cache.d.ts","./node_modules/next/dist/client/components/router-reducer/ppr-navigations.d.ts","./node_modules/next/dist/client/components/segment-cache/navigation.d.ts","./node_modules/next/dist/client/components/router-reducer/router-reducer-types.d.ts","./node_modules/next/dist/shared/lib/app-router-context.shared-runtime.d.ts","./node_modules/next/dist/shared/lib/server-inserted-html.shared-runtime.d.ts","./node_modules/next/dist/server/route-modules/pages/vendored/contexts/entrypoints.d.ts","./node_modules/next/dist/server/route-modules/pages/module.compiled.d.ts","./node_modules/next/dist/build/templates/pages.d.ts","./node_modules/next/dist/server/route-modules/pages/module.d.ts","./node_modules/next/dist/server/render.d.ts","./node_modules/next/dist/build/webpack/plugins/pages-manifest-plugin.d.ts","./node_modules/next/dist/server/route-definitions/pages-api-route-definition.d.ts","./node_modules/next/dist/server/route-matches/pages-api-route-match.d.ts","./node_modules/next/dist/server/route-matchers/route-matcher.d.ts","./node_modules/next/dist/server/route-matcher-providers/route-matcher-provider.d.ts","./node_modules/next/dist/server/route-matcher-managers/route-matcher-manager.d.ts","./node_modules/next/dist/server/normalizers/normalizer.d.ts","./node_modules/next/dist/server/normalizers/locale-route-normalizer.d.ts","./node_modules/next/dist/server/normalizers/request/pathname-normalizer.d.ts","./node_modules/next/dist/server/normalizers/request/suffix.d.ts","./node_modules/next/dist/server/normalizers/request/rsc.d.ts","./node_modules/next/dist/server/normalizers/request/next-data.d.ts","./node_modules/next/dist/server/after/builtin-request-context.d.ts","./node_modules/next/dist/server/normalizers/request/segment-prefix-rsc.d.ts","./node_modules/next/dist/server/route-modules/pages/builtin/_error.d.ts","./node_modules/next/dist/server/load-default-error-components.d.ts","./node_modules/next/dist/server/base-server.d.ts","./node_modules/next/dist/server/after/after.d.ts","./node_modules/next/dist/server/after/after-context.d.ts","./node_modules/next/dist/server/use-cache/cache-life.d.ts","./node_modules/next/dist/server/app-render/work-async-storage-instance.d.ts","./node_modules/next/dist/server/lib/lazy-result.d.ts","./node_modules/next/dist/server/app-render/create-error-handler.d.ts","./node_modules/next/dist/shared/lib/action-revalidation-kind.d.ts","./node_modules/next/dist/server/app-render/work-async-storage.external.d.ts","./node_modules/next/dist/server/async-storage/work-store.d.ts","./node_modules/next/dist/server/web/http.d.ts","./node_modules/next/dist/client/components/hooks-server-context.d.ts","./node_modules/next/dist/server/route-modules/app-route/shared-modules.d.ts","./node_modules/next/dist/client/components/redirect-status-code.d.ts","./node_modules/next/dist/client/components/redirect-error.d.ts","./node_modules/next/dist/server/web/spec-extension/adapters/request-cookies.d.ts","./node_modules/next/dist/server/async-storage/draft-mode-provider.d.ts","./node_modules/next/dist/server/web/spec-extension/adapters/headers.d.ts","./node_modules/next/dist/server/app-render/cache-signal.d.ts","./node_modules/next/dist/server/app-render/instant-validation/boundary-tracking.d.ts","./node_modules/next/dist/server/app-render/instant-validation/instant-validation-error.d.ts","./node_modules/next/dist/shared/lib/router/utils/parse-relative-url.d.ts","./node_modules/next/dist/server/app-render/instant-validation/instant-samples.d.ts","./node_modules/next/dist/server/app-render/dynamic-rendering.d.ts","./node_modules/next/dist/server/app-render/work-unit-async-storage-instance.d.ts","./node_modules/next/dist/server/lib/implicit-tags.d.ts","./node_modules/next/dist/server/app-render/staged-rendering.d.ts","./node_modules/next/dist/server/app-render/work-unit-async-storage.external.d.ts","./node_modules/next/dist/build/templates/app-route.d.ts","./node_modules/next/dist/server/app-render/action-async-storage-instance.d.ts","./node_modules/next/dist/server/app-render/action-async-storage.external.d.ts","./node_modules/next/dist/server/route-modules/app-route/module.d.ts","./node_modules/next/dist/server/route-modules/app-route/module.compiled.d.ts","./node_modules/next/dist/build/segment-config/app/app-segments.d.ts","./node_modules/next/dist/build/get-supported-browsers.d.ts","./node_modules/next/dist/build/utils.d.ts","./node_modules/next/dist/build/rendering-mode.d.ts","./node_modules/next/dist/server/lib/router-utils/build-prefetch-segment-data-route.d.ts","./node_modules/next/dist/server/lib/cpu-profile.d.ts","./node_modules/next/dist/build/turborepo-access-trace/types.d.ts","./node_modules/next/dist/build/turborepo-access-trace/result.d.ts","./node_modules/next/dist/build/turborepo-access-trace/helpers.d.ts","./node_modules/next/dist/build/turborepo-access-trace/index.d.ts","./node_modules/next/dist/export/routes/types.d.ts","./node_modules/next/dist/export/types.d.ts","./node_modules/next/dist/export/worker.d.ts","./node_modules/next/dist/build/worker.d.ts","./node_modules/next/dist/build/index.d.ts","./node_modules/next/dist/lib/coalesced-function.d.ts","./node_modules/next/dist/server/lib/router-utils/types.d.ts","./node_modules/next/dist/trace/types.d.ts","./node_modules/next/dist/trace/trace.d.ts","./node_modules/next/dist/trace/shared.d.ts","./node_modules/next/dist/trace/index.d.ts","./node_modules/next/dist/build/load-jsconfig.d.ts","./node_modules/@next/env/dist/index.d.ts","./node_modules/next/dist/build/webpack/plugins/telemetry-plugin/use-cache-tracker-utils.d.ts","./node_modules/next/dist/build/webpack/plugins/telemetry-plugin/telemetry-plugin.d.ts","./node_modules/next/dist/telemetry/storage.d.ts","./node_modules/next/dist/build/build-context.d.ts","./node_modules/next/dist/build/webpack-config.d.ts","./node_modules/next/dist/build/swc/generated-native.d.ts","./node_modules/next/dist/build/define-env.d.ts","./node_modules/next/dist/build/swc/index.d.ts","./node_modules/next/dist/build/swc/types.d.ts","./node_modules/next/dist/server/dev/parse-version-info.d.ts","./node_modules/next/dist/next-devtools/shared/types.d.ts","./node_modules/next/dist/server/dev/dev-indicator-server-state.d.ts","./node_modules/next/dist/next-devtools/dev-overlay/cache-indicator.d.ts","./node_modules/next/dist/server/lib/parse-stack.d.ts","./node_modules/next/dist/next-devtools/server/shared.d.ts","./node_modules/next/dist/next-devtools/shared/stack-frame.d.ts","./node_modules/next/dist/next-devtools/dev-overlay/utils/get-error-by-type.d.ts","./node_modules/next/dist/next-devtools/dev-overlay/container/runtime-error/render-error.d.ts","./node_modules/next/dist/next-devtools/dev-overlay/shared.d.ts","./node_modules/next/dist/server/dev/debug-channel.d.ts","./node_modules/next/dist/server/dev/hot-reloader-types.d.ts","./node_modules/next/dist/server/web/spec-extension/fetch-event.d.ts","./node_modules/next/dist/server/web/spec-extension/response.d.ts","./node_modules/next/dist/build/segment-config/middleware/middleware-config.d.ts","./node_modules/next/dist/server/web/types.d.ts","./node_modules/next/dist/shared/lib/router/utils/parse-url.d.ts","./node_modules/next/dist/server/base-http/node.d.ts","./node_modules/next/dist/server/lib/async-callback-set.d.ts","./node_modules/next/dist/shared/lib/router/utils/route-regex.d.ts","./node_modules/next/dist/shared/lib/router/utils/route-matcher.d.ts","./node_modules/sharp/lib/index.d.ts","./node_modules/next/dist/server/image-optimizer.d.ts","./node_modules/next/dist/server/next-server.d.ts","./node_modules/next/dist/server/lib/types.d.ts","./node_modules/next/dist/server/lib/lru-cache.d.ts","./node_modules/next/dist/server/lib/dev-bundler-service.d.ts","./node_modules/next/dist/server/dev/static-paths-worker.d.ts","./node_modules/next/dist/server/dev/next-dev-server.d.ts","./node_modules/next/dist/server/next.d.ts","./node_modules/next/dist/server/lib/render-server.d.ts","./node_modules/next/dist/server/lib/router-server.d.ts","./node_modules/next/dist/shared/lib/router/utils/path-match.d.ts","./node_modules/next/dist/server/lib/router-utils/filesystem.d.ts","./node_modules/next/dist/server/lib/router-utils/setup-dev-bundler.d.ts","./node_modules/next/dist/server/lib/router-utils/router-server-context.d.ts","./node_modules/next/dist/server/route-modules/route-module.d.ts","./node_modules/next/dist/server/load-components.d.ts","./node_modules/next/dist/server/web/adapter.d.ts","./node_modules/next/dist/server/app-render/types.d.ts","./node_modules/next/dist/build/webpack/loaders/metadata/types.d.ts","./node_modules/next/dist/build/webpack/loaders/next-app-loader/index.d.ts","./node_modules/next/dist/server/lib/app-dir-module.d.ts","./node_modules/next/dist/server/app-render/app-render.d.ts","./node_modules/next/dist/server/route-modules/app-page/vendored/contexts/entrypoints.d.ts","./node_modules/next/dist/client/components/error-boundary.d.ts","./node_modules/next/dist/client/components/layout-router.d.ts","./node_modules/next/dist/client/components/render-from-template-context.d.ts","./node_modules/next/dist/client/components/client-page.d.ts","./node_modules/next/dist/client/components/client-segment.d.ts","./node_modules/next/dist/client/components/http-access-fallback/error-boundary.d.ts","./node_modules/next/dist/lib/metadata/types/alternative-urls-types.d.ts","./node_modules/next/dist/lib/metadata/types/extra-types.d.ts","./node_modules/next/dist/lib/metadata/types/metadata-types.d.ts","./node_modules/next/dist/lib/metadata/types/manifest-types.d.ts","./node_modules/next/dist/lib/metadata/types/opengraph-types.d.ts","./node_modules/next/dist/lib/metadata/types/twitter-types.d.ts","./node_modules/next/dist/lib/metadata/types/metadata-interface.d.ts","./node_modules/next/dist/lib/metadata/types/resolvers.d.ts","./node_modules/next/dist/lib/metadata/types/icons.d.ts","./node_modules/next/dist/lib/metadata/resolve-metadata.d.ts","./node_modules/next/dist/lib/metadata/metadata.d.ts","./node_modules/next/dist/lib/framework/boundary-components.d.ts","./node_modules/next/dist/server/app-render/rsc/preloads.d.ts","./node_modules/next/dist/server/app-render/rsc/postpone.d.ts","./node_modules/next/dist/server/app-render/rsc/taint.d.ts","./node_modules/next/dist/server/app-render/collect-segment-data.d.ts","./node_modules/next/dist/server/app-render/instant-validation/instant-validation.d.ts","./node_modules/next/dist/next-devtools/userspace/app/segment-explorer-node.d.ts","./node_modules/next/dist/server/app-render/entry-base.d.ts","./node_modules/next/dist/build/templates/app-page.d.ts","./node_modules/next/dist/server/route-modules/app-page/helpers/prerender-manifest-matcher.d.ts","./node_modules/@types/react/jsx-dev-runtime.d.ts","./node_modules/@types/react/compiler-runtime.d.ts","./node_modules/next/dist/server/route-modules/app-page/vendored/rsc/entrypoints.d.ts","./node_modules/@types/react-dom/client.d.ts","./node_modules/@types/react-dom/static.d.ts","./node_modules/@types/react-dom/server.d.ts","./node_modules/next/dist/server/route-modules/app-page/vendored/ssr/entrypoints.d.ts","./node_modules/next/dist/server/route-modules/app-page/module.d.ts","./node_modules/next/dist/server/request/fallback-params.d.ts","./node_modules/next/dist/server/web/spec-extension/image-response.d.ts","./node_modules/next/dist/server/web/spec-extension/user-agent.d.ts","./node_modules/next/dist/server/web/spec-extension/url-pattern.d.ts","./node_modules/next/dist/server/after/index.d.ts","./node_modules/next/dist/server/request/connection.d.ts","./node_modules/next/dist/server/web/exports/index.d.ts","./node_modules/next/dist/server/request-meta.d.ts","./node_modules/next/dist/cli/next-test.d.ts","./node_modules/next/dist/shared/lib/size-limit.d.ts","./node_modules/next/dist/server/config-shared.d.ts","./node_modules/next/dist/server/base-http/index.d.ts","./node_modules/next/dist/server/api-utils/index.d.ts","./node_modules/next/dist/build/adapter/build-complete.d.ts","./node_modules/next/dist/types.d.ts","./node_modules/next/dist/shared/lib/html-context.shared-runtime.d.ts","./node_modules/next/dist/shared/lib/utils.d.ts","./node_modules/next/dist/pages/_app.d.ts","./node_modules/next/app.d.ts","./node_modules/next/dist/server/web/spec-extension/unstable-cache.d.ts","./node_modules/next/dist/server/web/spec-extension/revalidate.d.ts","./node_modules/next/dist/server/web/spec-extension/unstable-no-store.d.ts","./node_modules/next/dist/server/use-cache/cache-tag.d.ts","./node_modules/next/cache.d.ts","./node_modules/next/dist/pages/_document.d.ts","./node_modules/next/document.d.ts","./node_modules/next/dist/shared/lib/dynamic.d.ts","./node_modules/next/dynamic.d.ts","./node_modules/next/dist/pages/_error.d.ts","./node_modules/next/dist/client/components/catch-error.d.ts","./node_modules/next/dist/api/error.d.ts","./node_modules/next/error.d.ts","./node_modules/next/dist/shared/lib/head.d.ts","./node_modules/next/head.d.ts","./node_modules/next/dist/server/request/cookies.d.ts","./node_modules/next/dist/server/request/headers.d.ts","./node_modules/next/dist/server/request/draft-mode.d.ts","./node_modules/next/headers.d.ts","./node_modules/next/dist/shared/lib/get-img-props.d.ts","./node_modules/next/dist/client/image-component.d.ts","./node_modules/next/dist/shared/lib/image-external.d.ts","./node_modules/next/image.d.ts","./node_modules/next/dist/client/link.d.ts","./node_modules/next/link.d.ts","./node_modules/next/dist/client/components/unrecognized-action-error.d.ts","./node_modules/next/dist/client/components/redirect.d.ts","./node_modules/next/dist/client/components/not-found.d.ts","./node_modules/next/dist/client/components/forbidden.d.ts","./node_modules/next/dist/client/components/unauthorized.d.ts","./node_modules/next/dist/client/components/unstable-rethrow.server.d.ts","./node_modules/next/dist/client/components/unstable-rethrow.d.ts","./node_modules/next/dist/client/components/navigation.react-server.d.ts","./node_modules/next/dist/client/components/navigation.d.ts","./node_modules/next/navigation.d.ts","./node_modules/next/router.d.ts","./node_modules/next/dist/client/script.d.ts","./node_modules/next/script.d.ts","./node_modules/next/dist/compiled/@edge-runtime/primitives/url.d.ts","./node_modules/next/dist/compiled/@vercel/og/satori/index.d.ts","./node_modules/next/dist/compiled/@vercel/og/types.d.ts","./node_modules/next/server.d.ts","./node_modules/next/types/global.d.ts","./node_modules/next/types/compiled.d.ts","./node_modules/next/types.d.ts","./node_modules/next/index.d.ts","./node_modules/next/image-types/global.d.ts","./.next/types/routes.d.ts","./next-env.d.ts","./node_modules/@supabase/functions-js/dist/module/types.d.ts","./node_modules/@supabase/functions-js/dist/module/FunctionsClient.d.ts","./node_modules/@supabase/functions-js/dist/module/index.d.ts","./node_modules/@supabase/postgrest-js/dist/index.d.mts","./node_modules/@supabase/realtime-js/dist/module/lib/websocket-factory.d.ts","./node_modules/@supabase/realtime-js/dist/module/lib/serializer.d.ts","./node_modules/@supabase/phoenix/priv/static/types/constants.d.ts","./node_modules/@supabase/phoenix/priv/static/types/longpoll.d.ts","./node_modules/@supabase/phoenix/priv/static/types/types.d.ts","./node_modules/@supabase/phoenix/priv/static/types/timer.d.ts","./node_modules/@supabase/phoenix/priv/static/types/socket.d.ts","./node_modules/@supabase/phoenix/priv/static/types/push.d.ts","./node_modules/@supabase/phoenix/priv/static/types/channel.d.ts","./node_modules/@supabase/phoenix/priv/static/types/presence.d.ts","./node_modules/@supabase/phoenix/priv/static/types/serializer.d.ts","./node_modules/@supabase/phoenix/priv/static/types/index.d.ts","./node_modules/@supabase/realtime-js/dist/module/phoenix/types.d.ts","./node_modules/@supabase/realtime-js/dist/module/lib/constants.d.ts","./node_modules/@supabase/realtime-js/dist/module/RealtimePresence.d.ts","./node_modules/@supabase/realtime-js/dist/module/RealtimeChannel.d.ts","./node_modules/@supabase/realtime-js/dist/module/RealtimeClient.d.ts","./node_modules/@supabase/realtime-js/dist/module/index.d.ts","./node_modules/iceberg-js/dist/index.d.ts","./node_modules/@supabase/storage-js/dist/index.d.mts","./node_modules/@supabase/auth-js/dist/module/lib/error-codes.d.ts","./node_modules/@supabase/auth-js/dist/module/lib/errors.d.ts","./node_modules/@supabase/auth-js/dist/module/lib/web3/ethereum.d.ts","./node_modules/@supabase/auth-js/dist/module/lib/web3/solana.d.ts","./node_modules/@supabase/auth-js/dist/module/lib/webauthn.dom.d.ts","./node_modules/@supabase/auth-js/dist/module/lib/helpers.d.ts","./node_modules/@supabase/auth-js/dist/module/GoTrueClient.d.ts","./node_modules/@supabase/auth-js/dist/module/lib/webauthn.errors.d.ts","./node_modules/@supabase/auth-js/dist/module/lib/webauthn.d.ts","./node_modules/@supabase/auth-js/dist/module/lib/types.d.ts","./node_modules/@supabase/auth-js/dist/module/lib/fetch.d.ts","./node_modules/@supabase/auth-js/dist/module/GoTrueAdminApi.d.ts","./node_modules/@supabase/auth-js/dist/module/AuthAdminApi.d.ts","./node_modules/@supabase/auth-js/dist/module/AuthClient.d.ts","./node_modules/@supabase/auth-js/dist/module/lib/locks.d.ts","./node_modules/@supabase/auth-js/dist/module/index.d.ts","./node_modules/@supabase/supabase-js/dist/index.d.mts","./node_modules/cookie/dist/index.d.ts","./node_modules/@supabase/ssr/dist/main/types.d.ts","./node_modules/@supabase/ssr/dist/main/createBrowserClient.d.ts","./node_modules/@supabase/ssr/dist/main/createServerClient.d.ts","./node_modules/@supabase/ssr/dist/main/utils/helpers.d.ts","./node_modules/@supabase/ssr/dist/main/utils/constants.d.ts","./node_modules/@supabase/ssr/dist/main/utils/chunker.d.ts","./node_modules/@supabase/ssr/dist/main/utils/base64url.d.ts","./node_modules/@supabase/ssr/dist/main/utils/index.d.ts","./node_modules/@supabase/ssr/dist/main/index.d.ts","./src/lib/supabase/middleware.ts","./middleware.ts","./next.config.ts","./src/lib/supabase/server.ts","./src/lib/slug.ts","./src/lib/demo/config.ts","./src/app/admin/tenants/create/route.ts","./src/app/api/ingress/property24/route.ts","./src/app/auth/callback/route.ts","./src/app/logout/route.ts","./src/lib/types.ts","./src/lib/demo/data.ts","./src/lib/data/auth.ts","./src/lib/evolution.ts","./src/features/approvals/actions.ts","./src/features/branding/actions.ts","./src/lib/data/crm.ts","./src/lib/lead-identity.ts","./src/features/crm/actions.ts","./node_modules/clsx/clsx.d.mts","./node_modules/tailwind-merge/dist/types.d.ts","./src/lib/utils.ts","./src/lib/data/qualification.ts","./src/lib/data/approvals.ts","./src/lib/data/dashboard-intelligence.ts","./src/lib/data/inbox.ts","./src/lib/supabase/browser.ts","./node_modules/next/dist/compiled/@next/font/dist/types.d.ts","./node_modules/next/dist/compiled/@next/font/dist/google/index.d.ts","./node_modules/next/font/google/index.d.ts","./src/lib/demo/provider.tsx","./src/app/layout.tsx","./src/app/page.tsx","./node_modules/lucide-react/dist/lucide-react.d.ts","./node_modules/@radix-ui/react-slot/dist/index.d.mts","./node_modules/class-variance-authority/dist/types.d.ts","./node_modules/class-variance-authority/dist/index.d.ts","./src/components/ui/button.tsx","./src/components/brand/logo.tsx","./src/components/ui/status-indicator.tsx","./src/components/layout/shell.tsx","./src/components/ui/card.tsx","./src/components/ui/metric-card.tsx","./src/components/ui/badge.tsx","./src/app/admin/dashboard/page.tsx","./src/app/admin/tenants/page.tsx","./src/components/ui/input.tsx","./src/components/ui/label.tsx","./src/app/admin/tenants/new/page.tsx","./src/app/app/[orgSlug]/agent/leads/page.tsx","./src/components/ui/evidence.tsx","./src/features/approvals/approval-queue-client.tsx","./src/app/app/[orgSlug]/approvals/page.tsx","./src/features/branding/branding-form.tsx","./src/app/app/[orgSlug]/branding/page.tsx","./src/app/app/[orgSlug]/calendar/page.tsx","./src/components/dashboard/pending-approvals-summary.tsx","./src/components/dashboard/hot-leads-next-actions.tsx","./src/components/dashboard/viewing-ready-queue.tsx","./src/components/dashboard/signal-orchestration-flow.tsx","./src/components/dashboard/routing-audit-trail.tsx","./src/app/app/[orgSlug]/dashboard/page.tsx","./src/app/app/[orgSlug]/governance/page.tsx","./src/components/leads/lead-qualification-summary-card.tsx","./src/app/app/[orgSlug]/inbox/page.tsx","./src/app/app/[orgSlug]/leads/page.tsx","./src/app/app/[orgSlug]/leads/[leadId]/page.tsx","./src/app/app/[orgSlug]/leads/new/page.tsx","./src/app/app/[orgSlug]/positioning/page.tsx","./src/app/app/[orgSlug]/routing/page.tsx","./src/app/app/[orgSlug]/tasks/page.tsx","./src/app/app/[orgSlug]/vision/page.tsx","./src/app/demo/layout.tsx","./src/app/demo/page.tsx","./src/app/demo/approvals/page.tsx","./src/app/demo/branding/page.tsx","./src/app/demo/calendar/page.tsx","./src/app/demo/dashboard/page.tsx","./src/app/demo/governance/page.tsx","./src/app/demo/inbox/page.tsx","./src/app/demo/leads/page.tsx","./src/app/demo/leads/[leadId]/page.tsx","./src/app/demo/leads/new/page.tsx","./src/app/demo/positioning/page.tsx","./src/app/demo/routing/page.tsx","./src/app/demo/tasks/page.tsx","./src/app/demo/vision/page.tsx","./src/features/auth/forgot-REDACTED
+./supabase/migrations/20260524_phase10_property24_ingress_and_draft_review.sql:194:  channel_id uuid,
+./supabase/migrations/20260524_phase10_property24_ingress_and_draft_review.sql:272:    external_channel_id,
+./supabase/migrations/20260524_phase10_property24_ingress_and_draft_review.sql:286:  on conflict (organization_id, provider, external_channel_id) where external_channel_id is not null
+./supabase/migrations/20260524_phase10_property24_ingress_and_draft_review.sql:402:    and c.channel_id = v_channel.id
+./supabase/migrations/20260524_phase10_property24_ingress_and_draft_review.sql:409:      channel_id,
+./supabase/migrations/20260524_phase10_property24_ingress_and_draft_review.sql:438:      and m.channel_id = v_channel.id
+./supabase/migrations/20260524_phase10_property24_ingress_and_draft_review.sql:445:    channel_id := v_channel.id;
+./supabase/migrations/20260524_phase10_property24_ingress_and_draft_review.sql:462:    channel_id,
+./supabase/migrations/20260524_phase10_property24_ingress_and_draft_review.sql:536:  channel_id := v_channel.id;
+./supabase/migrations/20260430_stage_c_activation_ingestion_contract.sql:2:-- Ensures Evolution instance/channel identity maps to one channel and CRM intake receives
+./supabase/migrations/20260430_stage_c_activation_ingestion_contract.sql:3:-- exact_source='whatsapp', source_subtype='evolution', original_inbound_channel=<channel id>.
+./supabase/migrations/20260430_stage_c_activation_ingestion_contract.sql:6:on public.channels (provider, external_channel_id)
+./supabase/migrations/20260430_stage_c_activation_ingestion_contract.sql:7:where external_channel_id is not null;
+./supabase/migrations/20260430_stage_c_activation_ingestion_contract.sql:10:  p_channel_id uuid,
+./supabase/migrations/20260430_stage_c_activation_ingestion_contract.sql:23:  channel_id uuid,
+./supabase/migrations/20260430_stage_c_activation_ingestion_contract.sql:49:  where c.id = p_channel_id
+./supabase/migrations/20260430_stage_c_activation_ingestion_contract.sql:76:    'evolution',
+./supabase/migrations/20260430_stage_c_activation_ingestion_contract.sql:86:      'source_subtype', 'evolution',
+./supabase/migrations/20260430_stage_c_activation_ingestion_contract.sql:88:      'channel_id', v_channel.id,
+./supabase/migrations/20260430_stage_c_activation_ingestion_contract.sql:101:      and c.channel_id = v_channel.id
+./supabase/migrations/20260430_stage_c_activation_ingestion_contract.sql:110:      and c.channel_id = v_channel.id
+./supabase/migrations/20260430_stage_c_activation_ingestion_contract.sql:120:      channel_id,
+./supabase/migrations/20260430_stage_c_activation_ingestion_contract.sql:152:      and m.channel_id = v_channel.id
+./supabase/migrations/20260430_stage_c_activation_ingestion_contract.sql:162:      channel_id,
+./supabase/migrations/20260430_stage_c_activation_ingestion_contract.sql:205:      jsonb_build_object('channel_id', v_channel.id, 'external_conversation_id', nullif(btrim(coalesce(p_external_conversation_id, '')), ''), 'intake_action', v_intake.intake_action)
+./supabase/migrations/20260430_stage_c_activation_ingestion_contract.sql:218:    jsonb_build_object('channel_id', v_channel.id, 'external_message_id', nullif(btrim(coalesce(p_external_message_id, '')), ''), 'identity_confidence', v_intake.identity_confidence)
+./supabase/migrations/20260430_stage_c_activation_ingestion_contract.sql:222:  channel_id := v_channel.id;
+./supabase/migrations/20260430_stage_c_conversations_inbox.sql:21:  external_channel_id text,
+./supabase/migrations/20260430_stage_c_conversations_inbox.sql:35:on public.channels (organization_id, provider, external_channel_id)
+./supabase/migrations/20260430_stage_c_conversations_inbox.sql:36:where external_channel_id is not null;
+./supabase/migrations/20260430_stage_c_conversations_inbox.sql:43:  channel_id uuid not null references public.channels(id) on delete restrict,
+./supabase/migrations/20260430_stage_c_conversations_inbox.sql:58:on public.conversations (organization_id, channel_id, external_conversation_id)
+./supabase/migrations/20260430_stage_c_conversations_inbox.sql:63:create index if not exists conversations_channel_idx on public.conversations (channel_id, updated_at desc);
+./supabase/migrations/20260430_stage_c_conversations_inbox.sql:68:  channel_id uuid not null references public.channels(id) on delete restrict,
+./supabase/migrations/20260430_stage_c_conversations_inbox.sql:87:on public.messages (organization_id, channel_id, external_message_id)
+./supabase/migrations/20260430_stage_c_conversations_inbox.sql:127:  new.external_channel_id = nullif(btrim(coalesce(new.external_channel_id, '')), '');
+./supabase/migrations/20260430_stage_c_conversations_inbox.sql:148:  select c.organization_id into v_channel_org from public.channels c where c.id = new.channel_id;
+./supabase/migrations/20260430_stage_c_conversations_inbox.sql:195:  select c.organization_id, c.channel_id, c.lead_id into v_conversation
+./supabase/migrations/20260430_stage_c_conversations_inbox.sql:207:  if new.channel_id <> v_conversation.channel_id then
+./supabase/migrations/20260430_stage_c_conversations_inbox.sql:211:  select ch.organization_id into v_channel_org from public.channels ch where ch.id = new.channel_id;
+./supabase/migrations/20260430_stage_c_conversations_inbox.sql:292:  p_channel_id uuid,
+./supabase/migrations/20260430_stage_c_conversations_inbox.sql:305:  channel_id uuid,
+./supabase/migrations/20260430_stage_c_conversations_inbox.sql:331:  where c.id = p_channel_id
+./supabase/migrations/20260430_stage_c_conversations_inbox.sql:358:    'evolution',
+./supabase/migrations/20260430_stage_c_conversations_inbox.sql:368:      'source_subtype', 'evolution',
+./supabase/migrations/20260430_stage_c_conversations_inbox.sql:370:      'channel_id', v_channel.id,
+./supabase/migrations/20260430_stage_c_conversations_inbox.sql:383:      and c.channel_id = v_channel.id
+./supabase/migrations/20260430_stage_c_conversations_inbox.sql:392:      and c.channel_id = v_channel.id
+./supabase/migrations/20260430_stage_c_conversations_inbox.sql:402:      channel_id,
+./supabase/migrations/20260430_stage_c_conversations_inbox.sql:434:      and m.channel_id = v_channel.id
+./supabase/migrations/20260430_stage_c_conversations_inbox.sql:444:      channel_id,
+./supabase/migrations/20260430_stage_c_conversations_inbox.sql:487:      jsonb_build_object('channel_id', v_channel.id, 'external_conversation_id', nullif(btrim(coalesce(p_external_conversation_id, '')), ''), 'intake_action', v_intake.intake_action)
+./supabase/migrations/20260430_stage_c_conversations_inbox.sql:500:    jsonb_build_object('channel_id', v_channel.id, 'external_message_id', nullif(btrim(coalesce(p_external_message_id, '')), ''), 'identity_confidence', v_intake.identity_confidence)
+./supabase/migrations/20260430_stage_c_conversations_inbox.sql:504:  channel_id := v_channel.id;
+./supabase/migrations/20260525_phase10b_governed_outbound_certification.sql:187:  select c.organization_id, c.channel_id, c.lead_id into v_conversation
+./supabase/migrations/20260525_phase10b_governed_outbound_certification.sql:199:  if new.channel_id <> v_conversation.channel_id then
+./supabase/migrations/20260525_phase10b_governed_outbound_certification.sql:203:  select ch.organization_id into v_channel_org from public.channels ch where ch.id = new.channel_id;
+./supabase/migrations/20260525_phase10b_governed_outbound_certification.sql:249:  channel_id uuid,
+./supabase/migrations/20260525_phase10b_governed_outbound_certification.sql:257:  evolution_instance text,
+./supabase/migrations/20260525_phase10b_governed_outbound_certification.sql:308:         c.channel_id as conversation_channel_id,
+./supabase/migrations/20260525_phase10b_governed_outbound_certification.sql:346:  where ch.id = v_draft.conversation_channel_id
+./supabase/migrations/20260525_phase10b_governed_outbound_certification.sql:380:  evolution_instance := coalesce(
+./supabase/migrations/20260525_phase10b_governed_outbound_certification.sql:381:    nullif(btrim(coalesce(v_channel.metadata->>'evolution_instance', '')), ''),
+./supabase/migrations/20260525_phase10b_governed_outbound_certification.sql:382:    nullif(btrim(coalesce(v_channel.external_channel_id, '')), '')
+./supabase/migrations/20260525_phase10b_governed_outbound_certification.sql:412:        channel_id,
+./supabase/migrations/20260525_phase10b_governed_outbound_certification.sql:425:        v_draft.conversation_channel_id,
+./supabase/migrations/20260525_phase10b_governed_outbound_certification.sql:445:          'transport', 'evolution',
+./supabase/migrations/20260525_phase10b_governed_outbound_certification.sql:465:              'transport', 'evolution',
+./supabase/migrations/20260525_phase10b_governed_outbound_certification.sql:493:        'transport', 'evolution',
+./supabase/migrations/20260525_phase10b_governed_outbound_certification.sql:499:    channel_id := v_message.channel_id;
+./supabase/migrations/20260525_phase10b_governed_outbound_certification.sql:535:          'evolution_response', v_delivery_response,
+./supabase/migrations/20260525_phase10b_governed_outbound_certification.sql:576:      'transport', 'evolution',
+./supabase/migrations/20260525_phase10b_governed_outbound_certification.sql:604:      'transport', 'evolution',
+./supabase/migrations/20260525_phase10b_governed_outbound_certification.sql:611:  channel_id := v_message.channel_id;
+./LIBERTALIA_USER_ACTIVATION_PLAN.md:1:# Libertalia User Activation Plan
+./LIBERTALIA_USER_ACTIVATION_PLAN.md:16:Current live staging check found **no existing Libertalia tenant** and **no existing Kopano/Kopano-Libertalia auth/profile record**. Activation should therefore be a controlled founder/operator setup, not a public onboarding link.
+./LIBERTALIA_USER_ACTIVATION_PLAN.md:77:1. Create or confirm the Libertalia tenant.
+./LIBERTALIA_USER_ACTIVATION_PLAN.md:80:4. Add Kopano to Libertalia through `public.organization_members`.
+./LIBERTALIA_USER_ACTIVATION_PLAN.md:135:Current live staging inspection found no Libertalia tenant. If it is still absent at activation time, create it first.
+./LIBERTALIA_USER_ACTIVATION_PLAN.md:143:   - Organization name: `Libertalia`
+./LIBERTALIA_USER_ACTIVATION_PLAN.md:163:Assign Kopano to the Libertalia tenant through `public.organization_members`.
+./LIBERTALIA_USER_ACTIVATION_PLAN.md:214:- `organization = Libertalia`
+./LIBERTALIA_USER_ACTIVATION_PLAN.md:239:7. If Kopano remains on organization selection, choose **Libertalia**.
+./LIBERTALIA_USER_ACTIVATION_PLAN.md:274:4. After login, Kopano lands on the Libertalia dashboard or organization selector.
+./LIBERTALIA_USER_ACTIVATION_PLAN.md:390:- Limit the pilot data to Libertalia only.
+./LIBERTALIA_USER_ACTIVATION_PLAN.md:414:- [ ] Libertalia tenant exists and is `active`.
+./LIBERTALIA_USER_ACTIVATION_PLAN.md:418:- [ ] Default pipeline stages exist for Libertalia.
+./LIBERTALIA_USER_ACTIVATION_PLAN.md:419:- [ ] At least one Libertalia lead exists, or the pilot script explains the empty state.
+./LIBERTALIA_USER_ACTIVATION_PLAN.md:430:Use `member` role for the Libertalia pilot, but treat it as an operational-access pilot rather than read-only client access. If read-only access becomes a hard requirement, that will require a future cREDACTED product change; it should not be patched ad hoc for this activation.
+./EVOLUTION_TRANSPORT_CERTIFICATION.md:6:Scope: read-only Evolution outbound transport audit.
+./EVOLUTION_TRANSPORT_CERTIFICATION.md:13:The outbound request reaches Evolution, but Evolution fails before WhatsApp transmission while trying to validate the recipient via Baileys `onWhatsApp`.
+./EVOLUTION_TRANSPORT_CERTIFICATION.md:18:POST /message/sendText/AgentFlow_Primary
+./EVOLUTION_TRANSPORT_CERTIFICATION.md:27:This means the Evolution instance object exists, but its live Baileys socket/client is not usable. The instance reports `state=close`, and recent logs show connection/logout/session instability.
+./EVOLUTION_TRANSPORT_CERTIFICATION.md:33:`AgentFlow_Primary` is not in a healthy, open WhatsApp/Baileys session. Evolution's instance record exists, but the live Baileys client/socket required for outbound recipient validation is missing/unusable.
+./EVOLUTION_TRANSPORT_CERTIFICATION.md:39:AgentFlow_Primary status: close
+./EVOLUTION_TRANSPORT_CERTIFICATION.md:41:GET /instance/connectionState/AgentFlow_Primary
+./EVOLUTION_TRANSPORT_CERTIFICATION.md:50:last_error: evolution_send_failed_500
+./EVOLUTION_TRANSPORT_CERTIFICATION.md:53:Evolution response: Cannot read properties of undefined (reading 'onWhatsApp')
+./EVOLUTION_TRANSPORT_CERTIFICATION.md:56:### Exact failing Evolution component
+./EVOLUTION_TRANSPORT_CERTIFICATION.md:58:File inside the running Evolution container:
+./EVOLUTION_TRANSPORT_CERTIFICATION.md:61:/evolution/src/api/services/channels/whatsapp.baileys.service.ts
+./EVOLUTION_TRANSPORT_CERTIFICATION.md:77:- `sendMessage.router.ts:42-54` routes `/message/sendText/{instanceName}` to `sendMessageController.sendText(...)`.
+./EVOLUTION_TRANSPORT_CERTIFICATION.md:78:- `sendMessage.controller.ts:27-30` calls `this.waMonitor.waInstances[instanceName].textMessage(data)`.
+./EVOLUTION_TRANSPORT_CERTIFICATION.md:82:The thrown error specifically means `this.client` is undefined at the point where Evolution expects a live Baileys socket.
+./EVOLUTION_TRANSPORT_CERTIFICATION.md:84:### Evolution error-handling/build defect
+./EVOLUTION_TRANSPORT_CERTIFICATION.md:86:Evolution v1.8.6 does not guard this path when the instance is closed or its client is unavailable. Instead of returning a clean `instance not connected` / `session closed` error, it dereferences `this.client.onWhatsApp` and returns HTTP 500.
+./EVOLUTION_TRANSPORT_CERTIFICATION.md:91:- The **Evolution build/code path** is defective in how it reports the closed-client condition.
+./EVOLUTION_TRANSPORT_CERTIFICATION.md:95:### 1. Evolution version and container state
+./EVOLUTION_TRANSPORT_CERTIFICATION.md:100:Container: evolution_api
+./EVOLUTION_TRANSPORT_CERTIFICATION.md:101:Image tag: atendai/evolution-api:v1.8.7
+./EVOLUTION_TRANSPORT_CERTIFICATION.md:113:  "message": "Welcome to the Evolution API, it is working!",
+./EVOLUTION_TRANSPORT_CERTIFICATION.md:118:Important note: the Docker image tag says `v1.8.7`, but the running app/package reports `1.8.6`. Treat the active behavior as Evolution API **v1.8.6**.
+./EVOLUTION_TRANSPORT_CERTIFICATION.md:127:      "instanceName": "AgentFlow_Primary",
+./EVOLUTION_TRANSPORT_CERTIFICATION.md:138:GET /instance/connectionState/AgentFlow_Primary
+./EVOLUTION_TRANSPORT_CERTIFICATION.md:141:    "instanceName": "AgentFlow_Primary",
+./EVOLUTION_TRANSPORT_CERTIFICATION.md:151:Session files exist under `/evolution/instances/AgentFlow_Primary`:
+./EVOLUTION_TRANSPORT_CERTIFICATION.md:165:38 files under /evolution/instances/AgentFlow_Primary
+./EVOLUTION_TRANSPORT_CERTIFICATION.md:172:A read-only probe hit `/chat/whatsappNumbers/AgentFlow_Primary` using the latest outbound recipient in three formats:
+./EVOLUTION_TRANSPORT_CERTIFICATION.md:204:Recent log counts sampled from the Evolution container show session instability:
+./EVOLUTION_TRANSPORT_CERTIFICATION.md:231:logout instance: AgentFlow_Primary
+./EVOLUTION_TRANSPORT_CERTIFICATION.md:232:Instance "AgentFlow_Primary" - LOGOUT
+./EVOLUTION_TRANSPORT_CERTIFICATION.md:260:n8n_evolution_instances -> /evolution/instances
+./EVOLUTION_TRANSPORT_CERTIFICATION.md:261:n8n_evolution_store     -> /evolution/store
+./EVOLUTION_TRANSPORT_CERTIFICATION.md:266:- Evolution is using local volume-backed state, not Postgres-backed Evolution state.
+./EVOLUTION_TRANSPORT_CERTIFICATION.md:277:`AgentFlow_Primary` reports `state=close`. Logs show disconnect/reconnect/logout/session errors. The live Baileys client is unavailable in the validation/send path.
+./EVOLUTION_TRANSPORT_CERTIFICATION.md:285:### Is Evolution build defective?
+./EVOLUTION_TRANSPORT_CERTIFICATION.md:289:The root operational condition is a closed/unhealthy session. However, Evolution v1.8.6 has a defective error path: `whatsappNumber()` does not check that `this.client` exists before calling `this.client.onWhatsApp(...)`. This turns a closed-instance condition into a generic HTTP 500.
+./EVOLUTION_TRANSPORT_CERTIFICATION.md:295:A controlled reconnect/re-authentication of `AgentFlow_Primary` is required before outbound can be certified.
+./EVOLUTION_TRANSPORT_CERTIFICATION.md:312:   - Back up `/evolution/instances/AgentFlow_Primary`.
+./EVOLUTION_TRANSPORT_CERTIFICATION.md:313:   - Back up `/evolution/store` or at least `auth`, `settings`, `webhook`, and `messages` paths.
+./EVOLUTION_TRANSPORT_CERTIFICATION.md:316:   - Use Evolution's existing instance connect flow for `AgentFlow_Primary`.
+./EVOLUTION_TRANSPORT_CERTIFICATION.md:321:   GET /instance/connectionState/AgentFlow_Primary -> state=open
+./EVOLUTION_TRANSPORT_CERTIFICATION.md:325:   - Run `/chat/whatsappNumbers/AgentFlow_Primary` against the controlled test recipient.
+./EVOLUTION_TRANSPORT_CERTIFICATION.md:331:   - Capture Evolution response, AgentFlow DB transition, and recipient confirmation.
+./EVOLUTION_TRANSPORT_CERTIFICATION.md:334:   - Rebuild the Evolution instance from a backed-up state:
+./EVOLUTION_TRANSPORT_CERTIFICATION.md:336:     - delete/recreate or logout/recreate `AgentFlow_Primary`
+./EVOLUTION_TRANSPORT_CERTIFICATION.md:367:- Add pre-send Evolution health gate in AgentFlow.
+./EVOLUTION_TRANSPORT_CERTIFICATION.md:379:- Evolution returns a raw HTTP 500 instead of a clean closed-session error.
+./EVOLUTION_TRANSPORT_CERTIFICATION.md:381:  - `AgentFlow_Primary` is `state=open`,
+./EVOLUTION_TRANSPORT_CERTIFICATION.md:391:Reason: AgentFlow_Primary Baileys session is closed/unhealthy; Evolution dereferences missing client in onWhatsApp validation path.
+./docs/reports/AGENTFLOW_STAGING_TO_PRODUCTION_VISUAL_MIGRATION_REPORT.md:308:2. Anything that removes `src/lib/evolution.ts`.
+./OUTBOUND_RECOVERY_REPORT.md:6:**Scope:** Restore/certify existing governed approval → Evolution → WhatsApp transport path.
+./OUTBOUND_RECOVERY_REPORT.md:15:The previous failure point was an unhealthy/closed Evolution Baileys session for `AgentFlow_Primary`. After controlled Evolution reconnect/restart checks, the instance returned to `open`, recipient registration checks succeeded, and the previously failed governed outbound message was retried through the existing approval/RPC/Evolution path.
+./OUTBOUND_RECOVERY_REPORT.md:17:AgentFlow finalized the message as `sent` after Evolution returned HTTP `201` with a WhatsApp external message id.
+./OUTBOUND_RECOVERY_REPORT.md:19:**Important limitation:** Evolution returned immediate send status `PENDING`. That proves Evolution accepted the WhatsApp send request and produced a message id, but it is not handset-delivery proof. Final recipient confirmation is still required for full Definition-of-Success closure.
+./OUTBOUND_RECOVERY_REPORT.md:31:5. Evolution transport client: `src/lib/evolution.ts::sendEvolutionTextMessage(...)`
+./OUTBOUND_RECOVERY_REPORT.md:32:6. Evolution API: `POST /message/sendText/AgentFlow_Primary`
+./OUTBOUND_RECOVERY_REPORT.md:33:7. WhatsApp/Baileys provider path inside Evolution
+./OUTBOUND_RECOVERY_REPORT.md:42:POST /message/sendText/AgentFlow_Primary
+./OUTBOUND_RECOVERY_REPORT.md:53:- Evolution API was running.
+./OUTBOUND_RECOVERY_REPORT.md:54:- `AgentFlow_Primary` instance metadata existed.
+./OUTBOUND_RECOVERY_REPORT.md:56:- Evolution exposed this as HTTP 500 during recipient validation instead of returning a clean “instance closed” error.
+./OUTBOUND_RECOVERY_REPORT.md:60:### Evolution instance health
+./OUTBOUND_RECOVERY_REPORT.md:62:- Container: `evolution_api`
+./OUTBOUND_RECOVERY_REPORT.md:63:- Image tag observed: `atendai/evolution-api:v1.8.7`
+./OUTBOUND_RECOVERY_REPORT.md:72:`GET /instance/connectionState/AgentFlow_Primary` after recovery:
+./OUTBOUND_RECOVERY_REPORT.md:82:`GET /instance/fetchInstances?instanceName=AgentFlow_Primary` after recovery showed:
+./OUTBOUND_RECOVERY_REPORT.md:84:- `instanceName`: `AgentFlow_Primary`
+./OUTBOUND_RECOVERY_REPORT.md:90:Result: **Evolution/Baileys session active**.
+./OUTBOUND_RECOVERY_REPORT.md:94:`POST /chat/whatsappNumbers/AgentFlow_Primary` for the outbound recipient ending `5990`:
+./OUTBOUND_RECOVERY_REPORT.md:113:- Previous error: `evolution_send_failed_500`
+./OUTBOUND_RECOVERY_REPORT.md:124:  "evolution_instance": "AgentFlow_Primary"
+./OUTBOUND_RECOVERY_REPORT.md:136:1. Confirmed Evolution API health.
+./OUTBOUND_RECOVERY_REPORT.md:137:2. Confirmed `AgentFlow_Primary` was previously `close`.
+./OUTBOUND_RECOVERY_REPORT.md:138:3. Used existing Evolution instance lifecycle endpoints/checks to reconnect/restart the instance.
+./OUTBOUND_RECOVERY_REPORT.md:141:6. Re-ran recipient registration check via Evolution.
+./OUTBOUND_RECOVERY_REPORT.md:154:- Provider: `evolution`
+./OUTBOUND_RECOVERY_REPORT.md:155:- Channel external id: `AgentFlow_Primary`
+./OUTBOUND_RECOVERY_REPORT.md:167:2. Evolution recipient check
+./OUTBOUND_RECOVERY_REPORT.md:168:3. `POST /message/sendText/AgentFlow_Primary`
+./OUTBOUND_RECOVERY_REPORT.md:171:Evolution send result:
+./OUTBOUND_RECOVERY_REPORT.md:177:  "evolution_status": "PENDING"
+./OUTBOUND_RECOVERY_REPORT.md:192:  "evolution_http_status": 201,
+./OUTBOUND_RECOVERY_REPORT.md:193:  "evolution_response_status": "PENDING"
+./OUTBOUND_RECOVERY_REPORT.md:214:- Evolution accepted the send.
+./OUTBOUND_RECOVERY_REPORT.md:216:- Evolution immediate status was `PENDING`.
+./OUTBOUND_RECOVERY_REPORT.md:223:- Recipient/phone ending `5990` must confirm the message arrived, or Evolution must emit a delivery/read ACK for the new external message id.
+./OUTBOUND_RECOVERY_REPORT.md:230:closed/unusable Evolution Baileys client
+./OUTBOUND_RECOVERY_REPORT.md:231:→ AgentFlow_Primary open
+./OUTBOUND_RECOVERY_REPORT.md:233:→ governed retry accepted by Evolution
+./OUTBOUND_RECOVERY_REPORT.md:244:- Existing governed approval/RPC/Evolution path was used.
+./OUTBOUND_RECOVERY_REPORT.md:250:2. Add/validate delivery ACK handling later so AgentFlow does not equate Evolution `PENDING` with final handset delivery.
+./OUTBOUND_RECOVERY_REPORT.md:251:3. Keep `AgentFlow_Primary` session health monitored; alert if `connectionState` leaves `open`.
+./OUTBOUND_RECOVERY_REPORT.md:252:4. Consider a future controlled Evolution upgrade/patch only after the current production recovery is accepted; v1.8.6/v1.8.7 behavior dereferences `this.client.onWhatsApp` when the instance is closed.
+./OUTBOUND_TRANSPORT_ROOT_CAUSE.md:7:The live approval path does reach AgentFlow's governed outbound code, prepares the DB send, and calls Evolution directly. It does **not** use an outbound n8n workflow. The current real send attempt failed at the Evolution outbound endpoint:
+./OUTBOUND_TRANSPORT_ROOT_CAUSE.md:10:POST /message/sendText/AgentFlow_Primary -> HTTP 500
+./OUTBOUND_TRANSPORT_ROOT_CAUSE.md:11:Evolution response: Cannot read properties of undefined (reading 'onWhatsApp')
+./OUTBOUND_TRANSPORT_ROOT_CAUSE.md:15:There is also a product-state problem: AgentFlow treats a successful Evolution HTTP response as `sent`, even when Evolution only returns a WhatsApp/Baileys `PENDING` send object. That is **not proof of recipient delivery**. The UI copy can therefore overstate delivery if the Evolution API accepts/queues a message but WhatsApp never confirms delivery.
+./OUTBOUND_TRANSPORT_ROOT_CAUSE.md:25:5. Delivery/failed receipt returns from Evolution/WhatsApp.
+./OUTBOUND_TRANSPORT_ROOT_CAUSE.md:34:  -> Evolution outbound endpoint
+./OUTBOUND_TRANSPORT_ROOT_CAUSE.md:50:  -> src/lib/evolution.ts::sendEvolutionTextMessage
+./OUTBOUND_TRANSPORT_ROOT_CAUSE.md:64:- `src/features/approvals/actions.ts:106-112` calls `sendEvolutionTextMessage(...)` directly.
+./OUTBOUND_TRANSPORT_ROOT_CAUSE.md:65:- `src/features/approvals/actions.ts:113-125` finalizes DB as failed when Evolution throws.
+./OUTBOUND_TRANSPORT_ROOT_CAUSE.md:66:- `src/features/approvals/actions.ts:128-141` finalizes DB as `sent` and redirects `?sent=1` after a non-error Evolution HTTP response.
+./OUTBOUND_TRANSPORT_ROOT_CAUSE.md:67:- `src/lib/evolution.ts:102-111` posts directly to `/message/sendText/{instance}` with body `{ number, textMessage: { text } }`.
+./OUTBOUND_TRANSPORT_ROOT_CAUSE.md:77:  - `Evolution Inbound Webhook -> Normalize -> Call CREDACTED Ingestion RPC`.
+./OUTBOUND_TRANSPORT_ROOT_CAUSE.md:79:- Current code path imports/calls `sendEvolutionTextMessage` directly from the Next.js server action.
+./OUTBOUND_TRANSPORT_ROOT_CAUSE.md:81:Conclusion: outbound is not failing before Evolution in n8n. There is no outbound n8n execution to fail.
+./OUTBOUND_TRANSPORT_ROOT_CAUSE.md:92:provider: evolution
+./OUTBOUND_TRANSPORT_ROOT_CAUSE.md:93:external_channel_id / instance: AgentFlow_Primary
+./OUTBOUND_TRANSPORT_ROOT_CAUSE.md:99:raw_payload.last_error: evolution_send_failed_500
+./OUTBOUND_TRANSPORT_ROOT_CAUSE.md:102:Stored Evolution response:
+./OUTBOUND_TRANSPORT_ROOT_CAUSE.md:119:error: evolution_send_failed_500
+./OUTBOUND_TRANSPORT_ROOT_CAUSE.md:120:transport: evolution
+./OUTBOUND_TRANSPORT_ROOT_CAUSE.md:123:This means the latest audited real approval did **not** successfully reach a WhatsApp send. It was rejected/failed inside Evolution and AgentFlow finalized it as failed.
+./OUTBOUND_TRANSPORT_ROOT_CAUSE.md:132:Evolution response status: PENDING
+./OUTBOUND_TRANSPORT_ROOT_CAUSE.md:135:Important: `PENDING` from Evolution/Baileys is not a recipient delivery receipt. AgentFlow marked this as `sent` because Evolution returned HTTP success and an external message id, not because WhatsApp confirmed recipient delivery.
+./OUTBOUND_TRANSPORT_ROOT_CAUSE.md:137:## Evolution / WhatsApp transport evidence
+./OUTBOUND_TRANSPORT_ROOT_CAUSE.md:141:- Evolution container is running and inbound events are still received.
+./OUTBOUND_TRANSPORT_ROOT_CAUSE.md:142:- Inbound messages arrive through Evolution and n8n, proving inbound webhook transport works.
+./OUTBOUND_TRANSPORT_ROOT_CAUSE.md:143:- Prior state check showed `AgentFlow_Primary` connection state as `close`.
+./OUTBOUND_TRANSPORT_ROOT_CAUSE.md:144:- Latest outbound send returned Evolution HTTP 500 with `onWhatsApp` undefined.
+./OUTBOUND_TRANSPORT_ROOT_CAUSE.md:145:- Recent Evolution logs show unstable Baileys/WhatsApp session symptoms, including:
+./OUTBOUND_TRANSPORT_ROOT_CAUSE.md:149:  - `Log out instance: AgentFlow_Primary`
+./OUTBOUND_TRANSPORT_ROOT_CAUSE.md:152:- `POST /chat/findMessages/AgentFlow_Primary` returned `[]` during audit, so Evolution did not provide confirmable recent outbound delivery evidence through that query.
+./OUTBOUND_TRANSPORT_ROOT_CAUSE.md:164:AgentFlow -> Evolution POST /message/sendText/AgentFlow_Primary
+./OUTBOUND_TRANSPORT_ROOT_CAUSE.md:167:The Evolution API returned:
+./OUTBOUND_TRANSPORT_ROOT_CAUSE.md:175:- `AgentFlow_Primary` is not in a healthy connected/send-capable WhatsApp session.
+./OUTBOUND_TRANSPORT_ROOT_CAUSE.md:176:- Evolution/Baileys state is unstable or partially logged out; inbound can still appear for a period, but outbound send cannot reliably execute.
+./OUTBOUND_TRANSPORT_ROOT_CAUSE.md:180:- AgentFlow's `sent` state currently means **Evolution HTTP accepted/finalized**, not **WhatsApp delivered to recipient**.
