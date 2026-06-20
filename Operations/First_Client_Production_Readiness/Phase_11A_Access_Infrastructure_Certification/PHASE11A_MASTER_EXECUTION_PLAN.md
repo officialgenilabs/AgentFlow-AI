@@ -527,3 +527,43 @@ Minimum new pre-instance requirements:
 3. Update n8n Evolution normalization to fail closed on missing/unknown instance identity instead of falling back to `AgentFlow_Primary`.
 4. Create a Libertalia channel row only after founder approves the exact instance name and ownership model.
 5. Keep outbound frozen and Phase 11B unexecuted until all upstream gates pass and founder explicitly authorizes testing.
+
+## 14. Channel Owner + Fail-Closed Routing Planning Addendum — 2026-06-20
+
+Founder directed a planning-only continuation to remove the unsafe `AgentFlow_Primary` fallback risk and introduce deterministic channel ownership mapping before any Libertalia Evolution instance is created.
+
+New planning report:
+
+- `PHASE11A_CHANNEL_OWNER_FAIL_CLOSED_IMPLEMENTATION_PLAN.md`
+
+Current planning outcome:
+
+**CHANNEL OWNER FAIL-CLOSED PLAN COMPLETE — READY FOR FOUNDER APPROVAL**
+
+Scope remains documentation/design only. No database migration, n8n workflow update, Evolution instance creation, QR pairing, inbound test, outbound enablement, or Phase 11B execution has been authorized or performed.
+
+Plan impact:
+
+- `AgentFlow_Primary` must be locked to Gen I Labs/internal operations only and must not be used as an inbound or outbound fallback for Libertalia.
+- G06 remains `REVALIDATION REQUIRED` until a deterministic Libertalia channel/owner mapping exists and is tested.
+- G08 remains `REVALIDATION REQUIRED` until n8n removes the `AgentFlow_Primary` fallback and proves fail-closed handling.
+- G10 remains `REVALIDATION REQUIRED` until inbound owner propagation and routing audit evidence are validated.
+- G07 remains not executed; no QR pairing has been authorized.
+- G03 remains `WAITING ON KOPANO`.
+
+Minimum implementation now awaiting founder approval:
+
+1. Add first-class `owner_user_id` and `default_assignee_user_id` channel mapping, or explicitly approve a temporary metadata contract.
+2. Add sanitized rejection/quarantine evidence for missing, unknown, disabled, ambiguous, or owner-invalid inbound instances.
+3. Remove `AgentFlow_Primary` fallback from n8n inbound normalization.
+4. Remove/guard `AgentFlow_Primary` fallback from outbound Evolution helper before any future outbound activation.
+5. Propagate channel default assignee to new/unassigned conversations and leads.
+6. Keep `Libertalia_Kopano_Primary` uncreated until the approved fix passes validation.
+
+Founder decisions required before implementation:
+
+1. Whether to implement first-class `owner_user_id` / `default_assignee_user_id` channel mapping now.
+2. Whether unknown/unmapped inbound should be rejected or quarantined.
+3. Whether `Libertalia_Kopano_Primary` should be seeded after this fix passes.
+4. Whether `AgentFlow_Primary` should be locked to Gen I Labs/internal use only.
+5. Whether a minimal admin-only channel mapping configuration surface is required before broader rollout.

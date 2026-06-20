@@ -100,3 +100,38 @@ Phase 11B can only begin after:
 ### Safe next action
 
 Prepare a narrow channel ownership and fail-closed routing fix plan. Do **not** create `Libertalia_Kopano_Primary`, pair WhatsApp, send test messages, enable outbound, or execute Phase 11B until founder approval is given after this checkpoint.
+
+## 6. 2026-06-20 Channel Owner + Fail-Closed Routing Plan Addendum
+
+**Planning outcome:** **CHANNEL OWNER FAIL-CLOSED PLAN COMPLETE — READY FOR FOUNDER APPROVAL**
+
+New report:
+
+- `PHASE11A_CHANNEL_OWNER_FAIL_CLOSED_IMPLEMENTATION_PLAN.md`
+
+### Updated gate impact
+
+| Gate | Status after fail-closed plan | Reason |
+|---|---:|---|
+| G03 | WAITING ON KOPANO | Kopano's private reset/login remains required. |
+| G06 | REVALIDATION REQUIRED | Correct Libertalia instance/channel/owner mapping still does not exist. |
+| G07 | NOT STARTED | No QR pairing authorized; no client instance exists. |
+| G08 | REVALIDATION REQUIRED | n8n still needs implementation approval to remove the `AgentFlow_Primary` fallback and add fail-closed/quarantine behavior. |
+| G10 | REVALIDATION REQUIRED | Owner propagation and routing audit evidence are planned but not implemented. |
+| G11 | PREPARED | Phase 11B remains a plan only. |
+| G12 | NOT STARTED | Final certification blocked by upstream gates and founder approval. |
+
+### Required before G06/G08/G10 can pass
+
+- First-class or explicitly approved channel owner/default assignee contract.
+- n8n inbound workflow must stop defaulting missing instance identity to `AgentFlow_Primary`.
+- Unknown, disabled, ambiguous, malformed, or owner-invalid inbound must fail closed and create sanitized admin-visible evidence.
+- Inbound ingestion must assign new/unassigned conversation and lead ownership from deterministic channel mapping.
+- Outbound helper must require explicit Evolution instance before any future transport activation.
+
+### Current go/no-go
+
+- No-go for Libertalia instance creation.
+- No-go for QR pairing.
+- No-go for Phase 11B.
+- Go only for implementation after founder approval of the required decisions in the new plan.

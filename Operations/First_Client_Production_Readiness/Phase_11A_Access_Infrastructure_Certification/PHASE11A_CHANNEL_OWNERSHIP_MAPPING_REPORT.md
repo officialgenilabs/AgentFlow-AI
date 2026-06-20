@@ -109,3 +109,47 @@ Before creating any Libertalia Evolution instance:
 - [ ] Libertalia channel row is created with correct org and owner mapping.
 - [ ] G03 remains waiting until Kopano privately completes final reset/login.
 - [ ] No QR pairing until founder authorizes and correct instance exists.
+
+## 8. 2026-06-20 Fail-Closed Implementation Plan Addendum
+
+Planning report added:
+
+- `PHASE11A_CHANNEL_OWNER_FAIL_CLOSED_IMPLEMENTATION_PLAN.md`
+
+### Root cause confirmed
+
+Read-only n8n audit confirmed the active workflow `AgentFlow_AI_STAGE_C_Evolution_Inbound_Ingestion` (`8QAshjrkLrNF5kDI`) normalizes inbound Evolution payloads with a final fallback to `'AgentFlow_Primary'`. This is the exact unsafe fallback that must be removed before any Libertalia instance is created.
+
+Source audit also found outbound helper fallback in `src/lib/evolution.ts`, where missing outbound instance identity can fall back to `AgentFlow_Primary`. Outbound remains frozen, but this fallback should be removed before any future multi-agent outbound activation.
+
+### Recommended owner mapping model
+
+Canonical ownership should live in `public.channels` as first-class fields, not in n8n constants or environment variables.
+
+Recommended fields:
+
+- `owner_user_id`
+- `default_assignee_user_id`
+- `visibility_scope`
+- `fail_closed_policy`
+- `created_by_user_id`
+- `updated_by_user_id`
+
+Existing `external_channel_id` should remain the canonical Evolution instance name for `provider='evolution'`; do not create a duplicate `evolution_instance_name` column unless there is a later UI-only need.
+
+### Recommended fail-closed model
+
+- Missing instance: quarantine/reject, no tenant mutation.
+- Unknown instance: quarantine/reject, no tenant mutation.
+- Disabled/paused instance: quarantine/reject, known org/channel if safely resolvable, no message/lead mutation.
+- Ambiguous mapping: P0 fail-closed incident, no tenant selected.
+- Owner/default assignee missing or inactive on agent-owned channel: quarantine/reject, no message/lead mutation.
+- Known active mapped instance: create/attach conversation/message/lead under the channel tenant and assign new/unassigned records to the deterministic channel default assignee.
+
+### Founder approval required before implementation
+
+1. Approve first-class channel ownership fields now.
+2. Choose quarantine vs reject for unknown/unmapped inbound.
+3. Confirm whether `Libertalia_Kopano_Primary` should be seeded after the fix passes.
+4. Confirm `AgentFlow_Primary` is locked to Gen I Labs/internal use only.
+5. Decide whether minimal admin-only channel mapping UI is required before broader rollout, or whether controlled admin seeding is acceptable for Phase 11A.

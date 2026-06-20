@@ -77,3 +77,15 @@
 - Instance naming recommendation: use `Libertalia_Kopano_Primary` only if the first number is Kopano-owned; use `Libertalia_Agency_Primary` only for a shared agency/principal number. Current intended per-agent model favors `Libertalia_Kopano_Primary` after routing fixes.
 - Safe next action: prepare a narrow channel-owner / fail-closed routing fix plan. Do not create the instance until founder approval follows this checkpoint.
 - Gate impact: G06/G08/G10 remain `REVALIDATION REQUIRED`; G07 remains not executed; G03 remains `WAITING ON KOPANO`; Phase 11B remains prepared only.
+
+## 2026-06-20 Channel Owner + Fail-Closed Routing Plan
+
+- 2026-06-20T00:16Z: Founder directed Nova to prepare a planning-only implementation design for deterministic channel owner mapping and fail-closed Evolution routing.
+- Report created: `PHASE11A_CHANNEL_OWNER_FAIL_CLOSED_IMPLEMENTATION_PLAN.md`.
+- Runtime changes performed: none. No database migration, no n8n workflow update, no Evolution instance creation, no QR pairing, no inbound test, no outbound enablement, and no Phase 11B execution.
+- Root cause confirmed by read-only n8n audit: workflow `AgentFlow_AI_STAGE_C_Evolution_Inbound_Ingestion` (`8QAshjrkLrNF5kDI`) node `Normalize Evolution Payload` extracts instance identity with a final fallback to `'AgentFlow_Primary'`.
+- Additional root cause confirmed by source audit: `src/lib/evolution.ts` currently falls back to `AgentFlow_Primary` if no explicit outbound instance/env instance is supplied; outbound remains frozen, but this must be removed before multi-agent outbound activation.
+- Database finding reaffirmed: `public.channels` owns tenant/channel identity but lacks first-class `owner_user_id` and `default_assignee_user_id`; ingestion does not yet propagate channel default assignee into conversation/lead ownership.
+- Recommended safest architecture: first-class channel ownership on `public.channels`, DB-enforced same-org/active-member validation, n8n fail-closed routing, sanitized `inbound_routing_rejections` quarantine/audit evidence, and owner propagation for new/unassigned conversations/leads.
+- Gate impact unchanged: G03 `WAITING ON KOPANO`; G06/G08/G10 `REVALIDATION REQUIRED`; G07 not executed; G11 prepared only; G12 not started.
+- Next action: wait for founder approval on the five explicit implementation decisions before applying any code/database/n8n changes.
