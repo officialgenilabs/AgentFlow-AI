@@ -153,3 +153,33 @@ Existing `external_channel_id` should remain the canonical Evolution instance na
 3. Confirm whether `Libertalia_Kopano_Primary` should be seeded after the fix passes.
 4. Confirm `AgentFlow_Primary` is locked to Gen I Labs/internal use only.
 5. Decide whether minimal admin-only channel mapping UI is required before broader rollout, or whether controlled admin seeding is acceptable for Phase 11A.
+
+## 9. 2026-06-20 Implementation Addendum
+
+**Result:** **CHANNEL OWNER MAPPING FOUNDATION IMPLEMENTED — DO NOT SEED CLIENT CHANNEL WITHOUT SEPARATE APPROVAL**
+
+Implemented changes:
+
+- `public.channels` now has first-class ownership/default assignment fields: `owner_user_id`, `default_assignee_user_id`, `visibility_scope`, and `fail_closed_policy`.
+- Channel integrity now validates same-organization owner/default assignee membership.
+- `public.inbound_routing_rejections` stores sanitized quarantine/rejection evidence.
+- `public.ingest_evolution_inbound_message(...)` now resolves Evolution instance identity to a deterministic channel before calling canonical ingestion.
+- `public.ingest_inbound_message(...)` now propagates channel default assignee to new/unassigned leads and conversations.
+- `AgentFlow_Primary` is case-insensitively reserved for Gen I Labs/internal channel context only.
+- n8n workflow `8QAshjrkLrNF5kDI` no longer defaults missing instance identity to `AgentFlow_Primary`.
+- App outbound helper no longer defaults missing instance identity to `AgentFlow_Primary` or env fallback.
+
+Validation:
+
+- Known mapped synthetic rollback channel routed to correct org/default assignee.
+- Unknown instance quarantined.
+- Disabled channel rejected.
+- Missing/inactive owner quarantined.
+- Ambiguous case-variant mapping rejected.
+- Malformed instance rejected.
+- Duplicate external message deduped.
+- Future Libertalia/Kopano mapping pattern validated by the same channel-registry mechanism without creating or seeding `Libertalia_Kopano_Primary`.
+
+Remaining blocker:
+
+- No live Libertalia channel row exists yet. `Libertalia_Kopano_Primary` must only be seeded/admin-created after founder separately approves the next step.

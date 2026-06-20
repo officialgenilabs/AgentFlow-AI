@@ -135,3 +135,42 @@ New report:
 - No-go for QR pairing.
 - No-go for Phase 11B.
 - Go only for implementation after founder approval of the required decisions in the new plan.
+
+## 7. 2026-06-20 Channel Owner + Fail-Closed Routing Implementation Addendum
+
+**Implementation outcome:** **CHANNEL OWNER FAIL-CLOSED FOUNDATION IMPLEMENTED — LIVE CLIENT PROOF STILL REQUIRED**
+
+New reports/evidence:
+
+- `PHASE11A_CHANNEL_OWNER_FAIL_CLOSED_IMPLEMENTATION_REPORT.md`
+- `PHASE11A_CHANNEL_OWNER_MIGRATION_EVIDENCE.md`
+- `PHASE11A_FAIL_CLOSED_VALIDATION_REPORT.md`
+- `evidence/g08_phase11a_fail_closed_n8n_workflow_evidence_20260620.md`
+
+### Updated gate impact
+
+| Gate | Status after implementation | Reason |
+|---|---:|---|
+| G03 | WAITING ON KOPANO | Kopano must complete private reset/login; no temporary password was created or used. |
+| G06 | REVALIDATION REQUIRED | Evolution route/foundation is safer, but no dedicated Libertalia instance/channel has been created or certified. |
+| G07 | NOT STARTED / WAITING ON FOUNDER | QR pairing remains unauthorized and was not performed. |
+| G08 | REVALIDATION REQUIRED | n8n fallback to `AgentFlow_Primary` is removed and workflow validates; live webhook event proof still depends on correct instance/channel mapping and QR pairing. |
+| G10 | REVALIDATION REQUIRED | Deterministic owner/default-assignee propagation foundation is implemented; live inbound pipeline proof remains pending. |
+| G11 | PREPARED | Phase 11B remains plan-only. |
+| G12 | NOT STARTED | Final certification remains blocked by upstream gates. |
+
+### Validation summary
+
+- Database migration dry-run: passed.
+- Database migration apply and case-insensitive hardening reapply: passed.
+- Rollback-only functional validation: passed.
+- n8n workflow validation: valid; 4 non-blocking hardening warnings remain.
+- App lint/typecheck/build: passed.
+
+### Current go/no-go
+
+- Go for founder review of the fail-closed foundation.
+- No-go for QR pairing.
+- No-go for live inbound WhatsApp testing.
+- No-go for outbound automation.
+- No-go for Phase 11B.

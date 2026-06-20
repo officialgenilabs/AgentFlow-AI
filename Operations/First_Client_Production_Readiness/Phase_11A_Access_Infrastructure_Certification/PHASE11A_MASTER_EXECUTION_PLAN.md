@@ -567,3 +567,33 @@ Founder decisions required before implementation:
 3. Whether `Libertalia_Kopano_Primary` should be seeded after this fix passes.
 4. Whether `AgentFlow_Primary` should be locked to Gen I Labs/internal use only.
 5. Whether a minimal admin-only channel mapping configuration surface is required before broader rollout.
+
+## 14. 2026-06-20 Channel Owner + Fail-Closed Routing Implementation Addendum
+
+Founder approved the narrow implementation of first-class channel ownership and fail-closed Evolution routing.
+
+Implementation completed within approved constraints:
+
+- Database migration added first-class channel owner/default assignee fields and sanitized `inbound_routing_rejections` evidence.
+- Evolution inbound routing now uses `public.ingest_evolution_inbound_message(...)` to resolve instance → channel → tenant → owner/default assignee before mutation.
+- n8n workflow `8QAshjrkLrNF5kDI` no longer falls back to `AgentFlow_Primary` when instance identity is missing.
+- App outbound helper no longer falls back to `AgentFlow_Primary` or environment defaults.
+- `AgentFlow_Primary` is locked to Gen I Labs/internal channel context only.
+- Owner/default assignee propagation into new/unassigned conversation and lead context is implemented.
+
+Validation reports:
+
+- `PHASE11A_CHANNEL_OWNER_FAIL_CLOSED_IMPLEMENTATION_REPORT.md`
+- `PHASE11A_CHANNEL_OWNER_MIGRATION_EVIDENCE.md`
+- `PHASE11A_FAIL_CLOSED_VALIDATION_REPORT.md`
+
+This addendum does not alter gate completion rules:
+
+- G03 remains `WAITING ON KOPANO`.
+- G06/G08/G10 remain `REVALIDATION REQUIRED` until live client instance/channel, pairing, and inbound proof are certified.
+- G07 remains not executed / waiting on founder.
+- G11 remains prepared only.
+- G12 remains not started.
+- Phase 11A is not complete.
+
+Do not create/seed `Libertalia_Kopano_Primary`, pair WhatsApp, send inbound/outbound WhatsApp tests, enable outbound automation, or execute Phase 11B without separate founder approval.

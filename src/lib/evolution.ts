@@ -1,7 +1,7 @@
 import "server-only";
 
 export type EvolutionSendInput = {
-  instance?: string | null;
+  instance: string;
   number: string;
   text: string;
 };
@@ -19,8 +19,10 @@ function configuredApiKey() {
   return process.env.EVOLUTION_API_KEY || process.env.EVOLUTION_APIKEY || "";
 }
 
-function configuredInstance(instance?: string | null) {
-  return instance || process.env.EVOLUTION_INSTANCE_NAME || process.env.EVOLUTION_INSTANCE || "AgentFlow_Primary";
+function configuredInstance(instance: string) {
+  const normalized = instance.trim();
+  if (!normalized) throw new Error("evolution_instance_required");
+  return normalized;
 }
 
 function normalizeEvolutionResponse(value: unknown): Record<string, unknown> {

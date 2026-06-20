@@ -136,6 +136,12 @@ export type Channel = {
   external_channel_id: string | null;
   inbound_identifier: string | null;
   status: "active" | "paused" | "disabled" | string;
+  owner_user_id: string | null;
+  default_assignee_user_id: string | null;
+  visibility_scope: "agent_owned" | "agency_shared" | string;
+  fail_closed_policy: "reject" | "quarantine" | string;
+  created_by_user_id: string | null;
+  updated_by_user_id: string | null;
   metadata: Record<string, unknown>;
   created_at: string;
   updated_at: string;

@@ -89,3 +89,29 @@
 - Recommended safest architecture: first-class channel ownership on `public.channels`, DB-enforced same-org/active-member validation, n8n fail-closed routing, sanitized `inbound_routing_rejections` quarantine/audit evidence, and owner propagation for new/unassigned conversations/leads.
 - Gate impact unchanged: G03 `WAITING ON KOPANO`; G06/G08/G10 `REVALIDATION REQUIRED`; G07 not executed; G11 prepared only; G12 not started.
 - Next action: wait for founder approval on the five explicit implementation decisions before applying any code/database/n8n changes.
+
+## 2026-06-20 Channel Owner + Fail-Closed Routing Implementation Result
+
+- 2026-06-20T00:57Z: Founder-approved narrow implementation completed for deterministic channel-owner mapping and fail-closed Evolution routing.
+- Reports created:
+  - `PHASE11A_CHANNEL_OWNER_FAIL_CLOSED_IMPLEMENTATION_REPORT.md`
+  - `PHASE11A_CHANNEL_OWNER_MIGRATION_EVIDENCE.md`
+  - `PHASE11A_FAIL_CLOSED_VALIDATION_REPORT.md`
+- Evidence created:
+  - `evidence/g08_phase11a_fail_closed_n8n_workflow_evidence_20260620.md`
+- Database migration added/applied: `supabase/migrations/20260620_phase11a_channel_owner_fail_closed_routing.sql`.
+- Rollback-only validation script added/passed: `supabase/tests/phase11a_fail_closed_routing_validation.sql`.
+- n8n workflow `AgentFlow_AI_STAGE_C_Evolution_Inbound_Ingestion` (`8QAshjrkLrNF5kDI`) updated: `Normalize Evolution Payload` no longer falls back to `AgentFlow_Primary`; workflow now calls `public.ingest_evolution_inbound_message(...)`.
+- App outbound fallback removed: `src/lib/evolution.ts` now requires an explicit instance and no longer falls back to `AgentFlow_Primary` or environment defaults.
+- AgentFlow_Primary lock implemented case-insensitively for non-internal channel context.
+- Validation completed: database migration dry-run/apply/reapply passed; rollback-only routing validation passed; n8n workflow validation valid with 4 non-blocking hardening warnings; `npm run lint` passed with existing warnings; `npx tsc --noEmit` passed; `npm run build` passed.
+- Gate impact:
+  - G03 remains `WAITING ON KOPANO`.
+  - G06 remains `REVALIDATION REQUIRED`; canonical route/foundation is safer, but no Libertalia instance/channel exists yet.
+  - G07 must remain not passed / waiting on founder; QR pairing was not authorized or performed.
+  - G08 remains `REVALIDATION REQUIRED` for live webhook proof, but unsafe fallback remediation is implemented.
+  - G10 remains `REVALIDATION REQUIRED` for live inbound proof, but owner propagation foundation is implemented.
+  - G11 remains `PREPARED` only.
+  - G12 remains `NOT STARTED`.
+- Explicit non-actions: no `Libertalia_Kopano_Primary` instance or channel was created/seeded, no QR was exposed, no WhatsApp pairing was attempted, no WhatsApp message was sent, no outbound automation was enabled, no Phase 11B execution occurred, and no Kopano password/reset flow was touched.
+- Next action: founder review of implementation/validation. If approved, separately authorize the next narrow step to seed/admin-create `Libertalia_Kopano_Primary` channel mapping for Libertalia/Kopano without QR pairing yet.

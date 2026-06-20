@@ -1,10 +1,10 @@
 # Phase 11A — Channel Owner + Fail-Closed Routing Implementation Plan
 
 **Timestamp:** 2026-06-20 00:16 UTC continuation
-**Mode:** Planning only — no database migration, n8n change, Evolution instance creation, QR pairing, inbound test, outbound enablement, or Phase 11B execution.
+**Mode:** Approved narrow implementation executed — database/app/n8n safety changes only; no Evolution instance creation, no QR pairing, no WhatsApp send, no outbound enablement, and no Phase 11B execution.
 **Branch:** `release/agentflow-v2-production`
 **Current decision:** **Do not create `Libertalia_Kopano_Primary` yet.**
-**Recommended implementation decision:** **Proceed only after founder approval of the five decisions in Section 14.**
+**Implementation decision:** Founder approval granted on 2026-06-20; narrow fail-closed channel-owner routing fix implemented and validated. See implementation and validation reports.
 
 ## 1. Current Risk Summary
 

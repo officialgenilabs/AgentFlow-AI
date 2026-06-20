@@ -103,6 +103,10 @@ export async function reviewAiMessageDraft(orgSlug: string, draftId: string, for
     redirect(`/app/${orgSlug}/approvals?error=send-prepare-failed`);
   }
 
+  if (!prepared.evolution_instance) {
+    redirect(`/app/${orgSlug}/approvals?error=evolution-instance-required`);
+  }
+
   let delivery: Awaited<ReturnType<typeof sendEvolutionTextMessage>>;
   try {
     delivery = await sendEvolutionTextMessage({
