@@ -8,6 +8,8 @@ const CONNECTOR_ID = /^[A-Za-z0-9._:-]{1,128}$/;
 const SYNTHETIC_CASE_ID = /^[A-Za-z0-9._:-]{1,128}$/;
 const EMAIL_SHAPED = /^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/;
 const BOUNDED_TOKEN = /^[A-Za-z0-9._:-]{1,128}$/;
+const E164_PHONE = /^\+[1-9]\d{7,14}$/;
+const RFC3339_TIMESTAMP = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.\d{1,9})?(Z|[+-](?:[01]\d|2[0-3]):[0-5]\d)$/;
 
 const TOP_LEVEL_FIELDS = new Set([
   "schema_version",
@@ -206,6 +208,48 @@ function assertHex64(value: string, label: string) {
   if (!HEX_64.test(value)) failSchema("invalid_schema", `${label} must be a lowercase SHA-256 hex digest.`);
 }
 
+function isLeapYear(year: number) {
+  return year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0);
+}
+
+function daysInMonth(year: number, month: number) {
+  if (month === 2) return isLeapYear(year) ? 29 : 28;
+  if ([4, 6, 9, 11].includes(month)) return 30;
+  return 31;
+}
+
+function assertProviderReceivedAt(value: string) {
+  const match = RFC3339_TIMESTAMP.exec(value);
+  if (!match) {
+    failSchema("invalid_provider_timestamp", "provider_received_at must be a complete RFC3339 timestamp with seconds and an explicit timezone.");
+  }
+
+  const [, yearText, monthText, dayText, hourText, minuteText, secondText] = match;
+  const year = Number(yearText);
+  const month = Number(monthText);
+  const day = Number(dayText);
+  const hour = Number(hourText);
+  const minute = Number(minuteText);
+  const second = Number(secondText);
+
+  if (
+    year < 1
+    || month < 1
+    || month > 12
+    || day < 1
+    || day > daysInMonth(year, month)
+    || hour > 23
+    || minute > 59
+    || second > 59
+  ) {
+    failSchema("invalid_provider_timestamp", "provider_received_at must contain a valid calendar date and time.");
+  }
+
+  if (!Number.isFinite(Date.parse(value))) {
+    failSchema("invalid_provider_timestamp", "provider_received_at must parse to a finite timestamp.");
+  }
+}
+
 function validateLead(input: unknown): ZohoMailStagingLeadEnvelope {
   if (!isRecord(input)) failSchema("invalid_schema", "lead must be an object.");
   assertKnownKeys(input, LEAD_FIELDS, "lead");
@@ -240,8 +284,14 @@ function validateLead(input: unknown): ZohoMailStagingLeadEnvelope {
 
   if (lead.phone_validation_state === "missing") {
     if (lead.lead_phone_original !== null || lead.lead_phone_normalized !== null || lead.whatsapp_eligible !== false) {
-      failSemantic("missing_phone_contract_violation", "Missing phone envelopes must not carry phone values or WhatsApp eligibility.");
+      failSemantic("phone_eligibility_contract_violation", "Missing phone envelopes must not carry phone values or WhatsApp eligibility.");
     }
+  } else if (lead.phone_validation_state === "valid_e164") {
+    if (lead.lead_phone_normalized === null || !E164_PHONE.test(lead.lead_phone_normalized)) {
+      failSemantic("phone_eligibility_contract_violation", "valid_e164 phone envelopes require a bounded normalized E.164 phone value.");
+    }
+  } else if (lead.whatsapp_eligible !== false) {
+    failSemantic("phone_eligibility_contract_violation", "Only valid_e164 phone envelopes may carry WhatsApp eligibility.");
   }
 
   return lead;
@@ -277,8 +327,14 @@ function validateSanitization(input: unknown) {
   assertKnownKeys(input, SANITIZATION_FIELDS, "sanitization");
 
   const sanitization: Record<string, boolean> = {};
-  for (const [key, value] of Object.entries(input)) {
-    if (typeof value !== "boolean") failSchema("invalid_schema", "sanitization flags must be booleans.");
+  for (const key of SANITIZATION_FIELDS) {
+    const value = input[key];
+    if (typeof value !== "boolean") {
+      failSchema("invalid_sanitization_contract", "All approved sanitization flags must be present as booleans.");
+    }
+    if (value !== true) {
+      failSemantic("unsafe_sanitization_state", "All approved sanitization flags must be true for ZN-03A staging acceptance.");
+    }
     sanitization[key] = value;
   }
   return sanitization;
@@ -317,7 +373,7 @@ export function validateZohoMailStagingIngressEnvelope(input: unknown): ZohoMail
   if (provider_thread_id_digest !== null) assertHex64(provider_thread_id_digest, "provider_thread_id_digest");
 
   const provider_received_at = requiredString(input, "provider_received_at", 64);
-  if (!Number.isFinite(Date.parse(provider_received_at))) failSchema("invalid_schema", "provider_received_at must be a valid timestamp.");
+  assertProviderReceivedAt(provider_received_at);
 
   const mailbox = requiredString(input, "mailbox", 320);
   assertEmail(mailbox, "mailbox");
@@ -331,6 +387,10 @@ export function validateZohoMailStagingIngressEnvelope(input: unknown): ZohoMail
   const subject = requiredString(input, "subject", 500);
 
   const payload_hash = requiredString(input, "payload_hash", 64);
+  // ZN-03A validates only the digest format here. The request HMAC protects the
+  // exact transported body; envelope.payload_hash is upstream sanitized-payload
+  // evidence. Canonical payload-hash semantics and receipt-ledger verification
+  // are reserved for ZN-03B.
   assertHex64(payload_hash, "payload_hash");
 
   const synthetic_case_id = requiredString(input, "synthetic_case_id", 128);

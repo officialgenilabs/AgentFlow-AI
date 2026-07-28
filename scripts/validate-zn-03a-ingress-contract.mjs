@@ -540,6 +540,178 @@ await test("47 no email or WhatsApp action occurs", async () => {
   assert(!/sendEvolution|sendText|sendEmail|outbound email|message\/send|sendWhatsApp/i.test(changedSource), "outbound action pattern found");
 });
 
+await test("48 valid_e164 with normalized E.164 and WhatsApp eligibility accepted", async () => {
+  const result = await callHandler(signedRequest({
+    payload: envelope({
+      lead: {
+        lead_phone_original: "+27123456789",
+        lead_phone_normalized: "+27123456789",
+        phone_validation_state: "valid_e164",
+        whatsapp_eligible: true,
+      },
+    }),
+  }));
+  assert(result.status === 200 && result.body.ok === true, "valid E.164 WhatsApp-eligible envelope was not accepted");
+});
+
+await test("49 valid_e164 without normalized phone rejected", async () => {
+  const result = await callHandler(signedRequest({ payload: envelope({ lead: { lead_phone_normalized: null } }) }));
+  expectCode(result, 422, "phone_eligibility_contract_violation");
+});
+
+await test("50 valid_e164 with malformed normalized phone rejected", async () => {
+  const result = await callHandler(signedRequest({ payload: envelope({ lead: { lead_phone_normalized: "+012345678" } }) }));
+  expectCode(result, 422, "phone_eligibility_contract_violation");
+});
+
+await test("51 invalid_format with WhatsApp eligibility rejected", async () => {
+  const result = await callHandler(signedRequest({ payload: envelope({ lead: { phone_validation_state: "invalid_format", whatsapp_eligible: true } }) }));
+  expectCode(result, 422, "phone_eligibility_contract_violation");
+});
+
+await test("52 ambiguous_country with WhatsApp eligibility rejected", async () => {
+  const result = await callHandler(signedRequest({ payload: envelope({ lead: { phone_validation_state: "ambiguous_country", whatsapp_eligible: true } }) }));
+  expectCode(result, 422, "phone_eligibility_contract_violation");
+});
+
+await test("53 valid_local_requires_region with WhatsApp eligibility rejected", async () => {
+  const result = await callHandler(signedRequest({ payload: envelope({ lead: { phone_validation_state: "valid_local_requires_region", whatsapp_eligible: true } }) }));
+  expectCode(result, 422, "phone_eligibility_contract_violation");
+});
+
+await test("54 human_review_required with WhatsApp eligibility rejected", async () => {
+  const result = await callHandler(signedRequest({ payload: envelope({ lead: { phone_validation_state: "human_review_required", whatsapp_eligible: true } }) }));
+  expectCode(result, 422, "phone_eligibility_contract_violation");
+});
+
+await test("55 missing phone with WhatsApp eligibility false accepted", async () => {
+  const result = await callHandler(signedRequest({
+    payload: envelope({
+      lead: {
+        lead_phone_original: null,
+        lead_phone_normalized: null,
+        phone_validation_state: "missing",
+        phone_confidence: null,
+        whatsapp_eligible: false,
+      },
+      missing_fields: ["lead_phone_original"],
+    }),
+  }));
+  assert(result.status === 200 && result.body.ok === true, "missing phone with WhatsApp false was not accepted");
+});
+
+await test("56 missing phone carrying original phone rejected", async () => {
+  const result = await callHandler(signedRequest({
+    payload: envelope({
+      lead: {
+        lead_phone_original: "+27123456789",
+        lead_phone_normalized: null,
+        phone_validation_state: "missing",
+        whatsapp_eligible: false,
+      },
+    }),
+  }));
+  expectCode(result, 422, "phone_eligibility_contract_violation");
+});
+
+await test("57 missing phone carrying normalized phone rejected", async () => {
+  const result = await callHandler(signedRequest({
+    payload: envelope({
+      lead: {
+        lead_phone_original: null,
+        lead_phone_normalized: "+27123456789",
+        phone_validation_state: "missing",
+        whatsapp_eligible: false,
+      },
+    }),
+  }));
+  expectCode(result, 422, "phone_eligibility_contract_violation");
+});
+
+await test("58 sanitization object missing one required flag rejected", async () => {
+  const payload = envelope();
+  delete payload.sanitization.html_stripped;
+  const result = await callHandler(signedRequest({ payload }));
+  expectCode(result, 400, "invalid_sanitization_contract");
+});
+
+await test("59 raw_body_removed false rejected", async () => {
+  const result = await callHandler(signedRequest({ payload: envelope({ sanitization: { raw_body_removed: false } }) }));
+  expectCode(result, 422, "unsafe_sanitization_state");
+});
+
+await test("60 tokens_removed false rejected", async () => {
+  const result = await callHandler(signedRequest({ payload: envelope({ sanitization: { tokens_removed: false } }) }));
+  expectCode(result, 422, "unsafe_sanitization_state");
+});
+
+await test("61 provider_ids_hashed false rejected", async () => {
+  const result = await callHandler(signedRequest({ payload: envelope({ sanitization: { provider_ids_hashed: false } }) }));
+  expectCode(result, 422, "unsafe_sanitization_state");
+});
+
+await test("62 pii_minimized false rejected", async () => {
+  const result = await callHandler(signedRequest({ payload: envelope({ sanitization: { pii_minimized: false } }) }));
+  expectCode(result, 422, "unsafe_sanitization_state");
+});
+
+await test("63 unknown sanitization flag rejected", async () => {
+  const result = await callHandler(signedRequest({ payload: envelope({ sanitization: { unexpected_flag: true } }) }));
+  expectCode(result, 400, "unknown_field");
+});
+
+await test("64 full UTC RFC3339 provider timestamp accepted", async () => {
+  const result = await callHandler(signedRequest({ payload: envelope({ provider_received_at: "2026-07-28T00:00:00Z" }) }));
+  assert(result.status === 200 && result.body.ok === true, "UTC RFC3339 timestamp was not accepted");
+});
+
+await test("65 timezone-offset RFC3339 provider timestamp accepted", async () => {
+  const result = await callHandler(signedRequest({ payload: envelope({ provider_received_at: "2026-07-28T02:00:00+02:00" }) }));
+  assert(result.status === 200 && result.body.ok === true, "offset RFC3339 timestamp was not accepted");
+});
+
+await test("66 date-only provider timestamp rejected", async () => {
+  const result = await callHandler(signedRequest({ payload: envelope({ provider_received_at: "2026-07-28" }) }));
+  expectCode(result, 400, "invalid_provider_timestamp");
+});
+
+await test("67 timezone-free provider timestamp rejected", async () => {
+  const result = await callHandler(signedRequest({ payload: envelope({ provider_received_at: "2026-07-28T00:00:00" }) }));
+  expectCode(result, 400, "invalid_provider_timestamp");
+});
+
+await test("68 malformed calendar timestamp rejected", async () => {
+  const result = await callHandler(signedRequest({ payload: envelope({ provider_received_at: "2026-02-30T00:00:00Z" }) }));
+  expectCode(result, 400, "invalid_provider_timestamp");
+});
+
+await test("69 injected unexpected dependency error returns HTTP 500", async () => {
+  const deps = syntheticDependencies({
+    connectorRegistry: {
+      async resolveConnector() {
+        throw new Error("raw internal dependency exploded at /root/.openclaw/credentials/secret.env for lead@example.test");
+      },
+    },
+  });
+  const result = await callHandler(signedRequest(), deps);
+  expectCode(result, 500, "internal_ingress_error");
+});
+
+await test("70 HTTP 500 response contains no raw error message or stack trace", async () => {
+  const deps = syntheticDependencies({
+    connectorRegistry: {
+      async resolveConnector() {
+        throw new Error("raw internal dependency exploded at /root/.openclaw/credentials/secret.env for lead@example.test");
+      },
+    },
+  });
+  const result = await callHandler(signedRequest(), deps);
+  const responseText = JSON.stringify(result.body);
+  expectCode(result, 500, "internal_ingress_error");
+  assert(result.body?.error?.message === "The request could not be completed safely.", "safe internal-error message changed");
+  assert(!/raw internal|openclaw|credentials|secret\.env|lead@example\.test|stack|Error:/i.test(responseText), "HTTP 500 leaked raw error detail");
+});
+
 const failed = results.filter((result) => !result.ok);
 for (const result of results) {
   console.log(`${result.ok ? "PASS" : "FAIL"} ${result.name}${result.ok ? "" : ` :: ${result.error}`}`);

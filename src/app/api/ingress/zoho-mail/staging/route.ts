@@ -143,7 +143,7 @@ export async function handleZohoMailStagingIngressRequest(
       return errorResponse(correlationId, error.status, error.code, error.message);
     }
 
-    return errorResponse(correlationId, 400, "invalid_request", "Request could not be processed safely.");
+    return errorResponse(correlationId, 500, "internal_ingress_error", "The request could not be completed safely.");
   }
 }
 
